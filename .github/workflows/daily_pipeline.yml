@@ -61,14 +61,23 @@ jobs:
       # ─────────────────────────────────────────────
       - name: "3 · dbt deps"
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
         run: dbt deps
 
       - name: "3 · dbt seed (feriados_nacionais)"
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
         run: dbt seed --select feriados_nacionais
 
       - name: "3 · dbt run (incremental)"
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
         run: dbt run
 
       # ─────────────────────────────────────────────
@@ -76,6 +85,9 @@ jobs:
       # ─────────────────────────────────────────────
       - name: "4 · dbt test --select gold"
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
         run: dbt test --select gold
 
       # ─────────────────────────────────────────────

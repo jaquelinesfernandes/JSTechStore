@@ -15,6 +15,7 @@ pyarrow>=16.0.0                 # Engine Parquet (leitura/escrita no Bronze e Si
 # ── Geração de dados sintéticos ───────────────────────────
 faker[pt_BR]>=25.0.0            # Geração de dados fictícios com locale brasileiro
                                 # Inclui: cpf(), cnpj(), name(), email(), phone_number()
+tqdm>=4.66.0                    # Barra de progresso para scripts de geração de dados
 
 # ── DuckDB / dbt ──────────────────────────────────────────
 duckdb>=1.1.0                   # Engine OLAP embarcado (camada Gold)

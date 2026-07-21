@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: int_vendas__pedidos_unificados
+    description: >
+      Pedidos com status hierárquico (cancelado > devolvido > entregue),
+      métricas de margem e taxa de desconto calculadas.
+    columns:
+      - name: id_pedido
+        tests: [not_null, unique]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: [em_processamento, confirmado, enviado, entregue, cancelado, devolvido]
+      - name: valor_liquido
+        tests: [not_null]
+      - name: taxa_desconto
+        description: "Deve estar entre 0 e 1."
+        tests: [not_null]
+
+  - name: int_clientes__unificados
+    description: >
+      Clientes dedupliciados por CPF, com scores RFM e nível de fidelidade
+      calculados a partir do histórico real de compras.
+    columns:
+      - name: id_cliente
+        tests: [not_null, unique]
+      - name: cpf
+        tests: [not_null, unique]
+      - name: nivel_fidelidade
+        tests:
+          - accepted_values:
+              values: [Bronze, Silver, Gold, Platinum]
+      - name: score_recencia
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+      - name: score_frequencia
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+      - name: score_monetario
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5]
+
+  - name: int_produtos__catalogo
+    description: >
+      Catálogo enriquecido com categoria, fornecedor e preço vigente.
+      Margem percentual calculada.
+    columns:
+      - name: id_produto
+        tests: [not_null, unique]
+      - name: sku
+        tests: [not_null, unique]
+      - name: categoria
+        tests: [not_null]
+      - name: preco_venda_vigente
+        tests: [not_null]

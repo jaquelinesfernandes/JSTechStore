@@ -240,3 +240,11 @@ data/backups/gold/parquet_*/
 # Exportações Power BI locais
 powerbi/datasets/*.pbix
 powerbi/reports/*.pbix
+
+# ─── dbt ──────────────────────────────────────────────────────────
+# Pacotes instalados (equivalente a node_modules)
+transformation/dbt_project/dbt_packages/
+# Artefatos de compilação e execução
+transformation/dbt_project/target/
+# Configuração local do usuário (não versionável)
+transformation/dbt_project/.user.yml

@@ -32,7 +32,10 @@ from uuid import uuid4
 
 import pandas as pd
 import psycopg2
+from dotenv import load_dotenv
 from psycopg2.extras import RealDictCursor
+
+load_dotenv()
 
 from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig
 

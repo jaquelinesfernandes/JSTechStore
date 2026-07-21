@@ -61,6 +61,7 @@ TABLES: tuple[TableConfig, ...] = (
     TableConfig(schema="marketing", table="leads",       natural_key=("id_lead",)),
     TableConfig(schema="marketing", table="atribuicao",  natural_key=("id_atribuicao",)),
     # ── rh ────────────────────────────────────────────────────────────────
+    TableConfig(schema="rh", table="lojas",      natural_key=("id_loja",)),
     TableConfig(schema="rh", table="vendedores", natural_key=("id_vendedor",)),
     TableConfig(schema="rh", table="metas",      natural_key=("id_meta",)),
     TableConfig(schema="rh", table="comissoes",  natural_key=("id_comissao",)),

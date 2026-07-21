@@ -1,0 +1,298 @@
+version: 2
+
+models:
+  - name: stg_vendas__pedidos
+    description: "Pedidos de venda — leitura incremental do Bronze Parquet."
+    columns:
+      - name: id_pedido
+        tests: [not_null, unique]
+      - name: id_cliente
+        tests: [not_null]
+      - name: id_loja
+        tests: [not_null]
+      - name: canal_venda
+        tests:
+          - not_null
+          - accepted_values:
+              values: [loja_fisica, site_proprio, marketplace_ml, marketplace_amazon, marketplace_shopee]
+      - name: status
+        tests:
+          - not_null
+          - accepted_values:
+              values: [em_processamento, confirmado, enviado, entregue, cancelado, devolvido]
+      - name: valor_liquido
+        tests: [not_null]
+      - name: updated_at
+        tests: [not_null]
+
+  - name: stg_vendas__itens_pedido
+    description: "Itens dos pedidos de venda."
+    columns:
+      - name: id_item_pedido
+        tests: [not_null, unique]
+      - name: id_pedido
+        tests: [not_null]
+      - name: id_produto
+        tests: [not_null]
+      - name: qtd_vendida
+        tests: [not_null]
+      - name: valor_liquido_item
+        tests: [not_null]
+
+  - name: stg_vendas__devolucoes
+    description: "Devoluções de pedidos."
+    columns:
+      - name: id_devolucao
+        tests: [not_null, unique]
+      - name: id_pedido
+        tests: [not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              values: [aprovada, em_analise, rejeitada]
+
+  - name: stg_clientes__clientes
+    description: "Cadastro de clientes."
+    columns:
+      - name: id_cliente
+        tests: [not_null, unique]
+      - name: cpf
+        tests: [not_null, unique]
+      - name: email
+        tests: [not_null, unique]
+      - name: data_cadastro
+        tests: [not_null]
+
+  - name: stg_clientes__enderecos
+    description: "Endereços dos clientes."
+    columns:
+      - name: id_endereco
+        tests: [not_null, unique]
+      - name: id_cliente
+        tests: [not_null]
+      - name: tipo
+        tests:
+          - accepted_values:
+              values: [principal, entrega, cobranca]
+
+  - name: stg_clientes__techpoints
+    description: "Pontos de fidelidade por cliente."
+    columns:
+      - name: id_techpoints
+        tests: [not_null, unique]
+      - name: id_cliente
+        tests: [not_null, unique]
+      - name: nivel_fidelidade
+        tests:
+          - accepted_values:
+              values: [Bronze, Silver, Gold, Platinum]
+
+  - name: stg_produtos__produtos
+    description: "Catálogo de produtos."
+    columns:
+      - name: id_produto
+        tests: [not_null, unique]
+      - name: sku
+        tests: [not_null, unique]
+      - name: id_categoria
+        tests: [not_null]
+      - name: id_fornecedor
+        tests: [not_null]
+
+  - name: stg_produtos__categorias
+    description: "Categorias de produtos."
+    columns:
+      - name: id_categoria
+        tests: [not_null, unique]
+      - name: nome
+        tests: [not_null, unique]
+
+  - name: stg_produtos__fornecedores
+    description: "Fornecedores de produtos."
+    columns:
+      - name: id_fornecedor
+        tests: [not_null, unique]
+      - name: nome_fornecedor
+        tests: [not_null]
+
+  - name: stg_produtos__precos
+    description: "Histórico de preços por produto."
+    columns:
+      - name: id_preco
+        tests: [not_null, unique]
+      - name: id_produto
+        tests: [not_null]
+      - name: preco_venda
+        tests: [not_null]
+      - name: custo_unitario
+        tests: [not_null]
+
+  - name: stg_estoque__saldo_estoque
+    description: "Saldo de estoque atual por produto × loja."
+    columns:
+      - name: id_saldo
+        tests: [not_null, unique]
+      - name: id_produto
+        tests: [not_null]
+      - name: id_loja
+        tests: [not_null]
+
+  - name: stg_estoque__movimentacoes
+    description: "Movimentações de estoque (entradas e saídas)."
+    columns:
+      - name: id_movimentacao
+        tests: [not_null, unique]
+      - name: tipo_mov
+        tests:
+          - accepted_values:
+              values: [entrada, saida, transferencia, ajuste, devolucao]
+
+  - name: stg_logistica__entregas
+    description: "Entregas de pedidos online."
+    columns:
+      - name: id_entrega
+        tests: [not_null, unique]
+      - name: id_pedido
+        tests: [not_null, unique]
+
+  - name: stg_logistica__transportadoras
+    description: "Transportadoras cadastradas."
+    columns:
+      - name: id_transportadora
+        tests: [not_null, unique]
+      - name: nome
+        tests: [not_null]
+
+  - name: stg_logistica__modalidades
+    description: "Modalidades de entrega."
+    columns:
+      - name: id_modalidade
+        tests: [not_null, unique]
+      - name: codigo
+        tests: [not_null, unique]
+
+  - name: stg_financeiro__lancamentos
+    description: "Lançamentos financeiros."
+    columns:
+      - name: id_lancamento
+        tests: [not_null, unique]
+      - name: tipo
+        tests:
+          - accepted_values:
+              values: [receita, custo_produto, frete_custo, desconto, comissao]
+
+  - name: stg_financeiro__parcelas
+    description: "Parcelas dos lançamentos."
+    columns:
+      - name: id_parcela
+        tests: [not_null, unique]
+      - name: id_lancamento
+        tests: [not_null]
+      - name: status
+        tests:
+          - accepted_values:
+              values: [pendente, pago, atrasado]
+
+  - name: stg_financeiro__contas_receber
+    description: "Contas a receber por pedido."
+    columns:
+      - name: id_conta
+        tests: [not_null, unique]
+      - name: status
+        tests:
+          - accepted_values:
+              values: [pendente, pago, atrasado, cancelado]
+
+  - name: stg_financeiro__orcamentos
+    description: "Orçamentos mensais por loja e canal."
+    columns:
+      - name: id_orcamento
+        tests: [not_null, unique]
+      - name: id_loja
+        tests: [not_null]
+
+  - name: stg_marketing__campanhas
+    description: "Campanhas de marketing."
+    columns:
+      - name: id_campanha
+        tests: [not_null, unique]
+      - name: tipo
+        tests:
+          - accepted_values:
+              values: [black_friday, natal, volta_aulas, dia_maes, dia_pais, dia_namorados, dia_criancas, liquidacao]
+
+  - name: stg_marketing__leads
+    description: "Leads gerados por campanhas."
+    columns:
+      - name: id_lead
+        tests: [not_null, unique]
+      - name: id_campanha
+        tests: [not_null]
+
+  - name: stg_marketing__atribuicao
+    description: "Atribuição de campanha por pedido."
+    columns:
+      - name: id_atribuicao
+        tests: [not_null, unique]
+
+  - name: stg_rh__lojas
+    description: "Lojas físicas, e-commerce e CD."
+    columns:
+      - name: id_loja
+        tests: [not_null, unique]
+      - name: codigo
+        tests: [not_null, unique]
+      - name: tipo_loja
+        tests:
+          - accepted_values:
+              values: [fisica, ecommerce, cd]
+
+  - name: stg_rh__vendedores
+    description: "Vendedores das lojas físicas."
+    columns:
+      - name: id_vendedor
+        tests: [not_null, unique]
+      - name: cpf
+        tests: [not_null, unique]
+      - name: cargo
+        tests:
+          - accepted_values:
+              values: [vendedor, supervisor, gerente]
+
+  - name: stg_rh__metas
+    description: "Metas mensais por vendedor."
+    columns:
+      - name: id_meta
+        tests: [not_null, unique]
+
+  - name: stg_rh__comissoes
+    description: "Comissões de vendedores por pedido."
+    columns:
+      - name: id_comissao
+        tests: [not_null, unique]
+      - name: status
+        tests:
+          - accepted_values:
+              values: [pendente, pago, estornado]
+
+  - name: stg_web_analytics__sessoes
+    description: "Sessões de navegação no site."
+    columns:
+      - name: id_sessao
+        tests: [not_null, unique]
+      - name: device_type
+        tests:
+          - accepted_values:
+              values: [desktop, mobile, tablet]
+
+  - name: stg_web_analytics__eventos_carrinho
+    description: "Eventos de carrinho por sessão."
+    columns:
+      - name: id_evento
+        tests: [not_null, unique]
+      - name: id_sessao
+        tests: [not_null]
+      - name: tipo_evento
+        tests:
+          - accepted_values:
+              values: [add_to_cart, remove_from_cart, checkout_start, purchase]

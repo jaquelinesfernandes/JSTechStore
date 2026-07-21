@@ -1,0 +1,14 @@
+jstechstore:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', 'data/gold/jstechstore.duckdb') }}"
+      threads: 4
+      schema: main
+
+    prod:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', 'data/gold/jstechstore.duckdb') }}"
+      threads: 8
+      schema: main

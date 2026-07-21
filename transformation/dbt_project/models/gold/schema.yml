@@ -1,0 +1,211 @@
+version: 2
+
+models:
+  # ── Dimensões ──────────────────────────────────────────────────────────────
+
+  - name: dim_tempo
+    description: "Dimensão tempo: spine diária 2023-2027 com calendário e feriados."
+    columns:
+      - name: sk_tempo
+        tests: [not_null, unique]
+      - name: data_full
+        tests: [not_null, unique]
+      - name: ano
+        tests: [not_null]
+      - name: mes
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+  - name: dim_cliente
+    description: "Dimensão cliente com SCD2, scores RFM e nível de fidelidade."
+    columns:
+      - name: sk_cliente
+        tests: [not_null]
+      - name: id_cliente_nk
+        description: "Chave natural — id_cliente do sistema de origem."
+        tests: [not_null]
+      - name: cpf
+        tests: [not_null]
+      - name: nivel_fidelidade
+        tests:
+          - not_null
+          - accepted_values:
+              values: [Bronze, Silver, Gold, Platinum]
+      - name: segmento_rfm
+        tests:
+          - not_null
+          - accepted_values:
+              values: [Campeoes, Clientes_Fieis, Novos_Clientes, Potencial_Fidelizacao,
+                       Promissores, Em_Risco, Hibernando, Perdidos, Regulares]
+      - name: fl_current
+        tests: [not_null]
+
+  - name: dim_produto
+    description: "Dimensão produto com SCD2, categoria, fornecedor e preço vigente."
+    columns:
+      - name: sk_produto
+        tests: [not_null]
+      - name: id_produto_nk
+        tests: [not_null]
+      - name: sku
+        tests: [not_null]
+      - name: categoria
+        tests: [not_null]
+      - name: fl_current
+        tests: [not_null]
+
+  - name: dim_loja
+    description: "Lojas físicas, e-commerce e CD com SCD2."
+    columns:
+      - name: sk_loja
+        tests: [not_null]
+      - name: id_loja_nk
+        tests: [not_null]
+      - name: codigo
+        tests: [not_null]
+      - name: tipo_loja
+        tests:
+          - not_null
+          - accepted_values:
+              values: [fisica, ecommerce, cd]
+
+  - name: dim_vendedor
+    description: "Vendedores das lojas físicas com SCD2."
+    columns:
+      - name: sk_vendedor
+        tests: [not_null]
+      - name: id_vendedor_nk
+        tests: [not_null]
+
+  - name: dim_canal_venda
+    description: "Canais de venda — tabela estática (5 registros)."
+    columns:
+      - name: sk_canal_venda
+        tests: [not_null, unique]
+      - name: canal_venda
+        tests: [not_null, unique]
+      - name: tipo_canal
+        tests:
+          - accepted_values:
+              values: [Físico, Digital]
+      - name: plataforma
+        tests:
+          - accepted_values:
+              values: [Próprio, Marketplace]
+
+  - name: dim_campanha
+    description: "Campanhas de marketing com SCD2."
+    columns:
+      - name: sk_campanha
+        tests: [not_null]
+      - name: id_campanha_nk
+        tests: [not_null]
+
+  - name: dim_transportadora
+    description: "Transportadoras com prazo médio calculado."
+    columns:
+      - name: sk_transportadora
+        tests: [not_null, unique]
+      - name: id_transportadora_nk
+        tests: [not_null, unique]
+      - name: nome
+        tests: [not_null]
+
+  - name: dim_fornecedor
+    description: "Fornecedores de produtos com flag importado."
+    columns:
+      - name: sk_fornecedor
+        tests: [not_null, unique]
+      - name: id_fornecedor_nk
+        tests: [not_null, unique]
+
+  - name: dim_modalidade_entrega
+    description: "Modalidades de entrega com transportadora e flag retirada."
+    columns:
+      - name: sk_modalidade_entrega
+        tests: [not_null, unique]
+      - name: id_modalidade_nk
+        tests: [not_null, unique]
+      - name: codigo
+        tests: [not_null]
+
+  # ── Fatos ──────────────────────────────────────────────────────────────────
+
+  - name: fato_venda
+    description: >
+      Fato principal de vendas. Grão = 1 item de pedido.
+      Power BI Incremental Refresh: dt_pedido_data com janela de 3 dias.
+    columns:
+      - name: sk_venda
+        tests: [not_null, unique]
+      - name: sk_cliente
+        tests: [not_null]
+      - name: sk_produto
+        tests: [not_null]
+      - name: sk_loja
+        tests: [not_null]
+      - name: sk_tempo
+        tests: [not_null]
+      - name: sk_canal_venda
+        tests: [not_null]
+      - name: qtd_vendida
+        tests: [not_null]
+      - name: valor_liquido_item
+        tests: [not_null]
+      - name: fl_venda_valida
+        tests: [not_null]
+
+  - name: fato_estoque
+    description: "Snapshot de estoque por produto × loja × dia."
+    columns:
+      - name: sk_estoque
+        tests: [not_null, unique]
+      - name: sk_produto
+        tests: [not_null]
+      - name: sk_loja
+        tests: [not_null]
+      - name: qtd_disponivel
+        tests: [not_null]
+
+  - name: fato_entrega
+    description: "Entregas com métricas de OTD e lead time."
+    columns:
+      - name: sk_entrega
+        tests: [not_null, unique]
+      - name: sk_transportadora
+        tests: [not_null]
+      - name: sk_modalidade_entrega
+        tests: [not_null]
+
+  - name: fato_financeiro
+    description: "Lançamentos financeiros em base de competência."
+    columns:
+      - name: sk_lancamento
+        tests: [not_null, unique]
+      - name: sk_loja
+        tests: [not_null]
+      - name: tipo
+        tests:
+          - not_null
+          - accepted_values:
+              values: [receita, custo_produto, frete_custo, desconto, comissao]
+
+  - name: fato_cliente_interacao
+    description: "Sessões web com métricas de engajamento e abandono de carrinho."
+    columns:
+      - name: sk_sessao
+        tests: [not_null, unique]
+      - name: canal_origem
+        tests: [not_null]
+
+  - name: fato_orcamento
+    description: "Meta vs. realizado por loja × canal × mês."
+    columns:
+      - name: sk_orcamento
+        tests: [not_null, unique]
+      - name: sk_loja
+        tests: [not_null]
+      - name: valor_meta_receita
+        tests: [not_null]

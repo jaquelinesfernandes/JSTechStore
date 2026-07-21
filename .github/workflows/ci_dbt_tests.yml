@@ -61,16 +61,28 @@ jobs:
 
       - name: dbt deps
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ":memory:"
+          BRONZE_PATH: /tmp/bronze_ci
         run: dbt deps
 
       - name: dbt seed (feriados_nacionais)
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ":memory:"
+          BRONZE_PATH: /tmp/bronze_ci
         run: dbt seed --select feriados_nacionais
 
       - name: dbt compile
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ":memory:"
+          BRONZE_PATH: /tmp/bronze_ci
         run: dbt compile
 
       - name: dbt test
         working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ":memory:"
+          BRONZE_PATH: /tmp/bronze_ci
         run: dbt test
