@@ -1,0 +1,30 @@
+version: 2
+
+seeds:
+  - name: feriados_nacionais
+    description: >
+      Calendário de feriados nacionais brasileiros de 2023 a 2027.
+      Inclui feriados fixos (Lei 9.093/1995 e Lei 14.759/2023) e
+      feriados móveis calculados a partir da Páscoa.
+      Usado por dim_tempo para popular fl_feriado_nacional.
+    config:
+      column_types:
+        data: date
+        nome_feriado: varchar
+        tipo: varchar
+    columns:
+      - name: data
+        description: Data do feriado (YYYY-MM-DD)
+        tests:
+          - not_null
+          - unique
+      - name: nome_feriado
+        description: Nome oficial do feriado
+        tests:
+          - not_null
+      - name: tipo
+        description: Classificação do feriado
+        tests:
+          - not_null
+          - accepted_values:
+              values: [fixo, movel]

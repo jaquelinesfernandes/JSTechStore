@@ -1,0 +1,154 @@
+name: Daily Pipeline
+
+on:
+  schedule:
+    - cron: "0 4 * * *"   # 04:00 UTC = 01:00 BRT
+  workflow_dispatch:        # permite execução manual via GitHub UI
+
+env:
+  DUCKDB_PATH: data/gold/jstechstore.duckdb
+  BRONZE_PATH: data/bronze
+  SILVER_PATH: data/silver
+  GOLD_BACKUP_DIR: data/backups/gold
+
+jobs:
+  pipeline:
+    name: Pipeline Diário JSTechStore
+    runs-on: ubuntu-latest
+
+    steps:
+      # ─────────────────────────────────────────────
+      # Setup
+      # ─────────────────────────────────────────────
+      - name: Checkout repositório
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      - name: Restaurar watermarks do cache
+        uses: actions/cache@v4
+        with:
+          path: data/bronze/.watermarks
+          key: watermarks-${{ github.run_id }}
+          restore-keys: |
+            watermarks-
+
+      # ─────────────────────────────────────────────
+      # Step 1 — Geração de dados diários
+      # ─────────────────────────────────────────────
+      - name: "1 · Gerar dados do dia (generate_daily.py)"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python scripts/generate_daily.py --date today
+
+      # ─────────────────────────────────────────────
+      # Step 2 — Ingestão Bronze (watermark atômico)
+      # ─────────────────────────────────────────────
+      - name: "2 · Ingestão incremental → Bronze Parquet"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python -m ingestion.connectors.postgres.extract --mode incremental
+
+      # ─────────────────────────────────────────────
+      # Step 3 — dbt transformações incrementais
+      # ─────────────────────────────────────────────
+      - name: "3 · dbt deps"
+        working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
+        run: dbt deps
+
+      - name: "3 · dbt seed (feriados_nacionais)"
+        working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
+        run: dbt seed --select feriados_nacionais
+
+      - name: "3 · dbt run (incremental)"
+        working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
+        run: dbt run
+
+      # ─────────────────────────────────────────────
+      # Step 4 — Testes de qualidade dbt (Gold)
+      # ─────────────────────────────────────────────
+      - name: "4 · dbt test --select gold"
+        working-directory: transformation/dbt_project
+        env:
+          DUCKDB_PATH: ${{ env.DUCKDB_PATH }}
+          BRONZE_PATH: ${{ env.BRONZE_PATH }}
+        run: dbt test --select gold
+
+      # ─────────────────────────────────────────────
+      # Step 5 — Verificação de frescor (novo)
+      # ─────────────────────────────────────────────
+      - name: "5 · Verificar frescor Bronze + Gold"
+        run: python quality/monitoring/check_data_freshness.py --tolerance-hours 26
+
+      # ─────────────────────────────────────────────
+      # Step 6 — Reconciliação Gold vs. Supabase (expandida)
+      # ─────────────────────────────────────────────
+      - name: "6 · Reconciliação Gold vs. Supabase (todas as tabelas fato)"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python quality/reconciliation/reconcile_gold_vs_source.py
+
+      - name: "6 · Upload relatório de reconciliação"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reconciliation-report-${{ github.run_id }}
+          path: quality/reconciliation/logs/reconciliation_*.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      # ─────────────────────────────────────────────
+      # Step 7 — Backup Gold (apenas após todos os gates passarem)
+      # ─────────────────────────────────────────────
+      - name: "7 · Backup Gold (compressão + rotação local)"
+        run: |
+          python scripts/backup_gold.py --keep-days 7 | tee /tmp/backup_output.txt
+          BACKUP_FILE=$(grep "^BACKUP_FILE=" /tmp/backup_output.txt | cut -d= -f2)
+          echo "BACKUP_FILE=${BACKUP_FILE}" >> $GITHUB_ENV
+
+      - name: "7 · Upload backup como GitHub Actions Artifact (retenção 30 dias)"
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-backup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: data/backups/gold/jstechstore_*.duckdb.gz
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: "7 · Resumo do pipeline no Actions Summary"
+        run: |
+          echo "## Pipeline Diário — ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Step | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 1 · Geração diária | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 2 · Ingestão Bronze | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 3 · dbt run | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 4 · dbt test | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 5 · Frescor Bronze+Gold | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 6 · Reconciliação (6 fatos) | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 7 · Backup Gold | ✅ \`${{ env.BACKUP_FILE }}\` |" >> $GITHUB_STEP_SUMMARY
+
+      # ─────────────────────────────────────────────
+      # Notificação em caso de falha (qualquer step)
+      # ─────────────────────────────────────────────
+      - name: Notificar falha do pipeline
+        if: failure()
+        run: |
+          echo "::error::Pipeline falhou em ${{ github.workflow }} / Run ${{ github.run_id }}"
+          echo "Verifique os logs em: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -1,0 +1,60 @@
+data,nome_feriado,tipo
+2023-01-01,Confraternização Universal (Ano Novo),fixo
+2023-02-21,Carnaval (Terça-Feira Gorda),movel
+2023-04-07,Paixão de Cristo (Sexta-Feira Santa),movel
+2023-04-21,Tiradentes,fixo
+2023-05-01,Dia do Trabalhador,fixo
+2023-06-08,Corpus Christi,movel
+2023-09-07,Independência do Brasil,fixo
+2023-10-12,Nossa Senhora Aparecida,fixo
+2023-11-02,Finados,fixo
+2023-11-15,Proclamação da República,fixo
+2023-12-25,Natal,fixo
+2024-01-01,Confraternização Universal (Ano Novo),fixo
+2024-02-13,Carnaval (Terça-Feira Gorda),movel
+2024-03-29,Paixão de Cristo (Sexta-Feira Santa),movel
+2024-04-21,Tiradentes,fixo
+2024-05-01,Dia do Trabalhador,fixo
+2024-05-30,Corpus Christi,movel
+2024-09-07,Independência do Brasil,fixo
+2024-10-12,Nossa Senhora Aparecida,fixo
+2024-11-02,Finados,fixo
+2024-11-15,Proclamação da República,fixo
+2024-11-20,Dia da Consciência Negra,fixo
+2024-12-25,Natal,fixo
+2025-01-01,Confraternização Universal (Ano Novo),fixo
+2025-03-04,Carnaval (Terça-Feira Gorda),movel
+2025-04-18,Paixão de Cristo (Sexta-Feira Santa),movel
+2025-04-21,Tiradentes,fixo
+2025-05-01,Dia do Trabalhador,fixo
+2025-06-19,Corpus Christi,movel
+2025-09-07,Independência do Brasil,fixo
+2025-10-12,Nossa Senhora Aparecida,fixo
+2025-11-02,Finados,fixo
+2025-11-15,Proclamação da República,fixo
+2025-11-20,Dia da Consciência Negra,fixo
+2025-12-25,Natal,fixo
+2026-01-01,Confraternização Universal (Ano Novo),fixo
+2026-02-17,Carnaval (Terça-Feira Gorda),movel
+2026-04-03,Paixão de Cristo (Sexta-Feira Santa),movel
+2026-04-21,Tiradentes,fixo
+2026-05-01,Dia do Trabalhador,fixo
+2026-06-04,Corpus Christi,movel
+2026-09-07,Independência do Brasil,fixo
+2026-10-12,Nossa Senhora Aparecida,fixo
+2026-11-02,Finados,fixo
+2026-11-15,Proclamação da República,fixo
+2026-11-20,Dia da Consciência Negra,fixo
+2026-12-25,Natal,fixo
+2027-01-01,Confraternização Universal (Ano Novo),fixo
+2027-02-09,Carnaval (Terça-Feira Gorda),movel
+2027-03-26,Paixão de Cristo (Sexta-Feira Santa),movel
+2027-04-21,Tiradentes,fixo
+2027-05-01,Dia do Trabalhador,fixo
+2027-05-27,Corpus Christi,movel
+2027-09-07,Independência do Brasil,fixo
+2027-10-12,Nossa Senhora Aparecida,fixo
+2027-11-02,Finados,fixo
+2027-11-15,Proclamação da República,fixo
+2027-11-20,Dia da Consciência Negra,fixo
+2027-12-25,Natal,fixo
