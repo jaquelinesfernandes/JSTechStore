@@ -1,0 +1,27 @@
+# ============================================================
+#  JSTechStore Brasil — Dependências Python
+#  Instalar: pip install -r requirements.txt
+# ============================================================
+
+# ── Banco de dados / Ingestão ─────────────────────────────
+psycopg2-binary>=2.9.9          # Conector PostgreSQL (Supabase)
+sqlalchemy>=2.0.0               # ORM — usado nos scripts de geração de dados
+python-dotenv>=1.0.0            # Carrega variáveis do arquivo .env
+
+# ── Dados / Parquet ───────────────────────────────────────
+pandas>=2.2.0                   # Manipulação de DataFrames
+pyarrow>=16.0.0                 # Engine Parquet (leitura/escrita no Bronze e Silver)
+
+# ── Geração de dados sintéticos ───────────────────────────
+faker[pt_BR]>=25.0.0            # Geração de dados fictícios com locale brasileiro
+                                # Inclui: cpf(), cnpj(), name(), email(), phone_number()
+
+# ── DuckDB / dbt ──────────────────────────────────────────
+duckdb>=1.1.0                   # Engine OLAP embarcado (camada Gold)
+dbt-core>=1.8.0                 # Framework de transformação SQL
+dbt-duckdb>=1.8.0               # Adaptador dbt para DuckDB
+
+# ── Dev / CI ──────────────────────────────────────────────
+ruff>=0.5.0                     # Linting e formatação (substitui flake8 + black + isort)
+pytest>=8.0.0                   # Framework de testes
+pytest-timeout>=2.3.0           # Timeout por teste (evita testes travados no CI)

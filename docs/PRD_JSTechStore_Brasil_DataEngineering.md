@@ -151,7 +151,7 @@ Toda a operação da JSTechStore Brasil é consolidada em **um único banco de d
 │  Formato: Parquet · Particionado por data de ingestão               │
 │  Sem transformação · Retenção: 3 anos                               │
 │  Metadados: _source_schema, _source_table, _ingested_at             │
-│  PII pseudonimizado antes da escrita                                 │
+│  Dados 100% fictícios gerados por Faker pt_BR                        │
 └──────────────────────────┬───────────────────────────────────────────┘
                            │ dbt (staging, limpeza, SCD2)
                            ▼
@@ -303,27 +303,33 @@ fato_venda:
 
 ---
 
-## 5. LGPD — Requisitos Mínimos
+## 5. LGPD — Abordagem para Dados Sintéticos
 
-### 5.1 Pseudonimização na Geração de Dados
+### 5.1 Dados Fictícios por Natureza
 
-Como os dados são sintéticos, o módulo de pseudonimização aplica HMAC-SHA256 **nos dados gerados antes de inserir no Supabase** e **antes de escrever no Bronze**. Nenhum dado pessoal direto (CPF, e-mail, telefone) persiste no DW.
+Todo o banco de dados é populado por scripts Python que usam a biblioteca **Faker (locale `pt_BR`)**. CPF, e-mail, telefone, nome e endereço são gerados artificialmente e não correspondem a nenhuma pessoa real. Por isso:
 
-| Campo Original | Tratamento | Campo no DW |
-|---------------|-----------|-------------|
-| CPF (sintético) | HMAC-SHA256 com salt | `cpf_hash` |
-| E-mail (sintético) | HMAC-SHA256 com salt | `email_hash` |
-| Telefone (sintético) | HMAC-SHA256 com salt | `telefone_hash` |
-| Nome completo | Apenas `primeiro_nome` | `primeiro_nome` |
-| Endereço completo | Apenas CEP + cidade + UF | `cep`, `cidade`, `uf` |
+- **Não há pseudonimização** via hash — os dados já são fictícios
+- CPFs gerados pelo Faker seguem o formato válido brasileiro mas não pertencem a nenhum titular
+- Nenhum salt criptográfico é necessário
 
-### 5.2 Direito à Exclusão (Art. 18, LGPD)
+| Campo no DW | Gerado por | Tipo |
+|------------|-----------|------|
+| `cpf` | `Faker('pt_BR').cpf()` | Fictício, formato válido |
+| `email` | `Faker('pt_BR').email()` | Fictício |
+| `telefone` | `Faker('pt_BR').phone_number()` | Fictício |
+| `nome` | `Faker('pt_BR').name()` | Fictício |
+| `cep`, `cidade`, `uf` | `Faker('pt_BR').postcode()` + address | Fictício |
 
-Script parametrizado `quality/lgpd/exclusao_titular.py`:
-1. Identifica registros pelo `cpf_hash`
-2. Substitui campos PII por `'[REMOVIDO]'` nas camadas Silver e Gold (DuckDB)
-3. Preserva fatos agregados (valores, quantidades) sem identificação pessoal
-4. Registra execução em `quality/lgpd/logs/` com timestamp e tabelas afetadas
+### 5.2 Direito à Exclusão — Simulação (Art. 18, LGPD)
+
+Script parametrizado `quality/lgpd/exclusao_titular.py` (simulação do processo):
+1. Identifica registros pelo `cpf` fictício
+2. Substitui campos identificáveis por `'[REMOVIDO]'` nas camadas Silver e Gold
+3. Preserva fatos agregados (valores, quantidades)
+4. Registra execução em `quality/lgpd/logs/`
+
+> Em um sistema com dados reais, este script seria o ponto de entrada para o processo de exclusão de titular. A estrutura já está preparada.
 
 ### 5.3 Registro de Atividades (RIPD)
 
@@ -331,8 +337,8 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 
 | Campo | Conteúdo |
 |-------|---------|
-| Finalidade | Analytics e dashboards executivos internos (dados sintéticos) |
-| Base legal | Legítimo interesse (Art. 7º, IX) |
+| Finalidade | Analytics e dashboards executivos internos (dados 100% sintéticos) |
+| Base legal | Legítimo interesse (Art. 7º, IX) — dados fictícios, sem titular real |
 | Prazo de retenção | Bronze: 3 anos; Silver/Gold: enquanto necessário |
 | Compartilhamento | Apenas internamente (Power BI para equipes internas) |
 
@@ -375,10 +381,10 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 |-------|------|-----------|
 | sk_cliente | INT (PK) | Surrogate key |
 | id_cliente_nk | VARCHAR | Chave natural do OLTP |
-| cpf_hash | VARCHAR | HMAC-SHA256 do CPF |
-| email_hash | VARCHAR | HMAC-SHA256 do e-mail |
-| telefone_hash | VARCHAR | HMAC-SHA256 do telefone |
-| primeiro_nome | VARCHAR | Primeiro nome apenas |
+| cpf | VARCHAR | CPF fictício gerado por Faker pt_BR |
+| email | VARCHAR | E-mail fictício gerado por Faker |
+| telefone | VARCHAR | Telefone fictício gerado por Faker |
+| primeiro_nome | VARCHAR | Primeiro nome fictício |
 | cep | VARCHAR | CEP de entrega principal |
 | cidade | VARCHAR | Cidade |
 | uf | CHAR(2) | Estado |
@@ -482,7 +488,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 |-------|------|-----------|
 | sk_vendedor | INT (PK) | Surrogate key |
 | id_vendedor_nk | VARCHAR | Matrícula do vendedor |
-| cpf_hash | VARCHAR | HMAC-SHA256 do CPF |
+| cpf | VARCHAR | CPF fictício gerado por Faker pt_BR |
 | primeiro_nome | VARCHAR | Primeiro nome |
 | sk_loja | INT (FK) | Loja principal de atuação |
 | cargo | VARCHAR | Consultor, Supervisor, Gerente |
@@ -499,7 +505,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 | sk_transportadora | INT (PK) | Surrogate key |
 | id_transportadora_nk | VARCHAR | Código interno |
 | nome_transportadora | VARCHAR | Razão social / nome comercial |
-| cnpj_hash | VARCHAR | HMAC-SHA256 do CNPJ |
+| cnpj | VARCHAR | CNPJ fictício gerado por Faker pt_BR |
 | tipo | VARCHAR | correios, transportadora_privada, motoboy, retirada_loja |
 | sla_dias_padrao | INT | Prazo contratual padrão em dias úteis |
 | ativo | BOOLEAN | Transportadora ativa |
@@ -510,7 +516,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 | sk_fornecedor | INT (PK) | Surrogate key |
 | id_fornecedor_nk | VARCHAR | Código interno |
 | nome_fornecedor | VARCHAR | Razão social |
-| cnpj_hash | VARCHAR | HMAC-SHA256 do CNPJ |
+| cnpj | VARCHAR | CNPJ fictício gerado por Faker pt_BR |
 | categoria_principal | VARCHAR | Categoria primária fornecida |
 | pais_origem | VARCHAR | País de origem dos produtos |
 | prazo_entrega_dias | INT | Prazo padrão de entrega ao CD |
@@ -759,7 +765,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 - [ ] Conector de ingestão: Python + psycopg2 extraindo por `updated_at` → Parquet Bronze local
 - [ ] Estrutura de pastas `data/bronze/` com partição `year=YYYY/month=MM/day=DD/`
 - [ ] GitHub Actions workflow: cron diário (01:00 BRT) → `generate_daily.py` + ingestão Bronze
-- [ ] Módulo de pseudonimização LGPD (`quality/lgpd/pseudonimizacao.py`)
+- [ ] Script LGPD de exclusão simulada (`quality/lgpd/exclusao_titular.py`)
 - [ ] Watermark de controle incremental por tabela (`data/bronze/.watermarks/`)
 - [ ] Repositório GitHub: estrutura de pastas, `requirements.txt`, `.env.example`, `README.md`
 
@@ -841,7 +847,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 ### Camada Bronze
 - Dados extraídos sem transformação — fiel à fonte Supabase
 - Campos de metadados obrigatórios: `_source_schema`, `_source_table`, `_ingested_at`, `_row_count_batch`
-- **Nenhum dado pessoal direto** (pseudonimização antes da escrita em Parquet)
+- **Dados 100% fictícios** — CPF, e-mail e telefone gerados por Faker pt_BR; sem necessidade de pseudonimização
 
 ### Camada Silver (via dbt tests)
 

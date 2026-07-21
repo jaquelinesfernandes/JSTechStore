@@ -1,14 +1,16 @@
 """
 Extrator incremental Supabase → Bronze Parquet.
 
+Todos os dados são sintéticos (gerados por Faker com locale pt_BR).
+CPF, e-mail e telefone são fictícios por natureza — sem pseudonimização adicional.
+
 Estratégia de atomicidade do watermark:
   1. Extrai dados WHERE updated_at > watermark
-  2. Aplica pseudonimização LGPD nos campos PII
-  3. Grava em arquivo temporário (.tmp_<uuid>.parquet) dentro da partição de destino
-  4. Renomeia temp → arquivo final (operação atômica no mesmo filesystem)
-  5. Atualiza o watermark SOMENTE após rename bem-sucedido
+  2. Grava em arquivo temporário (.tmp_<uuid>.parquet) dentro da partição de destino
+  3. Renomeia temp → arquivo final (operação atômica no mesmo filesystem)
+  4. Atualiza o watermark SOMENTE após rename bem-sucedido
 
-Se o processo falhar nos steps 1–4, o watermark não é atualizado e a próxima
+Se o processo falhar nos steps 1–3, o watermark não é atualizado e a próxima
 execução reprocessa o mesmo intervalo (idempotência garantida pelo dbt unique_key).
 
 Uso:
@@ -33,7 +35,6 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig
-from quality.lgpd.pseudonimizacao import pseudonimizar_dataframe
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -144,7 +145,7 @@ def process_table(
     mode: str,
     ingested_at: datetime,
 ) -> dict:
-    """Processa uma tabela completa: extrai → pseudonimiza → grava → atualiza watermark."""
+    """Processa uma tabela completa: extrai → grava → atualiza watermark."""
     watermark = EPOCH if mode == "full" else read_watermark(table)
 
     log.info(f"[{table.full_name}] modo={mode} watermark={watermark.isoformat()}")
@@ -155,9 +156,6 @@ def process_table(
     if rows == 0:
         log.info(f"[{table.full_name}] Nenhum registro novo — skip")
         return {"table": table.full_name, "rows_extracted": 0, "status": "skip"}
-
-    if table.pii_cols:
-        df = pseudonimizar_dataframe(df, list(table.pii_cols))
 
     final_path = write_parquet_atomic(df, table, ingested_at)
 

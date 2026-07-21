@@ -54,7 +54,6 @@ jobs:
       - name: "2 · Ingestão incremental → Bronze Parquet"
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-          LGPD_HMAC_SALT: ${{ secrets.LGPD_HMAC_SALT }}
         run: python -m ingestion.connectors.postgres.extract --mode incremental
 
       # ─────────────────────────────────────────────

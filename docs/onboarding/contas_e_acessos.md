@@ -13,7 +13,7 @@ configurado em cada uma, e onde cada credencial é consumida.
 |------------|-----------------|--------|
 | **Supabase** | Banco de dados fonte (OLTP) | Criar conta + projeto |
 | **GitHub** | Repositório + CI/CD (Actions) | Já existente |
-| **GitHub Secrets** | Pipeline diário sem expor credenciais | Configurar 2 secrets |
+| **GitHub Secrets** | Pipeline diário sem expor credenciais | Configurar 1 secret |
 | **Python 3.12+** | Scripts de geração + ingestão + qualidade | Instalar localmente |
 | **dbt Core** | Transformações Silver/Gold | Instalar via pip |
 | **DuckDB** | Camada Gold + consultas | Instalar via pip |
@@ -66,35 +66,7 @@ python scripts/setup_supabase.py   # a ser criado na Fase 1
 
 ---
 
-## 2. LGPD — Salt de Pseudonimização
-
-**O que é:** Chave secreta usada no HMAC-SHA256 para pseudonimizar CPF, e-mail e telefone.  
-**Criticidade:** MÁXIMA — perder este salt torna todos os hashes irreproduziveis.
-
-### Gerar o salt
-
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-# Exemplo de saída: a3f2e1d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2
-```
-
-### Armazenar com segurança
-
-- **Obrigatório:** salvar no gerenciador de senhas da equipe (1Password, Bitwarden, etc.)
-- **Obrigatório:** configurar como GitHub Actions Secret (ver seção 3)
-- **Nunca:** commitar em código, compartilhar por e-mail ou Slack
-
-### Onde esta credencial é usada
-
-| Onde | Variável |
-|------|----------|
-| `.env` local | `LGPD_HMAC_SALT` |
-| GitHub Actions Secret | `LGPD_HMAC_SALT` |
-| `quality/lgpd/pseudonimizacao.py` | `os.environ["LGPD_HMAC_SALT"]` |
-
----
-
-## 3. GitHub — Repository Secrets
+## 2. GitHub — Repository Secrets
 
 **O que é:** Variáveis secretas injetadas nos workflows do GitHub Actions sem expor valores nos logs.
 
@@ -104,21 +76,17 @@ python -c "import secrets; print(secrets.token_hex(32))"
 GitHub → Repositório JSTechStore → Settings → Secrets and variables → Actions → New repository secret
 ```
 
-### Secrets a configurar
+### Secret a configurar
 
 | Secret | Valor | Usado em |
 |--------|-------|----------|
 | `SUPABASE_DB_URL` | Connection string do Supabase (seção 1) | `daily_pipeline.yml` steps 1, 2, 6 |
-| `LGPD_HMAC_SALT` | Salt gerado (seção 2) | `daily_pipeline.yml` step 2 |
 
 ### Configurar via GitHub CLI (após autenticar)
 
 ```powershell
 # Setar SUPABASE_DB_URL
 gh secret set SUPABASE_DB_URL --body "postgresql://postgres:SENHA@xxxx.supabase.co:5432/postgres"
-
-# Setar LGPD_HMAC_SALT
-gh secret set LGPD_HMAC_SALT --body "SEU_SALT_HEX_64_CHARS"
 
 # Verificar secrets configurados
 gh secret list
@@ -240,14 +208,13 @@ Execute na ordem para garantir que tudo está funcional antes da Fase 1:
 ```
 [ ] 1. Criar conta Supabase + projeto "jstechstore" (região São Paulo)
 [ ] 2. Copiar connection string do Supabase
-[ ] 3. Gerar LGPD_HMAC_SALT e guardar no gerenciador de senhas
-[ ] 4. Copiar .env.example → .env e preencher SUPABASE_DB_URL e LGPD_HMAC_SALT
-[ ] 5. Instalar Python 3.12 e criar ambiente virtual (.venv)
-[ ] 6. pip install -r requirements.txt
-[ ] 7. Configurar GitHub Secrets: SUPABASE_DB_URL e LGPD_HMAC_SALT
-[ ] 8. Instalar DuckDB ODBC Driver 64-bit e criar System DSN "JSTechStoreGold"
-[ ] 9. Instalar On-premises Data Gateway e registrar como "JSTechStore-GW"
-[  ] 10. Verificar Power BI Pro/PPU disponível na conta de serviço
+[ ] 3. Copiar .env.example → .env e preencher SUPABASE_DB_URL
+[ ] 4. Instalar Python 3.12 e criar ambiente virtual (.venv)
+[ ] 5. pip install -r requirements.txt
+[ ] 6. Configurar GitHub Secret: SUPABASE_DB_URL
+[ ] 7. Instalar DuckDB ODBC Driver 64-bit e criar System DSN "JSTechStoreGold"
+[ ] 8. Instalar On-premises Data Gateway e registrar como "JSTechStore-GW"
+[ ] 9. Verificar Power BI Pro/PPU disponível na conta de serviço
 ```
 
 ---
@@ -256,8 +223,7 @@ Execute na ordem para garantir que tudo está funcional antes da Fase 1:
 
 | Credencial | Sensível | Onde fica | Nunca colocar em |
 |-----------|----------|-----------|-----------------|
-| `SUPABASE_DB_URL` | Sim (contém senha) | `.env` + GitHub Secret | Código, PR, Slack |
-| `LGPD_HMAC_SALT` | Sim (crítico) | `.env` + GitHub Secret + gerenciador de senhas | Código, PR, Slack |
+| `SUPABASE_DB_URL` | Sim (contém senha) | `.env` + GitHub Secret | Código, PR, Slack, `.env.example` |
 | `DUCKDB_PATH` | Não | `.env` (opcional) | — |
 | `BRONZE_PATH` | Não | `.env` (opcional) | — |
 | `SILVER_PATH` | Não | `.env` (opcional) | — |

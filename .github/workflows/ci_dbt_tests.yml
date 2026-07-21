@@ -43,7 +43,6 @@ jobs:
         env:
           # Testes usam banco SQLite local ou mocks — sem Supabase real
           SUPABASE_DB_URL: ""
-          LGPD_HMAC_SALT: test_salt_ci_only
           DUCKDB_PATH: ":memory:"
           BRONZE_PATH: /tmp/bronze_ci
           SILVER_PATH: /tmp/silver_ci
