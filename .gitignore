@@ -216,3 +216,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ─── JSTechStore — Dados locais ───────────────────────────────────
+# Parquet Bronze e Silver (grandes demais para o Git)
+data/bronze/**
+data/silver/**
+
+# Manter watermarks no Git (necessários para ingestão incremental)
+!data/bronze/.watermarks/
+!data/bronze/.watermarks/**
+
+# DuckDB Gold (arquivo binário gerado — não versionar)
+data/gold/*.duckdb
+data/gold/*.duckdb.wal
+
+# Backups comprimidos (grandes demais; armazenados no GitHub Artifacts)
+data/backups/gold/*.duckdb.gz
+data/backups/gold/parquet_*/
+
+# Manter o log de auditoria de backups no Git
+!data/backups/gold/backup_log.jsonl
+
+# Exportações Power BI locais
+powerbi/datasets/*.pbix
+powerbi/reports/*.pbix
