@@ -79,10 +79,5 @@ jobs:
           DUCKDB_PATH: ":memory:"
           BRONZE_PATH: /tmp/bronze_ci
         run: dbt compile
-
-      - name: dbt test
-        working-directory: transformation/dbt_project
-        env:
-          DUCKDB_PATH: ":memory:"
-          BRONZE_PATH: /tmp/bronze_ci
-        run: dbt test
+        # dbt test requer dados materializados; é executado pela daily_pipeline
+        # após ingestão Bronze real. Aqui só validamos a sintaxe SQL.
