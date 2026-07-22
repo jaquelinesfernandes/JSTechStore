@@ -55,6 +55,7 @@ EPOCH = datetime(2000, 1, 1, tzinfo=timezone.utc)
 # Watermark helpers
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 def read_watermark(table: TableConfig) -> datetime:
     path = WATERMARKS_DIR / f"{table.watermark_key}.json"
     if not path.exists():
@@ -68,8 +69,13 @@ def write_watermark(table: TableConfig, value: datetime) -> None:
     path = WATERMARKS_DIR / f"{table.watermark_key}.json"
     tmp = path.with_suffix(f".tmp_{uuid4().hex}.json")
     tmp.write_text(
-        json.dumps({"last_updated_at": value.isoformat(), "updated_at_utc": datetime.now(timezone.utc).isoformat()},
-                   indent=2),
+        json.dumps(
+            {
+                "last_updated_at": value.isoformat(),
+                "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
     tmp.replace(path)  # atômico no mesmo filesystem
@@ -78,6 +84,7 @@ def write_watermark(table: TableConfig, value: datetime) -> None:
 # ──────────────────────────────────────────────────────────────────────────────
 # Parquet helpers
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def parquet_partition_dir(table: TableConfig, dt: datetime) -> Path:
     return (
@@ -90,7 +97,9 @@ def parquet_partition_dir(table: TableConfig, dt: datetime) -> Path:
     )
 
 
-def write_parquet_atomic(df: pd.DataFrame, table: TableConfig, ingested_at: datetime) -> Path:
+def write_parquet_atomic(
+    df: pd.DataFrame, table: TableConfig, ingested_at: datetime
+) -> Path:
     """Grava DataFrame em Parquet com rename atômico. Retorna path do arquivo final."""
     dest_dir = parquet_partition_dir(table, ingested_at)
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -111,6 +120,7 @@ def write_parquet_atomic(df: pd.DataFrame, table: TableConfig, ingested_at: date
 # ──────────────────────────────────────────────────────────────────────────────
 # Extraction
 # ──────────────────────────────────────────────────────────────────────────────
+
 
 def get_connection() -> psycopg2.extensions.connection:
     db_url = os.environ["SUPABASE_DB_URL"]
@@ -170,7 +180,9 @@ def process_table(
         new_watermark = new_watermark.replace(tzinfo=timezone.utc)
     write_watermark(table, new_watermark)
 
-    log.info(f"[{table.full_name}] {rows:,} linhas → {final_path.name} | novo watermark: {new_watermark.isoformat()}")
+    log.info(
+        f"[{table.full_name}] {rows:,} linhas → {final_path.name} | novo watermark: {new_watermark.isoformat()}"
+    )
     return {
         "table": table.full_name,
         "rows_extracted": rows,
@@ -184,8 +196,11 @@ def process_table(
 # CLI entrypoint
 # ──────────────────────────────────────────────────────────────────────────────
 
+
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Extrator incremental Supabase → Bronze Parquet")
+    p = argparse.ArgumentParser(
+        description="Extrator incremental Supabase → Bronze Parquet"
+    )
     p.add_argument("--mode", choices=["full", "incremental"], required=True)
     p.add_argument("--table", help="Processar apenas esta tabela (ex: vendas.pedidos)")
     return p.parse_args()
@@ -195,14 +210,12 @@ def main() -> int:
     args = parse_args()
     ingested_at = datetime.now(timezone.utc)
 
-    targets = (
-        [TABLES_BY_NAME[args.table]]
-        if args.table
-        else list(TABLES)
-    )
+    targets = [TABLES_BY_NAME[args.table]] if args.table else list(TABLES)
 
     if args.table and args.table not in TABLES_BY_NAME:
-        log.error(f"Tabela desconhecida: {args.table}. Disponíveis: {list(TABLES_BY_NAME)}")
+        log.error(
+            f"Tabela desconhecida: {args.table}. Disponíveis: {list(TABLES_BY_NAME)}"
+        )
         return 1
 
     results: list[dict] = []
@@ -223,7 +236,9 @@ def main() -> int:
     total_rows = sum(r.get("rows_extracted", 0) for r in results)
     ok_count = sum(1 for r in results if r["status"] in ("ok", "skip"))
 
-    log.info(f"=== Ingestão concluída | {ok_count}/{len(targets)} tabelas OK | {total_rows:,} linhas extraídas ===")
+    log.info(
+        f"=== Ingestão concluída | {ok_count}/{len(targets)} tabelas OK | {total_rows:,} linhas extraídas ==="
+    )
 
     if errors:
         log.error(f"Tabelas com erro: {errors}")

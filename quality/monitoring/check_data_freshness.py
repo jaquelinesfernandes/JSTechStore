@@ -89,7 +89,9 @@ def check_bronze_freshness(tolerance_hours: int) -> list[str]:
                 latest_file = parquet
 
         if latest_file is None:
-            errors.append(f"BRONZE [{schema}.{table}] Nenhum arquivo Parquet encontrado")
+            errors.append(
+                f"BRONZE [{schema}.{table}] Nenhum arquivo Parquet encontrado"
+            )
             continue
 
         file_dt = datetime.fromtimestamp(latest_mtime, tz=timezone.utc)
@@ -101,7 +103,9 @@ def check_bronze_freshness(tolerance_hours: int) -> list[str]:
                 f"último arquivo tem {age_hours:.1f}h (tolerância: {tolerance_hours}h) — {latest_file}"
             )
         else:
-            log.info(f"BRONZE [{schema}.{table}] OK — {age_hours:.1f}h atrás ({latest_file.name})")
+            log.info(
+                f"BRONZE [{schema}.{table}] OK — {age_hours:.1f}h atrás ({latest_file.name})"
+            )
 
     return errors
 
@@ -121,7 +125,9 @@ def check_gold_freshness(tolerance_hours: int) -> list[str]:
         return errors
 
     expected_min_sk = int(
-        (datetime.now(timezone.utc) - timedelta(hours=tolerance_hours)).strftime("%Y%m%d")
+        (datetime.now(timezone.utc) - timedelta(hours=tolerance_hours)).strftime(
+            "%Y%m%d"
+        )
     )
 
     con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
@@ -161,11 +167,14 @@ def check_bronze_batch_size() -> list[str]:
         partition = BRONZE_PATH / schema / table / date_path
 
         if not partition.exists():
-            warnings.append(f"BATCH [{full_name}] Partição de hoje não encontrada: {partition}")
+            warnings.append(
+                f"BATCH [{full_name}] Partição de hoje não encontrada: {partition}"
+            )
             continue
 
         try:
             import pyarrow.parquet as pq
+
             total = sum(
                 pq.read_metadata(f).num_rows
                 for f in partition.glob("*.parquet")
@@ -174,7 +183,12 @@ def check_bronze_batch_size() -> list[str]:
         except ImportError:
             # Fallback: conta via pandas (mais lento)
             import pandas as pd
-            frames = [pd.read_parquet(f) for f in partition.glob("*.parquet") if not f.name.startswith(".tmp")]
+
+            frames = [
+                pd.read_parquet(f)
+                for f in partition.glob("*.parquet")
+                if not f.name.startswith(".tmp")
+            ]
             total = sum(len(f) for f in frames) if frames else 0
 
         if total < min_rows:
@@ -192,11 +206,20 @@ def check_bronze_batch_size() -> list[str]:
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Verificação de frescor de dados Bronze e Gold")
-    p.add_argument("--tolerance-hours", type=int, default=26,
-                   help="Horas máximas de defasagem aceitas (padrão: 26h = D-1 + margem)")
-    p.add_argument("--skip-batch-size", action="store_true",
-                   help="Ignora verificação de volume de batch")
+    p = argparse.ArgumentParser(
+        description="Verificação de frescor de dados Bronze e Gold"
+    )
+    p.add_argument(
+        "--tolerance-hours",
+        type=int,
+        default=26,
+        help="Horas máximas de defasagem aceitas (padrão: 26h = D-1 + margem)",
+    )
+    p.add_argument(
+        "--skip-batch-size",
+        action="store_true",
+        help="Ignora verificação de volume de batch",
+    )
     return p.parse_args()
 
 
@@ -216,14 +239,16 @@ def main() -> int:
             for w in batch_warnings:
                 log.warning(w)
             # Avisos de volume não falham o pipeline, apenas alertam
-            log.warning(f"{len(batch_warnings)} aviso(s) de volume — revisar manualmente")
+            log.warning(
+                f"{len(batch_warnings)} aviso(s) de volume — revisar manualmente"
+            )
 
     if all_errors:
-        log.error(f"\n{'='*60}")
+        log.error(f"\n{'=' * 60}")
         log.error(f"FALHA — {len(all_errors)} erro(s) de frescor:")
         for err in all_errors:
             log.error(f"  ✗ {err}")
-        log.error("="*60)
+        log.error("=" * 60)
         return 1
 
     log.info("=== Todas as verificações de frescor passaram ===")

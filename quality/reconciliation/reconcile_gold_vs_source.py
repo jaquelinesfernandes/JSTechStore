@@ -234,10 +234,18 @@ def run_check(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Reconciliação Gold vs. Supabase para todas as tabelas fato")
-    p.add_argument("--table", help="Filtrar por prefixo de check (ex: fato_venda, fato_entrega)")
-    p.add_argument("--tolerance", type=float, default=DEFAULT_TOLERANCE,
-                   help="Tolerância de desvio percentual (padrão: 0.001 = 0,1%%)")
+    p = argparse.ArgumentParser(
+        description="Reconciliação Gold vs. Supabase para todas as tabelas fato"
+    )
+    p.add_argument(
+        "--table", help="Filtrar por prefixo de check (ex: fato_venda, fato_entrega)"
+    )
+    p.add_argument(
+        "--tolerance",
+        type=float,
+        default=DEFAULT_TOLERANCE,
+        help="Tolerância de desvio percentual (padrão: 0.001 = 0,1%%)",
+    )
     p.add_argument("--output", type=Path, help="Salvar resultado JSON em arquivo")
     return p.parse_args()
 
@@ -256,20 +264,23 @@ def main() -> int:
         log.error(f"DuckDB Gold não encontrado: {DUCKDB_PATH}")
         return 1
 
-    checks = [
-        c for c in CHECKS
-        if not args.table or c.name.startswith(args.table)
-    ]
+    checks = [c for c in CHECKS if not args.table or c.name.startswith(args.table)]
     if not checks:
         log.error(f"Nenhum check encontrado para --table={args.table}")
         return 1
 
     # Override tolerance global se passado via CLI
     if args.tolerance != DEFAULT_TOLERANCE:
-        checks = [ReconciliationCheck(
-            name=c.name, gold_query=c.gold_query, source_query=c.source_query,
-            metric_label=c.metric_label, tolerance=args.tolerance
-        ) for c in checks]
+        checks = [
+            ReconciliationCheck(
+                name=c.name,
+                gold_query=c.gold_query,
+                source_query=c.source_query,
+                metric_label=c.metric_label,
+                tolerance=args.tolerance,
+            )
+            for c in checks
+        ]
 
     log.info(f"=== Reconciliação Gold vs. Supabase | {len(checks)} check(s) ===")
 
@@ -284,7 +295,9 @@ def main() -> int:
                 results.append(result)
             except Exception as exc:
                 log.error(f"[{check.name}] Erro ao executar: {exc}", exc_info=True)
-                results.append({"check": check.name, "passed": False, "error": str(exc)})
+                results.append(
+                    {"check": check.name, "passed": False, "error": str(exc)}
+                )
     finally:
         duckdb_con.close()
         pg_con.close()
@@ -300,9 +313,15 @@ def main() -> int:
         "results": results,
     }
 
-    output_path = args.output or LOG_DIR / f"reconciliation_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+    output_path = (
+        args.output
+        or LOG_DIR
+        / f"reconciliation_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+    )
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+    output_path.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
+    )
     log.info(f"Relatório salvo: {output_path}")
 
     if failures:
