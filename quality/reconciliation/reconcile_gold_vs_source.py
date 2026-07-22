@@ -247,7 +247,7 @@ def main() -> int:
 
     try:
         import duckdb
-        import psycopg2
+        import psycopg2  # noqa: F401
     except ImportError as exc:
         log.error(f"Dependência faltando: {exc}")
         return 1

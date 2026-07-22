@@ -37,7 +37,7 @@ from psycopg2.extras import RealDictCursor
 
 load_dotenv()
 
-from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig
+from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(

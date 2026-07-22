@@ -15,10 +15,9 @@ from __future__ import annotations
 
 import argparse
 import logging
-import os
 import random
 import sys
-from datetime import date, datetime, timezone
+from datetime import date
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -29,7 +28,7 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 sys.path.insert(0, str(Path(__file__).parent))
 from generate_data import connect, gen_daily  # noqa: E402
 
-from faker import Faker
+from faker import Faker  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(

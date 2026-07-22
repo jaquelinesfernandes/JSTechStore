@@ -684,12 +684,12 @@ def gen_lojas(conn) -> dict[str, int]:
     """Insere lojas e retorna mapeamento codigo→id_loja."""
     now = datetime.now(timezone.utc)
     rows = []
-    for l in LOJAS:
+    for loja in LOJAS:
         rows.append({
-            "codigo": l["codigo"], "nome_loja": l["nome_loja"], "tipo_loja": l["tipo_loja"],
-            "regiao": l["regiao"], "cidade": l["cidade"], "uf": l["uf"],
-            "gerente": l["gerente"], "capacidade_m2": l["capacidade_m2"],
-            "dt_abertura": l["dt_abertura"], "ativo": True,
+            "codigo": loja["codigo"], "nome_loja": loja["nome_loja"], "tipo_loja": loja["tipo_loja"],
+            "regiao": loja["regiao"], "cidade": loja["cidade"], "uf": loja["uf"],
+            "gerente": loja["gerente"], "capacidade_m2": loja["capacidade_m2"],
+            "dt_abertura": loja["dt_abertura"], "ativo": True,
             "created_at": now, "updated_at": now,
         })
     with conn.cursor() as cur:
@@ -1516,7 +1516,7 @@ def main() -> int:
         conn.close()
 
     log.info("=== Geração concluída com sucesso! ===")
-    log.info(f"Próximo passo: python -m ingestion.connectors.postgres.extract --mode full")
+    log.info("Próximo passo: python -m ingestion.connectors.postgres.extract --mode full")
     return 0
 
 
