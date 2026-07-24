@@ -44,7 +44,7 @@ def load_context(conn) -> dict:
     ctx: dict = {}
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id_produto, preco_venda, custo_unitario FROM produtos.precos p JOIN produtos.produtos pr ON pr.id_produto = p.id_produto WHERE pr.ativo = TRUE AND p.dt_vigencia_fim IS NULL"
+            "SELECT p.id_produto, p.preco_venda, p.custo_unitario FROM produtos.precos p JOIN produtos.produtos pr ON pr.id_produto = p.id_produto WHERE pr.ativo = TRUE AND p.dt_vigencia_fim IS NULL"
         )
         ctx["produtos"] = [
             {"id": r[0], "preco": float(r[1]), "custo": float(r[2])}
