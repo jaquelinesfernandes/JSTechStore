@@ -37,7 +37,11 @@ from psycopg2.extras import RealDictCursor
 
 load_dotenv()
 
-from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig  # noqa: E402
+from ingestion.connectors.postgres.config import (  # noqa: E402
+    TABLES,
+    TABLES_BY_NAME,
+    TableConfig,
+)
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -87,19 +91,10 @@ def write_watermark(table: TableConfig, value: datetime) -> None:
 
 
 def parquet_partition_dir(table: TableConfig, dt: datetime) -> Path:
-    return (
-        BRONZE_PATH
-        / table.schema
-        / table.table
-        / f"year={dt.year}"
-        / f"month={dt.month:02d}"
-        / f"day={dt.day:02d}"
-    )
+    return BRONZE_PATH / table.schema / table.table / f"year={dt.year}" / f"month={dt.month:02d}" / f"day={dt.day:02d}"
 
 
-def write_parquet_atomic(
-    df: pd.DataFrame, table: TableConfig, ingested_at: datetime
-) -> Path:
+def write_parquet_atomic(df: pd.DataFrame, table: TableConfig, ingested_at: datetime) -> Path:
     """Grava DataFrame em Parquet com rename atômico. Retorna path do arquivo final."""
     dest_dir = parquet_partition_dir(table, ingested_at)
     dest_dir.mkdir(parents=True, exist_ok=True)
@@ -180,9 +175,7 @@ def process_table(
         new_watermark = new_watermark.replace(tzinfo=timezone.utc)
     write_watermark(table, new_watermark)
 
-    log.info(
-        f"[{table.full_name}] {rows:,} linhas → {final_path.name} | novo watermark: {new_watermark.isoformat()}"
-    )
+    log.info(f"[{table.full_name}] {rows:,} linhas → {final_path.name} | novo watermark: {new_watermark.isoformat()}")
     return {
         "table": table.full_name,
         "rows_extracted": rows,
@@ -198,9 +191,7 @@ def process_table(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Extrator incremental Supabase → Bronze Parquet"
-    )
+    p = argparse.ArgumentParser(description="Extrator incremental Supabase → Bronze Parquet")
     p.add_argument("--mode", choices=["full", "incremental"], required=True)
     p.add_argument("--table", help="Processar apenas esta tabela (ex: vendas.pedidos)")
     return p.parse_args()
@@ -213,9 +204,7 @@ def main() -> int:
     targets = [TABLES_BY_NAME[args.table]] if args.table else list(TABLES)
 
     if args.table and args.table not in TABLES_BY_NAME:
-        log.error(
-            f"Tabela desconhecida: {args.table}. Disponíveis: {list(TABLES_BY_NAME)}"
-        )
+        log.error(f"Tabela desconhecida: {args.table}. Disponíveis: {list(TABLES_BY_NAME)}")
         return 1
 
     results: list[dict] = []
@@ -228,7 +217,7 @@ def main() -> int:
                 result = process_table(conn, table, args.mode, ingested_at)
                 results.append(result)
             except Exception as exc:
-                log.error(f"[{table.full_name}] ERRO: {exc}", exc_info=True)
+                log.exception(f"[{table.full_name}] ERRO: {exc}")
                 errors.append(table.full_name)
     finally:
         conn.close()
@@ -236,9 +225,7 @@ def main() -> int:
     total_rows = sum(r.get("rows_extracted", 0) for r in results)
     ok_count = sum(1 for r in results if r["status"] in ("ok", "skip"))
 
-    log.info(
-        f"=== Ingestão concluída | {ok_count}/{len(targets)} tabelas OK | {total_rows:,} linhas extraídas ==="
-    )
+    log.info(f"=== Ingestão concluída | {ok_count}/{len(targets)} tabelas OK | {total_rows:,} linhas extraídas ===")
 
     if errors:
         log.error(f"Tabelas com erro: {errors}")

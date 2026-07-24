@@ -18,7 +18,7 @@ import argparse
 import logging
 import random
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -27,9 +27,8 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 # Adiciona o diretório scripts/ ao path para importar generate_data como módulo
 sys.path.insert(0, str(Path(__file__).parent))
-from generate_data import connect, gen_daily  # noqa: E402
-
 from faker import Faker  # noqa: E402
+from generate_data import connect, gen_daily  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -44,12 +43,9 @@ def load_context(conn) -> dict:
     ctx: dict = {}
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id_produto, preco_venda, custo_unitario FROM produtos.precos p JOIN produtos.produtos pr ON pr.id_produto = p.id_produto WHERE pr.ativo = TRUE AND p.dt_vigencia_fim IS NULL"
+            "SELECT p.id_produto, p.preco_venda, p.custo_unitario FROM produtos.precos p JOIN produtos.produtos pr ON pr.id_produto = p.id_produto WHERE pr.ativo = TRUE AND p.dt_vigencia_fim IS NULL"
         )
-        ctx["produtos"] = [
-            {"id": r[0], "preco": float(r[1]), "custo": float(r[2])}
-            for r in cur.fetchall()
-        ]
+        ctx["produtos"] = [{"id": r[0], "preco": float(r[1]), "custo": float(r[2])} for r in cur.fetchall()]
 
         cur.execute("SELECT id_cliente FROM clientes.clientes WHERE ativo = TRUE")
         ctx["cliente_ids"] = [r[0] for r in cur.fetchall()]
@@ -63,24 +59,16 @@ def load_context(conn) -> dict:
             vend_by_loja.setdefault(lid, []).append(vid)
         ctx["vend_by_loja"] = vend_by_loja
 
-        cur.execute(
-            "SELECT id_campanha, dt_inicio, dt_fim, tipo FROM marketing.campanhas WHERE ativo = TRUE"
-        )
-        ctx["campanhas"] = [
-            {"id": r[0], "dt_inicio": r[1], "dt_fim": r[2], "tipo": r[3]}
-            for r in cur.fetchall()
-        ]
+        cur.execute("SELECT id_campanha, dt_inicio, dt_fim, tipo FROM marketing.campanhas WHERE ativo = TRUE")
+        ctx["campanhas"] = [{"id": r[0], "dt_inicio": r[1], "dt_fim": r[2], "tipo": r[3]} for r in cur.fetchall()]
 
         cur.execute(
             "SELECT codigo, id_modalidade, id_transportadora, prazo_dias, frete_base FROM logistica.modalidades"
         )
         ctx["modalidades"] = {
-            r[0]: {"id": r[1], "id_trans": r[2], "prazo": r[3], "frete": float(r[4])}
-            for r in cur.fetchall()
+            r[0]: {"id": r[1], "id_trans": r[2], "prazo": r[3], "frete": float(r[4])} for r in cur.fetchall()
         }
-        ctx["trans_ids_by_modal"] = {
-            k: v["id_trans"] for k, v in ctx["modalidades"].items()
-        }
+        ctx["trans_ids_by_modal"] = {k: v["id_trans"] for k, v in ctx["modalidades"].items()}
 
     if not ctx["produtos"]:
         log.error("Nenhum produto encontrado. Execute generate_data.py primeiro.")
@@ -98,9 +86,7 @@ def load_context(conn) -> dict:
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Gerador de dados diários JSTechStore → Supabase"
-    )
+    p = argparse.ArgumentParser(description="Gerador de dados diários JSTechStore → Supabase")
     p.add_argument("--date", required=True, help="Data a gerar: 'today' ou YYYY-MM-DD")
     p.add_argument(
         "--seed",
@@ -114,10 +100,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
-    if args.date == "today":
-        target_date = date.today()
-    else:
-        target_date = date.fromisoformat(args.date)
+    target_date = datetime.now(tz=timezone.utc).date() if args.date == "today" else date.fromisoformat(args.date)
 
     # Semente derivada da data para resultados reprodutíveis por dia
     seed = args.seed if args.seed is not None else int(target_date.strftime("%Y%m%d"))

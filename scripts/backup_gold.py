@@ -67,9 +67,7 @@ def compress_duckdb(source: Path, dest: Path, dry_run: bool = False) -> int:
     return size
 
 
-def rotate_local_backups(
-    backup_dir: Path, keep_days: int, dry_run: bool = False
-) -> list[Path]:
+def rotate_local_backups(backup_dir: Path, keep_days: int, dry_run: bool = False) -> list[Path]:
     """Remove os backups mais antigos, mantendo apenas os últimos keep_days."""
     backups = sorted(backup_dir.glob("jstechstore_*.duckdb.gz"))
     to_remove = backups[:-keep_days] if len(backups) > keep_days else []
@@ -102,9 +100,7 @@ def export_as_parquet(source: Path, export_dir: Path, dry_run: bool = False) -> 
     export_dir.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(str(source), read_only=True)
     try:
-        con.execute(
-            f"EXPORT DATABASE '{export_dir}' (FORMAT PARQUET, COMPRESSION ZSTD)"
-        )
+        con.execute(f"EXPORT DATABASE '{export_dir}' (FORMAT PARQUET, COMPRESSION ZSTD)")
         log.info(f"Exportação Parquet concluída: {export_dir}")
     finally:
         con.close()
@@ -126,9 +122,7 @@ def main() -> int:
     source = args.duckdb_path
     if not source.exists():
         log.error(f"Arquivo DuckDB não encontrado: {source}")
-        log.error(
-            "Execute 'dbt run --full-refresh' para criar a camada Gold antes do backup."
-        )
+        log.error("Execute 'dbt run --full-refresh' para criar a camada Gold antes do backup.")
         return 1
 
     backup_dir = args.backup_dir

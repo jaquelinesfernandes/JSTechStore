@@ -1,0 +1,30 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "G2",     # flake8-logging-format (G201, G202)
+    "BLE",    # flake8-blind-except
+    "PERF",   # Perflint
+    "SIM",    # flake8-simplify
+    "DTZ",    # flake8-datetimez
+    "RUF",    # Ruff-specific rules
+]
+ignore = [
+    "EXE001",  # Shebang sem chmod — irrelevante no Windows e no CI Linux sem permissão
+    "RUF001",  # Caractere × em strings de produto — unicode legítimo em pt-BR
+    "RUF002",  # En dash em docstrings — português usa travessão normalmente
+    "RUF003",  # × em comentários — idem
+    "G004",    # f-strings em logging — opinionado, impacto mínimo aqui
+    "E501",    # Linhas longas em SQL strings embutidas — não quebráveis sem perder legibilidade
+    "PERF401", # list.extend em loops com dicts multi-linha — menos legível como comprehension
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts de geração de dados: regras de produção não se aplicam
+"scripts/generate_data.py" = ["SIM108"]
