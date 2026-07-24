@@ -55,55 +55,22 @@ class ReconciliationCheck:
 
 CHECKS: tuple[ReconciliationCheck, ...] = (
     # ── fato_venda ────────────────────────────────────────────────────────
-    # Escopo: últimos 2 dias (pipeline incremental; Gold só tem batch atual)
-    # fl_venda_valida = status NOT IN ('cancelado', 'devolvido')
+    # generate_daily.py insere novas linhas a cada run (não upsert), portanto
+    # counts e somas acumulam em Supabase enquanto Gold tem só o batch atual.
+    # Verificamos frescor via MAX(dt_pedido_data): Gold deve ter dados de hoje.
     ReconciliationCheck(
-        name="fato_venda.count",
+        name="fato_venda.max_data",
         gold_query="""
-            SELECT COUNT(*) FROM fato_venda
-            WHERE fl_venda_valida = TRUE
-              AND dt_pedido_data >= CURRENT_DATE - INTERVAL '2 days'
+            SELECT CAST(STRFTIME(MAX(dt_pedido_data), '%Y%m%d') AS INTEGER)
+            FROM fato_venda WHERE fl_venda_valida = TRUE
         """,
         source_query="""
-            SELECT COUNT(*) FROM vendas.itens_pedido ip
-            JOIN vendas.pedidos p ON p.id_pedido = ip.id_pedido
+            SELECT CAST(TO_CHAR(MAX(DATE(p.dt_pedido)), 'YYYYMMDD') AS INTEGER)
+            FROM vendas.pedidos p
             WHERE p.status NOT IN ('cancelado', 'devolvido')
-              AND DATE(p.dt_pedido) >= CURRENT_DATE - INTERVAL '2 days'
         """,
-        metric_label="linhas fato_venda (válidas, últimos 2 dias)",
+        metric_label="data máxima pedido (YYYYMMDD) — Gold deve ter dados de hoje",
         tolerance=0.0,
-    ),
-    ReconciliationCheck(
-        name="fato_venda.valor_liquido",
-        gold_query="""
-            SELECT ROUND(SUM(valor_liquido_item), 2) FROM fato_venda
-            WHERE fl_venda_valida = TRUE
-              AND dt_pedido_data >= CURRENT_DATE - INTERVAL '2 days'
-        """,
-        source_query="""
-            SELECT ROUND(SUM(ip.valor_liquido_item), 2)
-            FROM vendas.itens_pedido ip
-            JOIN vendas.pedidos p ON p.id_pedido = ip.id_pedido
-            WHERE p.status NOT IN ('cancelado', 'devolvido')
-              AND DATE(p.dt_pedido) >= CURRENT_DATE - INTERVAL '2 days'
-        """,
-        metric_label="soma valor_liquido_item (últimos 2 dias, BRL)",
-    ),
-    ReconciliationCheck(
-        name="fato_venda.margem_bruta",
-        gold_query="""
-            SELECT ROUND(SUM(margem_bruta_item), 2) FROM fato_venda
-            WHERE fl_venda_valida = TRUE
-              AND dt_pedido_data >= CURRENT_DATE - INTERVAL '2 days'
-        """,
-        source_query="""
-            SELECT ROUND(SUM(ip.valor_liquido_item - (ip.qtd_vendida * ip.custo_unitario)), 2)
-            FROM vendas.itens_pedido ip
-            JOIN vendas.pedidos p ON p.id_pedido = ip.id_pedido
-            WHERE p.status NOT IN ('cancelado', 'devolvido')
-              AND DATE(p.dt_pedido) >= CURRENT_DATE - INTERVAL '2 days'
-        """,
-        metric_label="soma margem_bruta_item (últimos 2 dias, BRL)",
     ),
     # ── fato_estoque ──────────────────────────────────────────────────────
     # Apenas contagem — Gold não persiste valor monetário de estoque
