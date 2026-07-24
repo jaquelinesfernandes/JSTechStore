@@ -262,7 +262,7 @@ def main() -> int:
             for c in checks
         ]
 
-    log.info(f"=== Reconciliação Gold vs. Supabase | {len(checks)} check(s) ===")
+    log.info(f"=== Reconciliação Gold vs. Supabase v2 | {len(checks)} check(s) ===")
 
     duckdb_con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
     pg_con = __import__("psycopg2").connect(os.environ["SUPABASE_DB_URL"])
