@@ -59,28 +59,24 @@ jobs:
       # ─────────────────────────────────────────────
       # Step 3 — dbt transformações incrementais
       # ─────────────────────────────────────────────
-      - name: "3 · Criar diretórios data/gold e data/silver"
-        run: mkdir -p data/gold data/silver
+      - name: "3 · Configurar paths absolutos e criar diretórios"
+        run: |
+          echo "DUCKDB_PATH=$GITHUB_WORKSPACE/data/gold/jstechstore.duckdb" >> $GITHUB_ENV
+          echo "BRONZE_PATH=$GITHUB_WORKSPACE/data/bronze" >> $GITHUB_ENV
+          echo "SILVER_PATH=$GITHUB_WORKSPACE/data/silver" >> $GITHUB_ENV
+          echo "GOLD_BACKUP_DIR=$GITHUB_WORKSPACE/data/backups/gold" >> $GITHUB_ENV
+          mkdir -p "$GITHUB_WORKSPACE/data/gold" "$GITHUB_WORKSPACE/data/silver" "$GITHUB_WORKSPACE/data/backups/gold"
 
       - name: "3 · dbt deps"
         working-directory: transformation/dbt_project
-        env:
-          DUCKDB_PATH: ${{ github.workspace }}/${{ env.DUCKDB_PATH }}
-          BRONZE_PATH: ${{ github.workspace }}/${{ env.BRONZE_PATH }}
         run: dbt deps
 
       - name: "3 · dbt seed (feriados_nacionais)"
         working-directory: transformation/dbt_project
-        env:
-          DUCKDB_PATH: ${{ github.workspace }}/${{ env.DUCKDB_PATH }}
-          BRONZE_PATH: ${{ github.workspace }}/${{ env.BRONZE_PATH }}
         run: dbt seed --select feriados_nacionais
 
       - name: "3 · dbt run (incremental)"
         working-directory: transformation/dbt_project
-        env:
-          DUCKDB_PATH: ${{ github.workspace }}/${{ env.DUCKDB_PATH }}
-          BRONZE_PATH: ${{ github.workspace }}/${{ env.BRONZE_PATH }}
         run: dbt run
 
       # ─────────────────────────────────────────────
@@ -88,9 +84,6 @@ jobs:
       # ─────────────────────────────────────────────
       - name: "4 · dbt test --select gold"
         working-directory: transformation/dbt_project
-        env:
-          DUCKDB_PATH: ${{ github.workspace }}/${{ env.DUCKDB_PATH }}
-          BRONZE_PATH: ${{ github.workspace }}/${{ env.BRONZE_PATH }}
         run: dbt test --select gold
 
       # ─────────────────────────────────────────────
