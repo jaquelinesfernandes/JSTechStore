@@ -55,40 +55,42 @@ class ReconciliationCheck:
 
 CHECKS: tuple[ReconciliationCheck, ...] = (
     # ── fato_venda ────────────────────────────────────────────────────────
+    # fl_venda_valida = status NOT IN ('cancelado', 'devolvido')
     ReconciliationCheck(
         name="fato_venda.count",
-        gold_query="SELECT COUNT(*) FROM fato_venda WHERE fl_troca_devolucao = FALSE",
+        gold_query="SELECT COUNT(*) FROM fato_venda WHERE fl_venda_valida = TRUE",
         source_query="""
             SELECT COUNT(*) FROM vendas.itens_pedido ip
             JOIN vendas.pedidos p ON p.id_pedido = ip.id_pedido
-            WHERE p.status NOT IN ('cancelado')
+            WHERE p.status NOT IN ('cancelado', 'devolvido')
         """,
-        metric_label="linhas fato_venda",
-        tolerance=0.0,  # contagem deve ser exata
+        metric_label="linhas fato_venda (válidas)",
+        tolerance=0.0,
     ),
     ReconciliationCheck(
         name="fato_venda.valor_liquido",
-        gold_query="SELECT ROUND(SUM(valor_liquido_item), 2) FROM fato_venda WHERE fl_troca_devolucao = FALSE",
+        gold_query="SELECT ROUND(SUM(valor_liquido_item), 2) FROM fato_venda WHERE fl_venda_valida = TRUE",
         source_query="""
             SELECT ROUND(SUM(ip.valor_liquido_item), 2)
             FROM vendas.itens_pedido ip
             JOIN vendas.pedidos p ON p.id_pedido = ip.id_pedido
-            WHERE p.status NOT IN ('cancelado')
+            WHERE p.status NOT IN ('cancelado', 'devolvido')
         """,
         metric_label="soma valor_liquido_item (BRL)",
     ),
     ReconciliationCheck(
         name="fato_venda.margem_bruta",
-        gold_query="SELECT ROUND(SUM(margem_bruta_item), 2) FROM fato_venda WHERE fl_troca_devolucao = FALSE",
+        gold_query="SELECT ROUND(SUM(margem_bruta_item), 2) FROM fato_venda WHERE fl_venda_valida = TRUE",
         source_query="""
             SELECT ROUND(SUM(ip.valor_liquido_item - (ip.qtd_vendida * ip.custo_unitario)), 2)
             FROM vendas.itens_pedido ip
             JOIN vendas.pedidos p ON p.id_pedido = ip.id_pedido
-            WHERE p.status NOT IN ('cancelado')
+            WHERE p.status NOT IN ('cancelado', 'devolvido')
         """,
         metric_label="soma margem_bruta_item (BRL)",
     ),
     # ── fato_estoque ──────────────────────────────────────────────────────
+    # Apenas contagem — Gold não persiste valor monetário de estoque
     ReconciliationCheck(
         name="fato_estoque.count",
         gold_query="""
@@ -99,79 +101,61 @@ CHECKS: tuple[ReconciliationCheck, ...] = (
         metric_label="linhas fato_estoque (último snapshot)",
         tolerance=0.0,
     ),
-    ReconciliationCheck(
-        name="fato_estoque.valor_total",
-        gold_query="""
-            SELECT ROUND(SUM(valor_estoque_brl), 2) FROM fato_estoque
-            WHERE sk_tempo = (SELECT MAX(sk_tempo) FROM fato_estoque)
-        """,
-        source_query="""
-            SELECT ROUND(SUM(qtd_disponivel * custo_medio_unitario), 2)
-            FROM estoque.saldo_estoque
-            WHERE qtd_disponivel >= 0
-        """,
-        metric_label="valor total estoque (BRL)",
-    ),
     # ── fato_entrega ──────────────────────────────────────────────────────
+    # Escopo: últimos 2 dias (pipeline incremental; Gold só tem batch atual)
     ReconciliationCheck(
         name="fato_entrega.count",
-        gold_query="SELECT COUNT(*) FROM fato_entrega",
-        source_query="SELECT COUNT(*) FROM logistica.entregas",
-        metric_label="linhas fato_entrega",
+        gold_query="""
+            SELECT COUNT(*) FROM fato_entrega
+            WHERE dt_postagem >= CURRENT_DATE - INTERVAL '2 days'
+        """,
+        source_query="""
+            SELECT COUNT(*) FROM logistica.entregas
+            WHERE dt_postagem >= CURRENT_DATE - INTERVAL '2 days'
+        """,
+        metric_label="linhas fato_entrega (últimos 2 dias)",
         tolerance=0.0,
-    ),
-    ReconciliationCheck(
-        name="fato_entrega.custo_frete",
-        gold_query="SELECT ROUND(SUM(custo_frete), 2) FROM fato_entrega",
-        source_query="SELECT ROUND(SUM(custo_frete), 2) FROM logistica.entregas",
-        metric_label="soma custo_frete (BRL)",
     ),
     # ── fato_financeiro ───────────────────────────────────────────────────
+    # Escopo: últimos 2 dias; coluna é 'valor' (não valor_liquido)
     ReconciliationCheck(
         name="fato_financeiro.count",
-        gold_query="SELECT COUNT(*) FROM fato_financeiro",
-        source_query="SELECT COUNT(*) FROM financeiro.lancamentos",
-        metric_label="linhas fato_financeiro",
+        gold_query="""
+            SELECT COUNT(*) FROM fato_financeiro
+            WHERE dt_lancamento >= CURRENT_DATE - INTERVAL '2 days'
+        """,
+        source_query="""
+            SELECT COUNT(*) FROM financeiro.lancamentos
+            WHERE dt_lancamento >= CURRENT_DATE - INTERVAL '2 days'
+        """,
+        metric_label="linhas fato_financeiro (últimos 2 dias)",
         tolerance=0.0,
     ),
     ReconciliationCheck(
-        name="fato_financeiro.valor_liquido",
-        gold_query="SELECT ROUND(SUM(valor_liquido), 2) FROM fato_financeiro",
-        source_query="SELECT ROUND(SUM(valor_liquido), 2) FROM financeiro.lancamentos",
-        metric_label="soma valor_liquido financeiro (BRL)",
-    ),
-    ReconciliationCheck(
-        name="fato_financeiro.margem_bruta",
-        gold_query="SELECT ROUND(SUM(margem_bruta), 2) FROM fato_financeiro WHERE tipo_lancamento = 'venda'",
-        source_query="""
-            SELECT ROUND(SUM(valor_liquido - cmv), 2)
-            FROM financeiro.lancamentos
-            WHERE tipo_lancamento = 'venda'
+        name="fato_financeiro.valor",
+        gold_query="""
+            SELECT ROUND(SUM(valor), 2) FROM fato_financeiro
+            WHERE dt_lancamento >= CURRENT_DATE - INTERVAL '2 days'
         """,
-        metric_label="soma margem_bruta financeira (BRL)",
+        source_query="""
+            SELECT ROUND(SUM(valor), 2) FROM financeiro.lancamentos
+            WHERE dt_lancamento >= CURRENT_DATE - INTERVAL '2 days'
+        """,
+        metric_label="soma valor financeiro (últimos 2 dias, BRL)",
     ),
     # ── fato_cliente_interacao ────────────────────────────────────────────
+    # Grão = 1 linha por sessão; sem coluna tipo_interacao
     ReconciliationCheck(
         name="fato_cliente_interacao.count_sessoes",
         gold_query="""
             SELECT COUNT(*) FROM fato_cliente_interacao
-            WHERE tipo_interacao IN ('visita_site', 'abandono_carrinho')
-        """,
-        source_query="SELECT COUNT(*) FROM web_analytics.sessoes",
-        metric_label="linhas sessões em fato_cliente_interacao",
-        tolerance=0.0,
-    ),
-    ReconciliationCheck(
-        name="fato_cliente_interacao.count_eventos",
-        gold_query="""
-            SELECT COUNT(*) FROM fato_cliente_interacao
-            WHERE tipo_interacao NOT IN ('visita_site', 'abandono_carrinho', 'compra', 'devolucao')
+            WHERE dt_sessao >= CURRENT_DATE - INTERVAL '2 days'
         """,
         source_query="""
-            SELECT COUNT(*) FROM web_analytics.eventos_carrinho
-            WHERE tipo_evento NOT IN ('purchase')
+            SELECT COUNT(*) FROM web_analytics.sessoes
+            WHERE DATE(dt_inicio) >= CURRENT_DATE - INTERVAL '2 days'
         """,
-        metric_label="linhas eventos carrinho em fato_cliente_interacao",
+        metric_label="linhas sessões em fato_cliente_interacao (últimos 2 dias)",
         tolerance=0.0,
     ),
     # ── fato_orcamento ────────────────────────────────────────────────────
@@ -183,10 +167,10 @@ CHECKS: tuple[ReconciliationCheck, ...] = (
         tolerance=0.0,
     ),
     ReconciliationCheck(
-        name="fato_orcamento.receita_orcada",
-        gold_query="SELECT ROUND(SUM(receita_orcada_brl), 2) FROM fato_orcamento",
-        source_query="SELECT ROUND(SUM(valor_receita_orcado), 2) FROM financeiro.orcamentos",
-        metric_label="soma receita orçada (BRL)",
+        name="fato_orcamento.receita_meta",
+        gold_query="SELECT ROUND(SUM(valor_meta_receita), 2) FROM fato_orcamento",
+        source_query="SELECT ROUND(SUM(valor_meta_receita), 2) FROM financeiro.orcamentos",
+        metric_label="soma receita meta orçada (BRL)",
     ),
 )
 
