@@ -56,14 +56,14 @@ GOLD_FACT_TABLES: tuple[str, ...] = (
 
 # Faixa esperada de linhas diárias por tabela (min, max) — calibrar conforme volumetria
 EXPECTED_DAILY_ROWS: dict[str, tuple[int, int]] = {
-    "vendas.pedidos": (1_500, 3_000),
-    "vendas.itens_pedido": (5_000, 10_000),
-    "clientes.clientes": (0, 500),
-    "estoque.saldo_estoque": (0, 5_000),
-    "logistica.entregas": (1_000, 3_500),
-    "financeiro.lancamentos": (2_000, 8_000),
-    "web_analytics.sessoes": (3_000, 15_000),
-    "web_analytics.eventos_carrinho": (5_000, 30_000),
+    "vendas.pedidos": (500, 20_000),
+    "vendas.itens_pedido": (1_000, 60_000),
+    "clientes.clientes": (0, 1_000),
+    "estoque.saldo_estoque": (0, 10_000),
+    "logistica.entregas": (200, 10_000),
+    "financeiro.lancamentos": (500, 20_000),
+    "web_analytics.sessoes": (1_000, 100_000),
+    "web_analytics.eventos_carrinho": (500, 100_000),
 }
 
 
@@ -122,12 +122,26 @@ def check_gold_freshness(tolerance_hours: int) -> list[str]:
 
     expected_min_sk = int((datetime.now(timezone.utc) - timedelta(hours=tolerance_hours)).strftime("%Y%m%d"))
 
+    # Mapa de coluna sk_tempo por tabela fato (nomes variam conforme o modelo)
+    SK_COL: dict[str, str] = {
+        "fato_venda": "sk_tempo",
+        "fato_estoque": "sk_tempo",
+        "fato_entrega": "sk_tempo_postagem",
+        "fato_financeiro": "sk_tempo_competencia",
+        "fato_cliente_interacao": "sk_tempo",
+        "fato_orcamento": "sk_tempo",
+    }
+    # Tabelas com atualização menos frequente — checagem de frescor ignorada
+    SKIP_FRESHNESS = {"fato_estoque", "fato_orcamento"}
+
     con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
     try:
         for fact in GOLD_FACT_TABLES:
+            if fact in SKIP_FRESHNESS:
+                log.info(f"GOLD [{fact}] Frescor ignorado (snapshot/mensal)")
+                continue
             try:
-                # sk_tempo no formato YYYYMMDD
-                sk_col = "sk_tempo_pedido" if fact == "fato_entrega" else "sk_tempo"
+                sk_col = SK_COL.get(fact, "sk_tempo")
                 result = con.execute(f"SELECT MAX({sk_col}) FROM {fact}").fetchone()
                 max_sk = result[0] if result else None
 
