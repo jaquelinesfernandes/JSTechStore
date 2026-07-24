@@ -6,10 +6,10 @@ on:
   workflow_dispatch:        # permite execução manual via GitHub UI
 
 env:
-  DUCKDB_PATH: data/gold/jstechstore.duckdb
-  BRONZE_PATH: data/bronze
-  SILVER_PATH: data/silver
-  GOLD_BACKUP_DIR: data/backups/gold
+  DUCKDB_PATH: ${{ github.workspace }}/data/gold/jstechstore.duckdb
+  BRONZE_PATH: ${{ github.workspace }}/data/bronze
+  SILVER_PATH: ${{ github.workspace }}/data/silver
+  GOLD_BACKUP_DIR: ${{ github.workspace }}/data/backups/gold
 
 jobs:
   pipeline:
