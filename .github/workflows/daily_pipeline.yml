@@ -5,16 +5,15 @@ on:
     - cron: "0 4 * * *"   # 04:00 UTC = 01:00 BRT
   workflow_dispatch:        # permite execução manual via GitHub UI
 
-env:
-  DUCKDB_PATH: ${{ github.workspace }}/data/gold/jstechstore.duckdb
-  BRONZE_PATH: ${{ github.workspace }}/data/bronze
-  SILVER_PATH: ${{ github.workspace }}/data/silver
-  GOLD_BACKUP_DIR: ${{ github.workspace }}/data/backups/gold
-
 jobs:
   pipeline:
     name: Pipeline Diário JSTechStore
     runs-on: ubuntu-latest
+    env:
+      DUCKDB_PATH: ${{ github.workspace }}/data/gold/jstechstore.duckdb
+      BRONZE_PATH: ${{ github.workspace }}/data/bronze
+      SILVER_PATH: ${{ github.workspace }}/data/silver
+      GOLD_BACKUP_DIR: ${{ github.workspace }}/data/backups/gold
 
     steps:
       # ─────────────────────────────────────────────
