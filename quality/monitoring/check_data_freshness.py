@@ -148,7 +148,7 @@ def check_gold_freshness(tolerance_hours: int) -> list[str]:
                     )
                 else:
                     log.info(f"GOLD [{fact}] OK — MAX({sk_col})={max_sk}")
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 errors.append(f"GOLD [{fact}] Erro ao consultar: {exc}")
     finally:
         con.close()

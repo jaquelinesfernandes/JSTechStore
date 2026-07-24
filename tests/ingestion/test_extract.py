@@ -16,7 +16,6 @@ import pytest
 
 from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig
 
-
 # ── TableConfig ────────────────────────────────────────────────────────────────
 
 

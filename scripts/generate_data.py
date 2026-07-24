@@ -25,9 +25,9 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 import psycopg2
-from psycopg2.extras import execute_values
-from faker import Faker
 from dotenv import load_dotenv
+from faker import Faker
+from psycopg2.extras import execute_values
 from tqdm import tqdm
 
 load_dotenv(Path(__file__).parent.parent / ".env")
@@ -1880,7 +1880,7 @@ def gen_vendedores(
     rows: list[dict] = []
     cpfs_usados: set[str] = set()
 
-    for _, id_loja in lojas_fisicas.items():
+    for id_loja in lojas_fisicas.values():
         n_vend = rng.randint(4, 7)
         for j in range(n_vend):
             for _ in range(10):
@@ -2078,9 +2078,13 @@ def gen_orcamentos(
         for id_loja in lojas_fisicas:
             for canal in canais_orc:
                 # e-commerce canais apenas para loja ECOM
-                if canal != "loja_fisica" and id_loja != loja_ids.get("ECOM"):
-                    if canal == "site_proprio" and id_loja in [loja_ids.get("ECOM")]:
-                        pass
+                if (
+                    canal != "loja_fisica"
+                    and id_loja != loja_ids.get("ECOM")
+                    and canal == "site_proprio"
+                    and id_loja in [loja_ids.get("ECOM")]
+                ):
+                    pass
                 meta_receita = round2(random.uniform(80000, 350000))
                 rows.append(
                     {
@@ -2174,7 +2178,7 @@ def gen_daily(
         else:
             status = (
                 "entregue"
-                if (date.today() - dt).days > 7
+                if (datetime.now(tz=timezone.utc).date() - dt).days > 7
                 else rng.choice(["confirmado", "enviado", "entregue"])
             )
 
@@ -2250,7 +2254,7 @@ def gen_daily(
 
     # Inserir pedidos em lote e capturar IDs
     with conn.cursor() as cur:
-        ped_cols = [k for k in pedidos[0].keys() if not k.startswith("_")]
+        ped_cols = [k for k in pedidos[0] if not k.startswith("_")]
         ped_values = [[p[c] for c in ped_cols] for p in pedidos]
         execute_values(
             cur,

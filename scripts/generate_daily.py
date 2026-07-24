@@ -18,7 +18,7 @@ import argparse
 import logging
 import random
 import sys
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -27,9 +27,8 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 # Adiciona o diretório scripts/ ao path para importar generate_data como módulo
 sys.path.insert(0, str(Path(__file__).parent))
-from generate_data import connect, gen_daily  # noqa: E402
-
 from faker import Faker  # noqa: E402
+from generate_data import connect, gen_daily  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -114,10 +113,11 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
 
-    if args.date == "today":
-        target_date = date.today()
-    else:
-        target_date = date.fromisoformat(args.date)
+    target_date = (
+        datetime.now(tz=timezone.utc).date()
+        if args.date == "today"
+        else date.fromisoformat(args.date)
+    )
 
     # Semente derivada da data para resultados reprodutíveis por dia
     seed = args.seed if args.seed is not None else int(target_date.strftime("%Y%m%d"))

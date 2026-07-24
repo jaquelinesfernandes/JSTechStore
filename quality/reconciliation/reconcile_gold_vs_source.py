@@ -294,7 +294,7 @@ def main() -> int:
                 result = run_check(check, duckdb_con, pg_con)
                 results.append(result)
             except Exception as exc:
-                log.error(f"[{check.name}] Erro ao executar: {exc}", exc_info=True)
+                log.exception(f"[{check.name}] Erro ao executar: {exc}")
                 results.append(
                     {"check": check.name, "passed": False, "error": str(exc)}
                 )

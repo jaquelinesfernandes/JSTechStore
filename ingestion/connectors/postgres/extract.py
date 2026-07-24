@@ -37,7 +37,11 @@ from psycopg2.extras import RealDictCursor
 
 load_dotenv()
 
-from ingestion.connectors.postgres.config import TABLES, TABLES_BY_NAME, TableConfig  # noqa: E402
+from ingestion.connectors.postgres.config import (  # noqa: E402
+    TABLES,
+    TABLES_BY_NAME,
+    TableConfig,
+)
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -228,7 +232,7 @@ def main() -> int:
                 result = process_table(conn, table, args.mode, ingested_at)
                 results.append(result)
             except Exception as exc:
-                log.error(f"[{table.full_name}] ERRO: {exc}", exc_info=True)
+                log.exception(f"[{table.full_name}] ERRO: {exc}")
                 errors.append(table.full_name)
     finally:
         conn.close()
