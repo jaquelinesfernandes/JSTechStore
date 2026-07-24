@@ -234,12 +234,8 @@ def run_check(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Reconciliação Gold vs. Supabase para todas as tabelas fato"
-    )
-    p.add_argument(
-        "--table", help="Filtrar por prefixo de check (ex: fato_venda, fato_entrega)"
-    )
+    p = argparse.ArgumentParser(description="Reconciliação Gold vs. Supabase para todas as tabelas fato")
+    p.add_argument("--table", help="Filtrar por prefixo de check (ex: fato_venda, fato_entrega)")
     p.add_argument(
         "--tolerance",
         type=float,
@@ -295,9 +291,7 @@ def main() -> int:
                 results.append(result)
             except Exception as exc:
                 log.exception(f"[{check.name}] Erro ao executar: {exc}")
-                results.append(
-                    {"check": check.name, "passed": False, "error": str(exc)}
-                )
+                results.append({"check": check.name, "passed": False, "error": str(exc)})
     finally:
         duckdb_con.close()
         pg_con.close()
@@ -313,15 +307,9 @@ def main() -> int:
         "results": results,
     }
 
-    output_path = (
-        args.output
-        or LOG_DIR
-        / f"reconciliation_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
-    )
+    output_path = args.output or LOG_DIR / f"reconciliation_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(report, indent=2, ensure_ascii=False, default=str), encoding="utf-8"
-    )
+    output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
     log.info(f"Relatório salvo: {output_path}")
 
     if failures:

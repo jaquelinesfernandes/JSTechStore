@@ -1436,9 +1436,7 @@ CREATE INDEX IF NOT EXISTS idx_web_eventos_updated_at           ON web_analytics
 def connect() -> psycopg2.extensions.connection:
     url = os.environ.get("SUPABASE_DB_URL", "")
     if not url:
-        log.error(
-            "SUPABASE_DB_URL não definida. Configure no .env ou como variável de ambiente."
-        )
+        log.error("SUPABASE_DB_URL não definida. Configure no .env ou como variável de ambiente.")
         sys.exit(1)
     return psycopg2.connect(url)
 
@@ -1453,9 +1451,7 @@ def bulk_insert(cur, table: str, rows: list[dict], on_conflict: str = "") -> int
     return len(rows)
 
 
-def rand_ts(
-    dt: date, rng: random.Random, hour_min: int = 8, hour_max: int = 22
-) -> datetime:
+def rand_ts(dt: date, rng: random.Random, hour_min: int = 8, hour_max: int = 22) -> datetime:
     """Gera timestamp aleatório dentro do horário comercial para um dado dia."""
     h = rng.randint(hour_min, hour_max)
     m = rng.randint(0, 59)
@@ -1565,10 +1561,7 @@ def gen_lojas(conn) -> dict[str, int]:
 
 def gen_categorias(conn) -> dict[str, int]:
     now = datetime.now(timezone.utc)
-    rows = [
-        {"nome": c["nome"], "subcategoria": c["subcategoria"], "updated_at": now}
-        for c in CATEGORIAS
-    ]
+    rows = [{"nome": c["nome"], "subcategoria": c["subcategoria"], "updated_at": now} for c in CATEGORIAS]
     with conn.cursor() as cur:
         bulk_insert(cur, "produtos.categorias", rows, "ON CONFLICT (nome) DO NOTHING")
         cur.execute("SELECT nome, id_categoria FROM produtos.categorias")
@@ -1599,9 +1592,7 @@ def gen_transportadoras(conn) -> dict[str, int]:
     now = datetime.now(timezone.utc)
     rows = [{**t, "ativo": True, "updated_at": now} for t in TRANSPORTADORAS]
     with conn.cursor() as cur:
-        bulk_insert(
-            cur, "logistica.transportadoras", rows, "ON CONFLICT (nome) DO NOTHING"
-        )
+        bulk_insert(cur, "logistica.transportadoras", rows, "ON CONFLICT (nome) DO NOTHING")
         cur.execute("SELECT nome, id_transportadora FROM logistica.transportadoras")
         trans_ids = {r[0]: r[1] for r in cur.fetchall()}
     conn.commit()
@@ -1625,16 +1616,11 @@ def gen_modalidades(conn, trans_ids: dict[str, int]) -> dict[str, int]:
             }
         )
     with conn.cursor() as cur:
-        bulk_insert(
-            cur, "logistica.modalidades", rows, "ON CONFLICT (codigo) DO NOTHING"
-        )
+        bulk_insert(cur, "logistica.modalidades", rows, "ON CONFLICT (codigo) DO NOTHING")
         cur.execute(
             "SELECT codigo, id_modalidade, id_transportadora, prazo_dias, frete_base FROM logistica.modalidades"
         )
-        result = {
-            r[0]: {"id": r[1], "id_trans": r[2], "prazo": r[3], "frete": float(r[4])}
-            for r in cur.fetchall()
-        }
+        result = {r[0]: {"id": r[1], "id_trans": r[2], "prazo": r[3], "frete": float(r[4])} for r in cur.fetchall()}
     conn.commit()
     log.info(f"Modalidades: {len(result)} registros")
     return result
@@ -1652,9 +1638,7 @@ def gen_produtos(
     # Mapeia fornecedor por marca/categoria principal
     forn_by_cat: dict[str, list[str]] = {}
     for f in FORNECEDORES:
-        forn_by_cat.setdefault(f["categoria_principal"], []).append(
-            f["nome_fornecedor"]
-        )
+        forn_by_cat.setdefault(f["categoria_principal"], []).append(f["nome_fornecedor"])
 
     prod_rows = []
     for i, (nome, marca, cat, _, _, _, _, peso) in enumerate(PRODUTOS_CATALOG, start=1):
@@ -1681,9 +1665,7 @@ def gen_produtos(
         db_prods = {r[1]: r[0] for r in cur.fetchall()}
 
         preco_rows = []
-        for i, (nome, marca, cat, custo_min, custo_max, mg_min, mg_max, _) in enumerate(
-            PRODUTOS_CATALOG, start=1
-        ):
+        for i, (nome, marca, cat, custo_min, custo_max, mg_min, mg_max, _) in enumerate(PRODUTOS_CATALOG, start=1):
             sku = f"SKU{i:05d}"
             id_prod = db_prods.get(sku)
             if not id_prod:
@@ -1713,18 +1695,13 @@ def gen_produtos(
             FROM produtos.produtos p
             JOIN produtos.precos pr ON pr.id_produto = p.id_produto
         """)
-        produtos_info = [
-            {"id": r[0], "sku": r[1], "preco": float(r[2]), "custo": float(r[3])}
-            for r in cur.fetchall()
-        ]
+        produtos_info = [{"id": r[0], "sku": r[1], "preco": float(r[2]), "custo": float(r[3])} for r in cur.fetchall()]
     conn.commit()
     log.info(f"Produtos: {len(produtos_info)} SKUs com preços")
     return produtos_info
 
 
-def gen_clientes(
-    conn, rng: random.Random, n: int, start_date: date, end_date: date
-) -> list[int]:
+def gen_clientes(conn, rng: random.Random, n: int, start_date: date, end_date: date) -> list[int]:
     """Gera n clientes com cadastro distribuído ao longo do período. Retorna lista de IDs."""
     log.info(f"Gerando {n:,} clientes...")
     total_days = (end_date - start_date).days
@@ -1787,9 +1764,7 @@ def gen_clientes(
             )
 
             if len(batch) >= 500:
-                bulk_insert(
-                    cur, "clientes.clientes", batch, "ON CONFLICT (cpf) DO NOTHING"
-                )
+                bulk_insert(cur, "clientes.clientes", batch, "ON CONFLICT (cpf) DO NOTHING")
                 conn.commit()
                 batch = []
 
@@ -1811,9 +1786,7 @@ def gen_clientes(
                     "id_cliente": cid,
                     "logradouro": fake.street_name(),
                     "numero": str(rng.randint(1, 9999)),
-                    "complemento": rng.choice(
-                        [None, "Apto " + str(rng.randint(1, 200)), None]
-                    ),
+                    "complemento": rng.choice([None, "Apto " + str(rng.randint(1, 200)), None]),
                     "bairro": fake.bairro() if hasattr(fake, "bairro") else "Centro",
                     "cep": fake.postcode(),
                     "cidade": fake.city(),
@@ -1824,9 +1797,7 @@ def gen_clientes(
                 }
             )
             if len(end_batch) >= 500:
-                bulk_insert(
-                    cur, "clientes.enderecos", end_batch, "ON CONFLICT DO NOTHING"
-                )
+                bulk_insert(cur, "clientes.enderecos", end_batch, "ON CONFLICT DO NOTHING")
                 conn.commit()
                 end_batch = []
         if end_batch:
@@ -1871,9 +1842,7 @@ def gen_clientes(
     return ids_inserted
 
 
-def gen_vendedores(
-    conn, loja_ids: dict[str, int], rng: random.Random, start_date: date
-) -> dict[int, list[int]]:
+def gen_vendedores(conn, loja_ids: dict[str, int], rng: random.Random, start_date: date) -> dict[int, list[int]]:
     """Gera ~4-6 vendedores por loja física. Retorna mapa id_loja→lista de id_vendedor."""
     now = datetime.now(timezone.utc)
     lojas_fisicas = {k: v for k, v in loja_ids.items() if k not in ("ECOM", "CD01")}
@@ -1888,11 +1857,7 @@ def gen_vendedores(
                 if cpf not in cpfs_usados:
                     cpfs_usados.add(cpf)
                     break
-            cargo = (
-                "gerente"
-                if j == 0
-                else rng.choice(["vendedor", "vendedor", "vendedor", "supervisor"])
-            )
+            cargo = "gerente" if j == 0 else rng.choice(["vendedor", "vendedor", "vendedor", "supervisor"])
             admissao = start_date - timedelta(days=rng.randint(30, 365 * 5))
             rows.append(
                 {
@@ -2001,22 +1966,13 @@ def gen_campanhas(conn, start_date: date, end_date: date) -> list[dict]:
         ]
 
     # filtra campanhas dentro do período gerado
-    campanhas_def = [
-        c
-        for c in campanhas_def
-        if c["dt_fim"] >= start_date and c["dt_inicio"] <= end_date
-    ]
+    campanhas_def = [c for c in campanhas_def if c["dt_fim"] >= start_date and c["dt_inicio"] <= end_date]
 
     rows = [{**c, "ativo": True, "updated_at": now} for c in campanhas_def]
     with conn.cursor() as cur:
         bulk_insert(cur, "marketing.campanhas", rows, "ON CONFLICT DO NOTHING")
-        cur.execute(
-            "SELECT id_campanha, dt_inicio, dt_fim, tipo FROM marketing.campanhas"
-        )
-        result = [
-            {"id": r[0], "dt_inicio": r[1], "dt_fim": r[2], "tipo": r[3]}
-            for r in cur.fetchall()
-        ]
+        cur.execute("SELECT id_campanha, dt_inicio, dt_fim, tipo FROM marketing.campanhas")
+        result = [{"id": r[0], "dt_inicio": r[1], "dt_fim": r[2], "tipo": r[3]} for r in cur.fetchall()]
     conn.commit()
     log.info(f"Campanhas: {len(result)} registros")
     return result
@@ -2058,9 +2014,7 @@ def gen_saldo_estoque_inicial(
     log.info(f"Saldo estoque inicial: {len(rows):,} registros")
 
 
-def gen_orcamentos(
-    conn, loja_ids: dict[str, int], start_date: date, end_date: date
-) -> None:
+def gen_orcamentos(conn, loja_ids: dict[str, int], start_date: date, end_date: date) -> None:
     """Gera orçamentos mensais por loja × canal para o período."""
     now = datetime.now(timezone.utc)
     lojas_fisicas = [v for k, v in loja_ids.items() if k not in ("CD01",)]
@@ -2093,9 +2047,7 @@ def gen_orcamentos(
                         "ano": cur_month.year,
                         "mes": cur_month.month,
                         "valor_meta_receita": meta_receita,
-                        "valor_meta_margem": round2(
-                            meta_receita * random.uniform(0.20, 0.30)
-                        ),
+                        "valor_meta_margem": round2(meta_receita * random.uniform(0.20, 0.30)),
                         "qtd_meta_pedidos": random.randint(200, 1500),
                         "updated_at": now,
                     }
@@ -2183,9 +2135,7 @@ def gen_daily(
             )
 
         # Produtos do pedido
-        n_itens = rng.choices([1, 2, 3, 4, 5, 6], weights=[30, 28, 20, 12, 7, 3], k=1)[
-            0
-        ]
+        n_itens = rng.choices([1, 2, 3, 4, 5, 6], weights=[30, 28, 20, 12, 7, 3], k=1)[0]
         prods_escolhidos = rng.sample(produtos, min(n_itens, len(produtos)))
 
         valor_bruto = 0.0
@@ -2193,15 +2143,9 @@ def gen_daily(
         itens_temp = []
         for prod in prods_escolhidos:
             qtd = rng.choices([1, 2, 3], weights=[70, 20, 10], k=1)[0]
-            preco = prod["preco"] * (
-                1 + rng.uniform(-0.05, 0.05)
-            )  # variação de preço ±5%
+            preco = prod["preco"] * (1 + rng.uniform(-0.05, 0.05))  # variação de preço ±5%
             custo = prod["custo"]
-            desc_pct = (
-                rng.uniform(0, 0.15)
-                if canal.startswith("marketplace")
-                else rng.uniform(0, 0.08)
-            )
+            desc_pct = rng.uniform(0, 0.15) if canal.startswith("marketplace") else rng.uniform(0, 0.08)
             desconto = round2(preco * qtd * desc_pct)
             liq_item = round2(preco * qtd - desconto)
             valor_bruto += round2(preco * qtd)
@@ -2218,13 +2162,9 @@ def gen_daily(
                 }
             )
 
-        frete = (
-            0.0 if not is_online or rng.random() < 0.3 else round2(rng.uniform(8, 35))
-        )
+        frete = 0.0 if not is_online or rng.random() < 0.3 else round2(rng.uniform(8, 35))
         valor_liquido = round2(valor_bruto - valor_desconto + frete)
-        parcelas = rng.choices(
-            [1, 2, 3, 6, 10, 12], weights=[35, 15, 15, 15, 10, 10], k=1
-        )[0]
+        parcelas = rng.choices([1, 2, 3, 6, 10, 12], weights=[35, 15, 15, 15, 10, 10], k=1)[0]
         metodo_pag = rng.choice(METODOS_PAGAMENTO)
 
         pedido = {
@@ -2296,9 +2236,7 @@ def gen_daily(
                     "id_transportadora": modal["id_trans"],
                     "id_modalidade": modal["id"],
                     "id_loja_origem": id_loja_ecom or id_loja,
-                    "codigo_rastreio": f"BR{rng.randint(100000000, 999999999)}BR"
-                    if modal_key != "RETIRADA"
-                    else None,
+                    "codigo_rastreio": f"BR{rng.randint(100000000, 999999999)}BR" if modal_key != "RETIRADA" else None,
                     "dt_postagem": dt_post,
                     "dt_promessa": dt_prom,
                     "dt_efetiva": dt_ef,
@@ -2342,11 +2280,7 @@ def gen_daily(
             )
             # Contas a receber
             dt_venc = dt + timedelta(days=rng.randint(1, parcelas * 30))
-            dt_pag = (
-                dt_venc - timedelta(days=rng.randint(0, 3))
-                if status == "entregue"
-                else None
-            )
+            dt_pag = dt_venc - timedelta(days=rng.randint(0, 3)) if status == "entregue" else None
             contas_rec.append(
                 {
                     "id_pedido": id_ped,
@@ -2388,9 +2322,7 @@ def gen_daily(
                 {
                     "id_cliente": id_cliente,
                     "canal_origem": canal_ori,
-                    "device_type": rng.choice(
-                        ["desktop", "mobile", "mobile", "tablet"]
-                    ),
+                    "device_type": rng.choice(["desktop", "mobile", "mobile", "tablet"]),
                     "dt_inicio": dt_ini,
                     "dt_fim": dt_fim_sess,
                     "paginas_visitadas": rng.randint(3, 20),
@@ -2407,9 +2339,7 @@ def gen_daily(
         sessoes_rows.append(
             {
                 "id_cliente": rng.choice(cliente_ids) if rng.random() < 0.4 else None,
-                "canal_origem": rng.choice(
-                    ["organico", "search", "social", "email", "direto"]
-                ),
+                "canal_origem": rng.choice(["organico", "search", "social", "email", "direto"]),
                 "device_type": rng.choice(["desktop", "mobile", "mobile", "tablet"]),
                 "dt_inicio": dt_ini,
                 "dt_fim": dt_ini + timedelta(minutes=rng.randint(1, 30)),
@@ -2459,18 +2389,12 @@ def gen_daily(
             parc_rows = []
             for lanc_id, lanc in zip(lanc_ids, lancamentos):
                 valor_total = float(lanc["valor"])
-                parcelas_n = rng.choices(
-                    [1, 2, 3, 6, 10, 12], weights=[35, 15, 15, 15, 10, 10], k=1
-                )[0]
+                parcelas_n = rng.choices([1, 2, 3, 6, 10, 12], weights=[35, 15, 15, 15, 10, 10], k=1)[0]
                 val_parc = round2(valor_total / parcelas_n)
                 dt_lanc = lanc["dt_lancamento"]
                 for n in range(1, parcelas_n + 1):
                     dt_venc = dt_lanc + timedelta(days=30 * n)
-                    dt_pag = (
-                        dt_venc - timedelta(days=rng.randint(0, 5))
-                        if rng.random() < 0.75
-                        else None
-                    )
+                    dt_pag = dt_venc - timedelta(days=rng.randint(0, 5)) if rng.random() < 0.75 else None
                     parc_rows.append(
                         {
                             "id_lancamento": lanc_id,
@@ -2549,9 +2473,7 @@ def gen_daily(
                 )
             if ev_rows:
                 for i in range(0, len(ev_rows), 500):
-                    bulk_insert(
-                        cur, "web_analytics.eventos_carrinho", ev_rows[i : i + 500]
-                    )
+                    bulk_insert(cur, "web_analytics.eventos_carrinho", ev_rows[i : i + 500])
 
         # Devoluções (~5% dos pedidos entregues com delay de 5-30 dias)
         dev_rows = []
@@ -2583,9 +2505,7 @@ def gen_daily(
                 lead_rows.append(
                     {
                         "id_campanha": camp["id"],
-                        "id_cliente": rng.choice(cliente_ids)
-                        if rng.random() < 0.5
-                        else None,
+                        "id_cliente": rng.choice(cliente_ids) if rng.random() < 0.5 else None,
                         "canal": rng.choice(["email", "social", "search", "display"]),
                         "dt_lead": dt,
                         "convertido": rng.random() < 0.05,
@@ -2615,9 +2535,7 @@ def gen_daily(
     conn.commit()
 
 
-def gen_metas_mensais(
-    conn, vend_by_loja: dict[int, list[int]], ano: int, mes: int
-) -> None:
+def gen_metas_mensais(conn, vend_by_loja: dict[int, list[int]], ano: int, mes: int) -> None:
     """Gera metas mensais para todos os vendedores."""
     now = datetime.now(timezone.utc)
     rows = []
@@ -2644,9 +2562,7 @@ def gen_metas_mensais(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(
-        description="Gerador de dados históricos JSTechStore → Supabase"
-    )
+    p = argparse.ArgumentParser(description="Gerador de dados históricos JSTechStore → Supabase")
     p.add_argument("--start-date", required=True, help="Data inicial YYYY-MM-DD")
     p.add_argument("--end-date", required=True, help="Data final YYYY-MM-DD")
     p.add_argument(
@@ -2683,9 +2599,7 @@ def main() -> int:
     Faker.seed(args.seed)
     random.seed(args.seed)
 
-    log.info(
-        f"Iniciando geração: {start_date} → {end_date} | seed={args.seed} | clientes={args.n_clientes:,}"
-    )
+    log.info(f"Iniciando geração: {start_date} → {end_date} | seed={args.seed} | clientes={args.n_clientes:,}")
 
     conn = connect()
     try:
@@ -2726,9 +2640,7 @@ def main() -> int:
         campanhas = gen_campanhas(conn, start_date, end_date)
         cliente_ids = gen_clientes(conn, rng, args.n_clientes, start_date, end_date)
         vend_by_loja = gen_vendedores(conn, loja_ids, rng, start_date)
-        gen_saldo_estoque_inicial(
-            conn, [p["id"] for p in produtos], loja_ids, rng, start_date
-        )
+        gen_saldo_estoque_inicial(conn, [p["id"] for p in produtos], loja_ids, rng, start_date)
         gen_orcamentos(conn, loja_ids, start_date, end_date)
 
         ctx = {
@@ -2762,9 +2674,7 @@ def main() -> int:
         conn.close()
 
     log.info("=== Geração concluída com sucesso! ===")
-    log.info(
-        "Próximo passo: python -m ingestion.connectors.postgres.extract --mode full"
-    )
+    log.info("Próximo passo: python -m ingestion.connectors.postgres.extract --mode full")
     return 0
 
 

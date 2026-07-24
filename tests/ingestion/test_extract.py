@@ -25,9 +25,7 @@ class TestTableConfig:
         assert cfg.full_name == "vendas.pedidos"
 
     def test_watermark_key(self):
-        cfg = TableConfig(
-            schema="clientes", table="clientes", natural_key=("id_cliente",)
-        )
+        cfg = TableConfig(schema="clientes", table="clientes", natural_key=("id_cliente",))
         assert cfg.watermark_key == "clientes__clientes"
 
     def test_default_watermark_col(self):
@@ -99,9 +97,7 @@ class TestWatermark:
     def test_watermark_file_format(self, tmp_path):
         from ingestion.connectors.postgres import extract as ext
 
-        cfg = TableConfig(
-            schema="clientes", table="clientes", natural_key=("id_cliente",)
-        )
+        cfg = TableConfig(schema="clientes", table="clientes", natural_key=("id_cliente",))
         ts = datetime(2026, 7, 20, 22, 59, 43, tzinfo=timezone.utc)
 
         with patch.object(ext, "WATERMARKS_DIR", tmp_path):
@@ -139,17 +135,12 @@ class TestParquetPartition:
         with patch.object(ext, "BRONZE_PATH", tmp_path):
             result = ext.parquet_partition_dir(cfg, dt)
 
-        assert (
-            result
-            == tmp_path / "vendas" / "pedidos" / "year=2026" / "month=04" / "day=21"
-        )
+        assert result == tmp_path / "vendas" / "pedidos" / "year=2026" / "month=04" / "day=21"
 
     def test_partition_month_zero_padded(self, tmp_path):
         from ingestion.connectors.postgres import extract as ext
 
-        cfg = TableConfig(
-            schema="estoque", table="saldo_estoque", natural_key=("id_saldo",)
-        )
+        cfg = TableConfig(schema="estoque", table="saldo_estoque", natural_key=("id_saldo",))
         dt = datetime(2026, 5, 3, tzinfo=timezone.utc)
 
         with patch.object(ext, "BRONZE_PATH", tmp_path):
