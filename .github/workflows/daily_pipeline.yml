@@ -31,6 +31,14 @@ jobs:
       - name: Instalar dependências
         run: pip install -r requirements.txt
 
+      - name: Restaurar Bronze Parquet do cache
+        uses: actions/cache@v4
+        with:
+          path: data/bronze
+          key: bronze-${{ github.run_id }}
+          restore-keys: |
+            bronze-
+
       - name: Restaurar watermarks do cache
         uses: actions/cache@v4
         with:
@@ -50,10 +58,18 @@ jobs:
       # ─────────────────────────────────────────────
       # Step 2 — Ingestão Bronze (watermark atômico)
       # ─────────────────────────────────────────────
-      - name: "2 · Ingestão incremental → Bronze Parquet"
+      - name: "2 · Ingestão Bronze (full se cache vazio, incremental se cache hit)"
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: python -m ingestion.connectors.postgres.extract --mode incremental
+        run: |
+          PARQUET_COUNT=$(find data/bronze -name "*.parquet" 2>/dev/null | wc -l)
+          if [ "$PARQUET_COUNT" -eq 0 ]; then
+            echo "Bronze vazio (cache miss) — executando full extract"
+            python -m ingestion.connectors.postgres.extract --mode full
+          else
+            echo "Bronze com $PARQUET_COUNT arquivos (cache hit) — executando incremental"
+            python -m ingestion.connectors.postgres.extract --mode incremental
+          fi
 
       # ─────────────────────────────────────────────
       # Step 3 — dbt transformações incrementais
