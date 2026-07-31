@@ -1,9 +1,9 @@
 name: Daily Pipeline
 
 on:
-  schedule:
-    - cron: "0 4 * * *"   # 04:00 UTC = 01:00 BRT
-  workflow_dispatch:        # permite execução manual via GitHub UI
+  # schedule:
+  #   - cron: "0 4 * * *"   # 04:00 UTC = 01:00 BRT — DESATIVADO (Disk IO Budget Supabase)
+  workflow_dispatch:        # execução apenas manual enquanto cron está suspenso
 
 jobs:
   pipeline:
@@ -58,18 +58,10 @@ jobs:
       # ─────────────────────────────────────────────
       # Step 2 — Ingestão Bronze (watermark atômico)
       # ─────────────────────────────────────────────
-      - name: "2 · Ingestão Bronze (full se cache vazio, incremental se cache hit)"
+      - name: "2 · Ingestão Bronze (smart: full por tabela sem Parquet, incremental p/ resto)"
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          PARQUET_COUNT=$(find data/bronze -name "*.parquet" 2>/dev/null | wc -l)
-          if [ "$PARQUET_COUNT" -eq 0 ]; then
-            echo "Bronze vazio (cache miss) — executando full extract"
-            python -m ingestion.connectors.postgres.extract --mode full
-          else
-            echo "Bronze com $PARQUET_COUNT arquivos (cache hit) — executando incremental"
-            python -m ingestion.connectors.postgres.extract --mode incremental
-          fi
+        run: python -m ingestion.connectors.postgres.extract --mode smart
 
       # ─────────────────────────────────────────────
       # Step 3 — dbt transformações incrementais

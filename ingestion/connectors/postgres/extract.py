@@ -147,6 +147,24 @@ def extract_table(
     return pd.concat(chunks, ignore_index=True) if chunks else pd.DataFrame()
 
 
+def has_parquet(table: TableConfig) -> bool:
+    """Retorna True se existe pelo menos um arquivo Parquet para esta tabela no Bronze."""
+    table_dir = BRONZE_PATH / table.schema / table.table
+    if not table_dir.exists():
+        return False
+    return any(table_dir.rglob("*.parquet"))
+
+
+def resolve_mode(table: TableConfig, requested_mode: str) -> str:
+    """Para modo 'smart': full se não há Parquet local, incremental caso contrário."""
+    if requested_mode != "smart":
+        return requested_mode
+    if has_parquet(table):
+        return "incremental"
+    log.info(f"[{table.full_name}] Sem Parquet local → full extract")
+    return "full"
+
+
 def process_table(
     conn: psycopg2.extensions.connection,
     table: TableConfig,
@@ -154,6 +172,7 @@ def process_table(
     ingested_at: datetime,
 ) -> dict:
     """Processa uma tabela completa: extrai → grava → atualiza watermark."""
+    mode = resolve_mode(table, mode)
     watermark = EPOCH if mode == "full" else read_watermark(table)
 
     log.info(f"[{table.full_name}] modo={mode} watermark={watermark.isoformat()}")
@@ -192,7 +211,8 @@ def process_table(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Extrator incremental Supabase → Bronze Parquet")
-    p.add_argument("--mode", choices=["full", "incremental"], required=True)
+    p.add_argument("--mode", choices=["full", "incremental", "smart"], required=True,
+                   help="smart: full por tabela se sem Parquet, incremental se já existe")
     p.add_argument("--table", help="Processar apenas esta tabela (ex: vendas.pedidos)")
     return p.parse_args()
 

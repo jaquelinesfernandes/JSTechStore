@@ -1,601 +1,580 @@
 # Dicionário de Métricas Power BI — JSTechStore Brasil
 
-**Versão:** 1.0  
-**Data:** 2026-07-22  
-**Autor:** Equipe de Engenharia de Dados
+**Versão:** 2.0 (colunas validadas contra schema Gold real)
+**Data:** 2026-07-22
 
 ---
 
-## Convenções
+## Schema de Referência Rápida
 
-| Símbolo | Significado |
-|---------|-------------|
-| `fv` | `fato_venda` |
-| `ffe` | `fato_financeiro` |
-| `fen` | `fato_entrega` |
-| `fes` | `fato_estoque` |
-| `fci` | `fato_cliente_interacao` |
-| `dc` | `dim_cliente` |
-| `dp` | `dim_produto` |
-| `dl` | `dim_loja` |
-| `dt` | `dim_tempo` |
-| `dv` | `dim_vendedor` |
-| `dca` | `dim_campanha` |
-| `dtr` | `dim_transportadora` |
-| `dme` | `dim_modalidade_entrega` |
-| `dch` | `dim_canal_venda` |
+### fato_venda
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_venda` | VARCHAR | Surrogate key |
+| `sk_cliente` | VARCHAR | FK → dim_cliente |
+| `sk_produto` | VARCHAR | FK → dim_produto |
+| `sk_loja` | VARCHAR | FK → dim_loja |
+| `sk_tempo` | INTEGER | FK → dim_tempo |
+| `sk_canal_venda` | VARCHAR | FK → dim_canal_venda |
+| `sk_campanha` | VARCHAR | FK → dim_campanha (nullable) |
+| `id_pedido_dg` | INTEGER | Chave degenerada do pedido |
+| `id_item_pedido_dg` | INTEGER | Chave degenerada do item |
+| `dt_pedido_data` | DATE | Data do pedido (usar para Incremental Refresh) |
+| `dt_pedido` | TIMESTAMP TZ | Timestamp completo do pedido |
+| `qtd_vendida` | INTEGER | Unidades do item |
+| `preco_unitario` | DECIMAL(12,2) | Preço de venda unitário |
+| `custo_unitario` | DECIMAL(12,2) | CMV unitário (capturado na transação) |
+| `desconto_item` | DECIMAL(10,2) | Desconto no item |
+| `valor_liquido_item` | DECIMAL(12,2) | Receita líquida do item |
+| `margem_bruta_item` | DECIMAL(18,2) | Margem bruta do item |
+| `taxa_desconto_item` | DOUBLE | % de desconto no item |
+| `valor_bruto_pedido` | DECIMAL(12,2) | Total bruto do pedido |
+| `valor_desconto_pedido` | DECIMAL(12,2) | Total desconto do pedido |
+| `valor_frete_pedido` | DECIMAL(10,2) | Frete do pedido |
+| `valor_liquido_pedido` | DECIMAL(12,2) | Total líquido do pedido |
+| `qtd_itens_pedido` | BIGINT | Qtd de linhas de item no pedido |
+| `parcelas` | INTEGER | Número de parcelas |
+| `metodo_pagamento` | VARCHAR | Forma de pagamento |
+| `status` | VARCHAR | Status do pedido |
+| `fl_venda_valida` | BOOLEAN | Pedido não cancelado nem devolvido |
+| `fl_cancelado` | BOOLEAN | Pedido cancelado |
+| `fl_devolvido` | BOOLEAN | Pedido com devolução |
+| `fl_online` | BOOLEAN | Canal online (TRUE) vs físico (FALSE) |
+| `valor_comissao` | DECIMAL(12,2) | Comissão do vendedor |
+| `canal_venda` | VARCHAR | Nome do canal (desnormalizado) |
 
-**Filtro padrão de período:** todas as medidas de período usam `dt[data_completa]` como eixo de tempo.  
-**Moeda:** BRL com 2 casas decimais.  
-**Atualizações:** D-1 (dados do dia anterior), exceto Logística (2×/dia).
+### fato_entrega
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_entrega` | VARCHAR | Surrogate key |
+| `sk_transportadora` | VARCHAR | FK → dim_transportadora |
+| `sk_modalidade_entrega` | VARCHAR | FK → dim_modalidade_entrega |
+| `id_pedido_dg` | INTEGER | Chave degenerada do pedido |
+| `dt_postagem` | DATE | Data de postagem |
+| `dt_promessa` | DATE | Data prometida de entrega |
+| `dt_efetiva` | DATE | Data efetiva de entrega |
+| `lead_time_prometido_dias` | BIGINT | Prazo prometido em dias |
+| `lead_time_real_dias` | BIGINT | Prazo real em dias |
+| `atraso_dias` | BIGINT | Dias de atraso (0 se no prazo) |
+| `fl_sla_atendido` | BOOLEAN | TRUE se `dt_efetiva <= dt_promessa` |
+| `fl_entregue` | BOOLEAN | Entrega confirmada |
+| `status` | VARCHAR | Status da entrega |
+| `canal_venda` | VARCHAR | Canal de origem do pedido |
+
+### fato_financeiro
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_lancamento` | VARCHAR | Surrogate key |
+| `sk_loja` | VARCHAR | FK → dim_loja |
+| `sk_tempo_competencia` | INTEGER | FK → dim_tempo |
+| `id_pedido_dg` | INTEGER | Chave degenerada do pedido |
+| `tipo` | VARCHAR | Tipo do lançamento (receita, despesa, etc.) |
+| `valor` | DECIMAL(12,2) | Valor do lançamento |
+| `dt_lancamento` | DATE | Data do lançamento |
+| `dt_competencia` | DATE | Data de competência |
+| `valor_sinal` | DECIMAL(12,2) | Valor com sinal (positivo/negativo) |
+| `status_cr` | VARCHAR | Status de contas a receber |
+| `dt_pagamento` | DATE | Data de pagamento efetivo |
+| `valor_pago` | DECIMAL(12,2) | Valor pago |
+| `fl_pago` | BOOLEAN | Pagamento confirmado |
+
+### fato_orcamento
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_orcamento` | VARCHAR | Surrogate key |
+| `sk_loja` | VARCHAR | FK → dim_loja |
+| `sk_tempo` | INTEGER | FK → dim_tempo |
+| `canal_venda` | VARCHAR | Canal de venda |
+| `ano` / `mes` | INTEGER | Período |
+| `valor_meta_receita` | DECIMAL(14,2) | Meta de receita do período |
+| `valor_meta_margem` | DECIMAL(14,2) | Meta de margem |
+| `qtd_meta_pedidos` | INTEGER | Meta de pedidos |
+| `receita_realizada` | DECIMAL(38,2) | Receita realizada (pré-calculada) |
+| `margem_realizada` | DECIMAL(38,2) | Margem realizada |
+| `qtd_pedidos_realizados` | BIGINT | Pedidos realizados |
+| `var_receita_pct` | DOUBLE | Variação % receita vs meta |
+| `var_margem_pct` | DOUBLE | Variação % margem vs meta |
+| `fl_meta_receita_atingida` | BOOLEAN | Meta de receita atingida |
+
+### fato_cliente_interacao
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_sessao` | VARCHAR | Surrogate key (1 sessão = 1 linha) |
+| `sk_cliente` | VARCHAR | FK → dim_cliente |
+| `sk_tempo` | INTEGER | FK → dim_tempo |
+| `id_pedido_dg` | INTEGER | Pedido gerado (nullable) |
+| `canal_origem` | VARCHAR | Canal de origem da sessão |
+| `device_type` | VARCHAR | Tipo de dispositivo |
+| `dt_sessao` | DATE | Data da sessão |
+| `paginas_visitadas` | INTEGER | Páginas visitadas na sessão |
+| `duracao_min` | DOUBLE | Duração em minutos |
+| `converteu` | BOOLEAN | Sessão gerou compra |
+| `qtd_produtos_vistos` | BIGINT | Produtos visualizados |
+| `qtd_add_cart` | HUGEINT | Adições ao carrinho |
+| `qtd_remove_cart` | HUGEINT | Remoções do carrinho |
+| `qtd_compras` | HUGEINT | Compras concluídas na sessão |
+| `fl_abandono_carrinho` | BOOLEAN | Sessão com abandono de carrinho |
+
+### dim_cliente
+| Coluna relevante | Tipo | Descrição |
+|-----------------|------|-----------|
+| `sk_cliente` | VARCHAR | Surrogate key |
+| `nivel_fidelidade` | VARCHAR | Bronze / Prata / Ouro / Diamante |
+| `segmento_rfm` | VARCHAR | Segmento RFM (Champions, At Risk, etc.) |
+| `score_recencia` | INTEGER | Score RFM — recência (1–5) |
+| `score_frequencia` | INTEGER | Score RFM — frequência (1–5) |
+| `score_monetario` | INTEGER | Score RFM — valor monetário (1–5) |
+| `ltv` | DECIMAL(38,2) | LTV histórico acumulado |
+| `recencia_dias` | INTEGER | Dias desde última compra |
+| `ultima_compra` | DATE | Data da última compra |
+| `primeira_compra` | DATE | Data da primeira compra |
+| `qtd_pedidos` | BIGINT | Total de pedidos histórico |
+| `saldo_techpoints` | INTEGER | Saldo de pontos fidelidade |
+| `fl_current` | BOOLEAN | Registro SCD2 ativo (sempre filtrar TRUE) |
+
+### dim_tempo
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_tempo` | INTEGER | Surrogate key (formato YYYYMMDD) |
+| `data_full` | DATE | Data completa — eixo de tempo no Power BI |
+| `ano` / `mes` / `dia` | INTEGER | Componentes da data |
+| `trimestre` | INTEGER | Trimestre (1–4) |
+| `semana_iso` | INTEGER | Semana ISO |
+| `nome_mes` | VARCHAR | Janeiro … Dezembro |
+| `nome_dia_semana` | VARCHAR | Segunda … Domingo |
+| `ano_mes` | VARCHAR | "2026-07" — útil para agrupamentos mensais |
+| `fl_fim_de_semana` | BOOLEAN | Sábado ou domingo |
+| `fl_feriado_nacional` | BOOLEAN | Feriado nacional brasileiro |
+| `fl_black_friday` | BOOLEAN | Black Friday |
+
+### dim_campanha
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `sk_campanha` | VARCHAR | Surrogate key |
+| `nome` | VARCHAR | Nome da campanha |
+| `tipo` | VARCHAR | Tipo (email, pago, social, etc.) |
+| `canal` | VARCHAR | Canal de mídia |
+| `orcamento` | DECIMAL(12,2) | Investimento da campanha |
+| `objetivo` | VARCHAR | Objetivo da campanha |
 
 ---
 
 ## 1. Dashboard Comercial
 
-**Audiência:** Diretores Comerciais, Gerentes de Loja, Regional  
-**Tabela principal:** `fato_venda`  
-**Granularidade:** Dia / Semana / Mês / Canal / Loja / Vendedor / Categoria
+**Tabela principal:** `fato_venda` | **Eixo de tempo:** `dim_tempo[data_full]`
 
 ### 1.1 Receita Bruta Total
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Soma do valor de venda antes de descontos |
-| **Fórmula DAX** | `SUMX(fato_venda, fato_venda[valor_bruto_item])` |
-| **Coluna fonte** | `fv.valor_bruto_item` |
-| **Filtros obrigatórios** | Excluir `status_pedido = 'cancelado'` |
-| **Granularidade** | Dia, Semana, Mês, Canal, Loja |
+```dax
+Receita Bruta =
+SUMX(
+    FILTER(fato_venda, fato_venda[fl_cancelado] = FALSE()),
+    fato_venda[preco_unitario] * fato_venda[qtd_vendida]
+)
+-- Não existe coluna valor_bruto_item; calcular como preco_unitario × qtd_vendida
+```
 
 ### 1.2 Receita Líquida
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita após descontos comerciais e devoluções |
-| **Fórmula DAX** | `SUMX(fato_venda, fato_venda[valor_liquido_item])` |
-| **Coluna fonte** | `fv.valor_liquido_item` |
-| **Regra** | `valor_liquido_item = valor_bruto_item - desconto_valor` (descontos não negativos) |
-| **Granularidade** | Dia, Semana, Mês, Canal |
+```dax
+Receita Liquida = SUM(fato_venda[valor_liquido_item])
+-- Filtro recomendado: fato_venda[fl_venda_valida] = TRUE()
+```
 
 ### 1.3 Ticket Médio
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita líquida por pedido |
-| **Fórmula DAX** | `DIVIDE([Receita Líquida], DISTINCTCOUNT(fato_venda[id_pedido_nk]))` |
-| **Chave de pedido** | `fv.id_pedido_nk` (degenerate key) |
-| **Granularidade** | Canal, Loja, Categoria |
+```dax
+Ticket Medio =
+DIVIDE(
+    [Receita Liquida],
+    DISTINCTCOUNT(fato_venda[id_pedido_dg])
+)
+```
 
 ### 1.4 Unidades Vendidas
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Quantidade total de itens vendidos |
-| **Fórmula DAX** | `SUM(fato_venda[qtd_vendida])` |
-| **Coluna fonte** | `fv.qtd_vendida` |
-| **Granularidade** | Produto, Categoria |
+```dax
+Unidades Vendidas = SUM(fato_venda[qtd_vendida])
+```
 
 ### 1.5 Taxa de Desconto Médio
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual médio de desconto sobre receita bruta |
-| **Fórmula DAX** | `DIVIDE(SUM(fato_venda[desconto_valor]), SUM(fato_venda[valor_bruto_item]))` |
-| **Colunas fonte** | `fv.desconto_valor`, `fv.valor_bruto_item` |
-| **Regra** | Nunca negativo; desconto zero se `desconto_valor IS NULL` |
-| **Formato** | Percentual (0,00%) |
+```dax
+Taxa Desconto =
+DIVIDE(
+    SUM(fato_venda[desconto_item]),
+    SUMX(fato_venda, fato_venda[preco_unitario] * fato_venda[qtd_vendida])
+)
+-- Formatar como percentual (%)
+```
 
 ### 1.6 Mix de Canal
+```dax
+Mix Canal % =
+DIVIDE(
+    [Receita Liquida],
+    CALCULATE([Receita Liquida], ALL(fato_venda[canal_venda]))
+)
+-- Segmentar por fato_venda[canal_venda] no visual
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Participação percentual de cada canal na receita líquida |
-| **Fórmula DAX** | `DIVIDE([Receita Líquida], CALCULATE([Receita Líquida], ALL(dim_canal_venda)))` |
-| **Canais** | Físico, Online, Marketplace |
-| **Granularidade** | Mensal |
+### 1.7 Atingimento de Meta
+```dax
+-- Usar fato_orcamento (já tem receita_realizada e valor_meta_receita pré-calculados)
+Atingimento Meta % =
+DIVIDE(
+    SUM(fato_orcamento[receita_realizada]),
+    SUM(fato_orcamento[valor_meta_receita])
+)
+```
 
-### 1.7 vs. Meta (%)
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de atingimento de meta por loja/vendedor |
-| **Fórmula DAX** | `DIVIDE([Receita Líquida], SUM(dim_vendedor[meta_valor_mensal]))` |
-| **Fonte da meta** | `dv.meta_valor_mensal` (atualizado mensalmente via dbt) |
-| **Granularidade** | Loja, Vendedor, Mês |
-
-### 1.8 vs. Período Anterior
-
-| Campo | Detalhe |
-|-------|---------|
-| **YoY** | `CALCULATE([Receita Líquida], SAMEPERIODLASTYEAR(dim_tempo[data_completa]))` |
-| **MoM** | `CALCULATE([Receita Líquida], DATEADD(dim_tempo[data_completa], -1, MONTH))` |
-| **WoW** | `CALCULATE([Receita Líquida], DATEADD(dim_tempo[data_completa], -7, DAY))` |
+### 1.8 YoY / MoM / WoW
+```dax
+Receita YoY = CALCULATE([Receita Liquida], SAMEPERIODLASTYEAR(dim_tempo[data_full]))
+Receita MoM = CALCULATE([Receita Liquida], DATEADD(dim_tempo[data_full], -1, MONTH))
+Receita WoW = CALCULATE([Receita Liquida], DATEADD(dim_tempo[data_full], -7, DAY))
+```
 
 ### 1.9 Ranking de Lojas
+```dax
+Rank Loja Receita =
+RANKX(ALL(dim_loja[nome_loja]), [Receita Liquida],, DESC, DENSE)
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Posição da loja por receita e margem brutas no mês |
-| **Fórmula DAX** | `RANKX(ALL(dim_loja[nome_loja]), [Receita Líquida],, DESC)` |
-| **Granularidade** | Mensal |
+### 1.10 Taxa de Devolução
+```dax
+Taxa Devolucao =
+DIVIDE(
+    CALCULATE(DISTINCTCOUNT(fato_venda[id_pedido_dg]), fato_venda[fl_devolvido] = TRUE()),
+    DISTINCTCOUNT(fato_venda[id_pedido_dg])
+)
+```
 
-### 1.10 Top 20 Produtos
+### 1.11 Margem Bruta
+```dax
+Margem Bruta Valor = SUM(fato_venda[margem_bruta_item])
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | 20 SKUs com maior receita no período |
-| **Implementação** | Visual de tabela com `TOPN(20, ALL(dim_produto[sku_nk]), [Receita Líquida])` |
-| **Colunas exibidas** | SKU, Nome, Categoria, Receita, Margem Bruta, Unidades |
-
-### 1.11 Performance por Vendedor
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita e atingimento de meta por consultor no mês |
-| **Colunas** | `dv.nome_vendedor`, `[Receita Líquida]`, `[vs. Meta (%)]` |
-| **Granularidade** | Loja, Mês |
-
-### 1.12 Taxa de Devolução
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de pedidos com pelo menos um item devolvido |
-| **Fórmula DAX** | `DIVIDE(CALCULATE(DISTINCTCOUNT(fato_venda[id_pedido_nk]), fato_venda[fl_devolucao] = TRUE()), DISTINCTCOUNT(fato_venda[id_pedido_nk]))` |
-| **Flag fonte** | `fv.fl_devolucao` |
-| **Granularidade** | Canal, Categoria |
+Margem Bruta % =
+DIVIDE([Margem Bruta Valor], [Receita Liquida])
+```
 
 ---
 
 ## 2. Dashboard de Clientes
 
-**Audiência:** Gerência de CRM, Marketing, Fidelidade  
-**Tabelas principais:** `dim_cliente`, `fato_venda`, `fato_cliente_interacao`  
-**Granularidade:** Mês / Segmento / Canal / Nível de fidelidade
+**Tabelas principais:** `dim_cliente`, `fato_venda` | Filtrar sempre `dim_cliente[fl_current] = TRUE()`
 
 ### 2.1 Base Ativa de Clientes
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Clientes distintos com compra nos últimos 90 dias |
-| **Fórmula DAX** | `CALCULATE(DISTINCTCOUNT(fato_venda[sk_cliente]), fato_venda[data_pedido] >= TODAY() - 90)` |
-| **Granularidade** | Mensal |
+```dax
+Clientes Ativos 90d =
+CALCULATE(
+    DISTINCTCOUNT(fato_venda[sk_cliente]),
+    fato_venda[dt_pedido_data] >= TODAY() - 90,
+    fato_venda[fl_venda_valida] = TRUE()
+)
+```
 
 ### 2.2 Novos Clientes
+```dax
+-- dim_cliente[primeira_compra] guarda a data da 1ª compra
+Novos Clientes =
+CALCULATE(
+    DISTINCTCOUNT(dim_cliente[sk_cliente]),
+    dim_cliente[fl_current] = TRUE(),
+    dim_cliente[primeira_compra] >= MIN(dim_tempo[data_full]),
+    dim_cliente[primeira_compra] <= MAX(dim_tempo[data_full])
+)
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Clientes cuja primeira compra ocorreu no período selecionado |
-| **Fórmula DAX** | `CALCULATE(DISTINCTCOUNT(dim_cliente[cpf_hash]), dim_cliente[data_primeira_compra] >= MIN(dim_tempo[data_completa]) && dim_cliente[data_primeira_compra] <= MAX(dim_tempo[data_completa]))` |
-| **Coluna fonte** | `dc.data_primeira_compra` |
-| **Granularidade** | Mês, Canal |
+### 2.3 LTV Histórico
+```dax
+-- dim_cliente[ltv] já é pré-calculado pelo dbt
+LTV Medio =
+CALCULATE(
+    AVERAGE(dim_cliente[ltv]),
+    dim_cliente[fl_current] = TRUE()
+)
+```
 
-### 2.3 Taxa de Retenção
+### 2.4 Segmentação RFM
+```dax
+-- Usar dim_cliente[segmento_rfm] diretamente como dimensão em matriz
+-- Scores individuais: score_recencia, score_frequencia, score_monetario (1–5)
+Clientes por Segmento =
+CALCULATE(
+    DISTINCTCOUNT(dim_cliente[sk_cliente]),
+    dim_cliente[fl_current] = TRUE()
+)
+-- Segmentar por dim_cliente[segmento_rfm] no visual
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de clientes que compraram em dois meses consecutivos |
-| **Fórmula DAX** | `DIVIDE([Clientes Recorrentes no Mês], [Base Ativa Mês Anterior])` |
-| **Granularidade** | Mensal |
+### 2.5 Programa Fidelidade — Saldo TechPoints
+```dax
+-- saldo_techpoints está pré-calculado em dim_cliente
+Total TechPoints Saldo =
+CALCULATE(
+    SUM(dim_cliente[saldo_techpoints]),
+    dim_cliente[fl_current] = TRUE()
+)
+```
 
-### 2.4 Churn Rate
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Clientes que ficaram > 90 dias sem comprar / base total do mês anterior |
-| **Fórmula DAX** | `DIVIDE([Clientes Inativos > 90d], [Base Total Mês Anterior])` |
-| **Granularidade** | Mensal |
-
-### 2.5 Historical LTV
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Soma acumulada de receita líquida por `cpf_hash` desde a primeira compra |
-| **Fórmula DAX** | `CALCULATE(SUM(fato_venda[valor_liquido_item]), ALLSELECTED(dim_tempo))` agrupado por cliente |
-| **Nota** | LTV histórico — não preditivo; não inclui previsão futura |
-| **Granularidade** | Segmento RFM, Canal |
-
-### 2.6 Segmentação RFM
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Matriz de calor com frequência × recência, intensidade = valor monetário |
-| **Colunas fonte** | `dc.segmento_rfm`, `dc.score_rfm_recencia`, `dc.score_rfm_frequencia`, `dc.score_rfm_valor` |
-| **Segmentos padrão** | Champions, Loyal, Potential Loyalist, At Risk, Lost, New Customer |
-| **Atualização** | Mensal via dbt (`int_clientes__unificados` com macro `rfm_score.sql`) |
-
-### 2.7 Análise de Cohort
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de retenção mês a mês por coorte de aquisição (mês da 1ª compra) |
-| **Implementação** | Tabela DAX usando `dc.data_primeira_compra` truncada ao mês como coorte |
-| **Granularidade** | Trimestral (coortes mensais exibidas em tabela de cohorte) |
-
-### 2.8 Programa Fidelidade
-
-| Campo | Detalhe |
-|-------|---------|
-| **Pontos emitidos** | `SUM(fato_venda[techpoints_emitidos])` |
-| **Pontos resgatados** | `SUM(fato_venda[techpoints_resgatados])` |
-| **Saldo** | `[Pontos emitidos] - [Pontos resgatados]` |
-| **Nível** | `dc.nivel_fidelidade` (Bronze, Prata, Ouro, Diamante) |
-| **Granularidade** | Mensal, Nível |
-
-### 2.9 Clientes Omnichannel
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Clientes com compras em canal físico E online no período |
-| **Fórmula DAX** | `CALCULATE(DISTINCTCOUNT(fato_venda[sk_cliente]), fato_venda[canal] = "fisico") INTERSECT` com canal online |
-| **Granularidade** | Mensal |
-
-### 2.10 Ticket por Segmento
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Ticket médio agrupado por nível de fidelidade e segmento RFM |
-| **Fórmula DAX** | `DIVIDE([Receita Líquida], DISTINCTCOUNT(fato_venda[id_pedido_nk]))` filtrado por segmento |
-| **Granularidade** | Trimestral |
+### 2.6 Abandono de Carrinho
+```dax
+-- fato_cliente_interacao tem fl_abandono_carrinho
+Taxa Abandono Carrinho =
+DIVIDE(
+    CALCULATE(COUNT(fato_cliente_interacao[sk_sessao]),
+              fato_cliente_interacao[fl_abandono_carrinho] = TRUE()),
+    CALCULATE(COUNT(fato_cliente_interacao[sk_sessao]),
+              fato_cliente_interacao[qtd_add_cart] > 0)
+)
+```
 
 ---
 
 ## 3. Dashboard de Produtos
 
-**Audiência:** Compradores, Category Managers, Diretoria de Produto  
-**Tabelas principais:** `fato_venda`, `fato_estoque`, `dim_produto`  
-**Granularidade:** SKU / Categoria / Loja / Período
+**Tabelas principais:** `fato_venda`, `fato_estoque`, `dim_produto`
 
 ### 3.1 Giro de Estoque
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Unidades vendidas divididas pelo estoque médio do período |
-| **Fórmula DAX** | `DIVIDE(SUM(fato_venda[qtd_vendida]), AVERAGE(fato_estoque[qtd_disponivel]))` |
-| **Colunas fonte** | `fv.qtd_vendida`, `fes.qtd_disponivel` |
-| **Granularidade** | SKU, Categoria |
+```dax
+Giro Estoque =
+DIVIDE(
+    SUM(fato_venda[qtd_vendida]),
+    AVERAGE(fato_estoque[qtd_disponivel])
+)
+```
 
 ### 3.2 Dias de Cobertura
+```dax
+Venda Media Diaria 30d =
+CALCULATE(
+    DIVIDE(SUM(fato_venda[qtd_vendida]), 30),
+    DATESINPERIOD(dim_tempo[data_full], TODAY(), -30, DAY)
+)
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Quantos dias o estoque atual suporta, com base na venda média dos últimos 30 dias |
-| **Fórmula DAX** | `DIVIDE(LASTNONBLANK(fato_estoque[qtd_disponivel], 1), DIVIDE([Unidades Vendidas 30d], 30))` |
-| **Granularidade** | SKU, Loja |
+Dias Cobertura =
+DIVIDE(
+    CALCULATE(LASTNONBLANK(fato_estoque[qtd_disponivel], 1)),
+    [Venda Media Diaria 30d]
+)
+```
 
 ### 3.3 Taxa de Ruptura
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de SKUs ativos com estoque zero no dia |
-| **Fórmula DAX** | `DIVIDE(CALCULATE(DISTINCTCOUNT(fato_estoque[sk_produto]), fato_estoque[qtd_disponivel] = 0), DISTINCTCOUNT(fato_estoque[sk_produto]))` |
-| **Granularidade** | Loja, Dia |
+```dax
+-- fato_estoque[fl_ruptura] = TRUE quando qtd_disponivel = 0
+Taxa Ruptura =
+DIVIDE(
+    CALCULATE(DISTINCTCOUNT(fato_estoque[sk_produto]),
+              fato_estoque[fl_ruptura] = TRUE()),
+    DISTINCTCOUNT(fato_estoque[sk_produto])
+)
+```
 
 ### 3.4 Margem por Produto
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Margem bruta percentual por SKU |
-| **Fórmula DAX** | `DIVIDE([Margem Bruta Valor], SUM(fato_venda[valor_liquido_item]))` |
-| **Margem Bruta Valor** | `SUM(fato_venda[valor_liquido_item]) - SUMX(fato_venda, fato_venda[qtd_vendida] * fato_venda[custo_unitario])` |
-| **Regra** | Custo capturado no momento da transação em `fv.custo_unitario` (não na dimensão) |
-| **Granularidade** | SKU, Categoria |
-
-### 3.5 Produtos Sem Giro
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | SKUs sem nenhuma venda em 30/60/90 dias |
-| **Fórmula DAX** | `CALCULATE(DISTINCTCOUNT(dim_produto[sk_produto]), FILTER(dim_produto, CALCULATE(SUM(fato_venda[qtd_vendida]), DATESINPERIOD(dim_tempo[data_completa], TODAY(), -30, DAY)) = 0))` |
-| **Granularidade** | Loja, CD |
-
-### 3.6 Curva ABC
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Classificação Pareto de produtos por receita acumulada |
-| **A** | Primeiros SKUs que somam 80% da receita |
-| **B** | Próximos que somam 15% da receita |
-| **C** | Demais (5%) |
-| **Granularidade** | Categoria |
-
-### 3.7 Top e Bottom Performers
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Top 10 e Bottom 10 SKUs por margem × volume |
-| **Índice** | `[Margem Bruta Valor] * [Unidades Vendidas]` (normalizado) |
-| **Granularidade** | Categoria |
-
-### 3.8 Taxa de Devolução por Produto
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de unidades devolvidas sobre vendidas por SKU |
-| **Fórmula DAX** | `DIVIDE(SUM(fato_venda[qtd_devolvida]), SUM(fato_venda[qtd_vendida]))` |
-| **Granularidade** | SKU, Categoria |
-
-### 3.9 Mix de Marca por Categoria
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Participação percentual de receita por fabricante/marca dentro da categoria |
-| **Fórmula DAX** | `DIVIDE([Receita Líquida], CALCULATE([Receita Líquida], ALL(dim_produto[marca])))` |
-| **Coluna fonte** | `dp.marca` |
-| **Granularidade** | Categoria |
+```dax
+-- margem_bruta_item já calculado em fato_venda
+Margem Produto % =
+DIVIDE(
+    SUM(fato_venda[margem_bruta_item]),
+    SUM(fato_venda[valor_liquido_item])
+)
+-- Segmentar por dim_produto[nome_produto] ou [categoria]
+```
 
 ---
 
 ## 4. Dashboard de Logística
 
-**Audiência:** Gerência de Logística, Operações  
-**Tabelas principais:** `fato_entrega`, `dim_transportadora`, `dim_modalidade_entrega`  
-**Atualização:** 2× ao dia  
-**Granularidade:** Dia / Canal / Transportadora / Região / Modalidade
+**Tabela principal:** `fato_entrega`
 
 ### 4.1 OTD (On-Time Delivery)
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de entregas realizadas até a data prometida |
-| **Fórmula DAX** | `DIVIDE(CALCULATE(COUNT(fato_entrega[sk_entrega]), fato_entrega[fl_sla_atendido] = TRUE()), COUNT(fato_entrega[sk_entrega]))` |
-| **Flag fonte** | `fen.fl_sla_atendido` (`TRUE` quando `data_efetiva <= data_promessa`) |
-| **Granularidade** | Dia, Canal, Transportadora |
+```dax
+OTD % =
+DIVIDE(
+    CALCULATE(COUNT(fato_entrega[sk_entrega]),
+              fato_entrega[fl_sla_atendido] = TRUE()),
+    COUNT(fato_entrega[sk_entrega])
+)
+```
 
 ### 4.2 Tempo Médio de Entrega
+```dax
+Lead Time Medio Dias = AVERAGE(fato_entrega[lead_time_real_dias])
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Média de dias entre data do pedido e data efetiva de entrega |
-| **Fórmula DAX** | `AVERAGEX(fato_entrega, fato_entrega[dias_para_entrega])` |
-| **Coluna fonte** | `fen.dias_para_entrega` |
-| **Granularidade** | Região, Canal, Modalidade |
+### 4.3 Atraso Médio
+```dax
+Atraso Medio Dias =
+CALCULATE(
+    AVERAGE(fato_entrega[atraso_dias]),
+    fato_entrega[fl_sla_atendido] = FALSE()
+)
+```
 
-### 4.3 SLA por Transportadora
+### 4.4 Pedidos em Aberto (Aging)
+```dax
+-- fl_entregue = FALSE indica pendente
+Pedidos Abertos =
+CALCULATE(
+    COUNT(fato_entrega[sk_entrega]),
+    fato_entrega[fl_entregue] = FALSE()
+)
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | OTD agrupado por parceiro logístico |
-| **Implementação** | Medida `[OTD]` segmentada por `dim_transportadora[nome_transportadora]` |
-| **Granularidade** | Mensal, Transportadora |
-
-### 4.4 Ship from Store vs CD
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de pedidos expedidos de loja física vs centro de distribuição |
-| **Fórmula DAX** | `DIVIDE(CALCULATE(COUNT(fato_entrega[sk_entrega]), fato_entrega[origem_expedicao] = "loja"), COUNT(fato_entrega[sk_entrega]))` |
-| **Coluna fonte** | `fen.origem_expedicao` |
-| **Granularidade** | Canal, Dia |
-
-### 4.5 Taxa de Avaria
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Percentual de entregas com registro de avaria |
-| **Fórmula DAX** | `DIVIDE(CALCULATE(COUNT(fato_entrega[sk_entrega]), fato_entrega[fl_avaria] = TRUE()), COUNT(fato_entrega[sk_entrega]))` |
-| **Granularidade** | Transportadora, Mensal |
-
-### 4.6 Custo de Frete / Receita
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Custo total de frete como percentual da receita líquida |
-| **Fórmula DAX** | `DIVIDE(SUM(fato_entrega[custo_frete]), [Receita Líquida])` |
-| **Granularidade** | Canal, Mensal |
-
-### 4.7 Pedidos em Aberto (Aging)
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Pedidos sem entrega confirmada, classificados por faixa de dias em aberto |
-| **Faixas** | 0–3 dias, 4–7 dias, 8–15 dias, >15 dias |
-| **Fórmula DAX** | `CALCULATE(COUNT(fato_entrega[sk_entrega]), fato_entrega[data_efetiva] = BLANK())` agrupado por faixa |
-| **Granularidade** | Dia |
+### 4.5 Custo de Frete / Receita
+```dax
+-- valor_frete_pedido está em fato_venda, não em fato_entrega
+Custo Frete Pct Receita =
+DIVIDE(
+    SUM(fato_venda[valor_frete_pedido]),
+    [Receita Liquida]
+)
+```
 
 ---
 
 ## 5. Dashboard Financeiro
 
-**Audiência:** CFO, Controladoria, Diretoria  
-**Tabelas principais:** `fato_financeiro`, `fato_venda`  
-**Atualização:** D-1  
-**Granularidade:** Mês / Canal / Categoria
+**Tabelas principais:** `fato_financeiro`, `fato_orcamento`
 
-### 5.1 Receita Bruta
+### 5.1 Receita Bruta / Líquida
+```dax
+-- Usar fato_venda como fonte primária (mais granular)
+Receita Bruta FF =
+CALCULATE(
+    SUM(fato_financeiro[valor]),
+    fato_financeiro[tipo] = "receita"
+)
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Soma de todos os lançamentos de receita antes de deduções |
-| **Fórmula DAX** | `CALCULATE(SUM(fato_financeiro[valor]), fato_financeiro[tipo_lancamento] = "receita_bruta")` |
-| **Granularidade** | Mês, Canal |
+### 5.2 Budget vs. Realizado
+```dax
+-- fato_orcamento tem ambos pré-calculados pelo dbt
+Budget Receita = SUM(fato_orcamento[valor_meta_receita])
+Realizado Receita = SUM(fato_orcamento[receita_realizada])
 
-### 5.2 Receita Líquida
+Variacao Receita % = SUM(fato_orcamento[var_receita_pct])
+-- Ou calcular manualmente: DIVIDE([Realizado] - [Budget], [Budget])
+```
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita bruta menos devoluções, impostos e descontos |
-| **Fórmula DAX** | `[Receita Bruta FF] - [Devoluções FF] - [Impostos FF] - [Descontos FF]` |
-| **Coluna fonte** | `ffe.tipo_lancamento` com valores: `receita_bruta`, `devolucao`, `imposto`, `desconto` |
-| **Granularidade** | Mês, Canal |
+### 5.3 CMV
+```dax
+CMV Total =
+SUMX(fato_venda, fato_venda[qtd_vendida] * fato_venda[custo_unitario])
+```
 
-### 5.3 CMV (Custo da Mercadoria Vendida)
+### 5.4 Contas a Receber (Aging)
+```dax
+-- Usar fato_financeiro[dt_pagamento] e [fl_pago]
+CR Vencer =
+CALCULATE(
+    SUM(fato_financeiro[valor]),
+    fato_financeiro[fl_pago] = FALSE(),
+    fato_financeiro[dt_pagamento] >= TODAY()
+)
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Custo total dos produtos vendidos no período |
-| **Fórmula DAX** | `SUMX(fato_venda, fato_venda[qtd_vendida] * fato_venda[custo_unitario])` |
-| **Granularidade** | Categoria, Mês |
-
-### 5.4 Margem Bruta
-
-| Campo | Detalhe |
-|-------|---------|
-| **Valor** | `[Receita Líquida] - [CMV]` |
-| **Percentual** | `DIVIDE([Margem Bruta Valor], [Receita Líquida])` |
-| **Granularidade** | Mês, Canal, Categoria |
-
-### 5.5 EBITDA
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Margem bruta menos despesas operacionais (excluindo D&A) |
-| **Fórmula DAX** | `[Margem Bruta Valor] - CALCULATE(SUM(fato_financeiro[valor]), fato_financeiro[tipo_lancamento] = "despesa_operacional")` |
-| **Granularidade** | Mensal |
-
-### 5.6 Receita por Canal
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita líquida segmentada por canal de venda |
-| **Canais** | Físico, Online, Marketplace |
-| **Granularidade** | Mensal |
-
-### 5.7 Budget vs. Realizado
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Comparação entre receita/margem projetadas e realizadas |
-| **Realizado** | `[Receita Líquida]` ou `[Margem Bruta Valor]` |
-| **Budget** | `SUM(fato_orcamento[valor_orcado])` filtrado pelo tipo |
-| **Desvio (%)** | `DIVIDE([Realizado] - [Budget], [Budget])` |
-| **Granularidade** | Mês, Canal |
-
-### 5.8 Contas a Receber
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Aging de recebíveis por faixa de vencimento |
-| **Faixas** | A vencer, 1–30d vencido, 31–60d, 61–90d, >90d |
-| **Fórmula DAX** | `CALCULATE(SUM(fato_financeiro[valor_parcela]), FILTER(fato_financeiro, fato_financeiro[dt_vencimento] >= <faixa_inicio> && ...))` |
-| **Granularidade** | Mensal |
-
-### 5.9 Análise de Parcelamento
-
-| Campo | Detalhe |
-|-------|---------|
-| **% Parceladas** | `DIVIDE(CALCULATE(COUNT(fato_financeiro[id_parcela]), fato_financeiro[nr_parcelas] > 1), COUNT(fato_financeiro[id_parcela]))` |
-| **Prazo Médio** | `AVERAGE(fato_financeiro[nr_parcelas])` |
-| **Concentração** | Distribuição de parcelas por faixa de número de parcelas |
-| **Granularidade** | Mensal, Canal |
+CR Vencido =
+CALCULATE(
+    SUM(fato_financeiro[valor]),
+    fato_financeiro[fl_pago] = FALSE(),
+    fato_financeiro[dt_pagamento] < TODAY()
+)
+```
 
 ---
 
 ## 6. Dashboard de Marketing
 
-**Audiência:** Gerência de Marketing, Growth  
-**Tabelas principais:** `fato_cliente_interacao`, `dim_campanha`, `fato_venda`  
-**Atualização:** Diária  
-**Granularidade:** Campanha / Canal / Dia
+**Tabelas principais:** `fato_cliente_interacao`, `dim_campanha`
 
-### 6.1 ROI de Campanha
+### 6.1 Sessões e Conversão
+```dax
+Total Sessoes = COUNT(fato_cliente_interacao[sk_sessao])
 
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Retorno sobre investimento por campanha |
-| **Fórmula DAX** | `DIVIDE([Receita Atribuída] - SUM(dim_campanha[custo_campanha]), SUM(dim_campanha[custo_campanha]))` |
-| **Granularidade** | Campanha, Canal |
-
-### 6.2 ROAS
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita atribuída dividida pelo investimento em mídia paga |
-| **Fórmula DAX** | `DIVIDE([Receita Atribuída], CALCULATE(SUM(dim_campanha[custo_campanha]), dim_campanha[tipo] = "pago"))` |
-| **Granularidade** | Canal Pago |
-
-### 6.3 CAC (Custo de Aquisição de Cliente)
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Custo total da campanha dividido pelo número de novos clientes adquiridos |
-| **Fórmula DAX** | `DIVIDE(SUM(dim_campanha[custo_campanha]), [Novos Clientes])` |
-| **Granularidade** | Campanha, Canal |
-
-### 6.4 Funil de Conversão
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Volume em cada etapa: Impressões → Cliques → Sessões → Compras |
-| **Impressões** | `SUM(fato_cliente_interacao[impressoes])` |
-| **Cliques** | `SUM(fato_cliente_interacao[cliques])` |
-| **Sessões** | `SUM(fato_cliente_interacao[sessoes])` |
-| **Compras** | `DISTINCTCOUNT(fato_venda[id_pedido_nk])` atribuídas à campanha |
-| **Granularidade** | Campanha, Canal |
-
-### 6.5 Taxa de Conversão
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Compras divididas por sessões no site |
-| **Fórmula DAX** | `DIVIDE([Compras], [Sessões])` |
-| **Granularidade** | Dia, Campanha |
-
-### 6.6 Abandono de Carrinho
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Carrinhos iniciados sem compra concluída |
-| **Fórmula DAX** | `DIVIDE(CALCULATE(COUNT(fato_cliente_interacao[sk_interacao]), fato_cliente_interacao[tipo_evento] = "carrinho_abandonado"), CALCULATE(COUNT(fato_cliente_interacao[sk_interacao]), fato_cliente_interacao[tipo_evento] IN {"carrinho_iniciado","carrinho_abandonado","compra"}))` |
-| **Granularidade** | Dia |
-
-### 6.7 Receita Atribuída
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Receita de pedidos atribuídos a uma campanha (modelo last-touch) |
-| **Fórmula DAX** | `CALCULATE([Receita Líquida], NOT ISBLANK(fato_venda[sk_campanha]))` |
-| **Modelo** | Last-touch por padrão; atribuição linear disponível via `dim_campanha[modelo_atribuicao]` |
-| **Granularidade** | Campanha |
-
-### 6.8 Clientes Reativados
-
-| Campo | Detalhe |
-|-------|---------|
-| **Definição** | Clientes que estavam inativos (>90 dias) e compraram após uma campanha |
-| **Fórmula DAX** | `CALCULATE(DISTINCTCOUNT(fato_venda[sk_cliente]), FILTER(dim_cliente, dim_cliente[dias_desde_ultima_compra_antes_campanha] > 90))` |
-| **Granularidade** | Campanha, Mensal |
-
----
-
-## 7. Métricas Transversais
-
-Estas métricas aparecem em múltiplos dashboards.
-
-| Métrica | Fórmula DAX | Dashboards |
-|---------|-------------|-----------|
-| **Receita Líquida** | `SUM(fato_venda[valor_liquido_item])` | Todos |
-| **Margem Bruta (%)** | `DIVIDE([Margem Bruta Valor], [Receita Líquida])` | Comercial, Produtos, Financeiro |
-| **Pedidos Totais** | `DISTINCTCOUNT(fato_venda[id_pedido_nk])` | Comercial, Clientes, Logística |
-| **Clientes Únicos** | `DISTINCTCOUNT(fato_venda[sk_cliente])` | Clientes, Marketing |
-| **YoY Receita** | `CALCULATE([Receita Líquida], SAMEPERIODLASTYEAR(dim_tempo[data_completa]))` | Comercial, Financeiro |
-| **MoM Receita** | `CALCULATE([Receita Líquida], DATEADD(dim_tempo[data_completa], -1, MONTH))` | Todos |
-
----
-
-## 8. Configuração de Incremental Refresh
-
-### Tabela elegível: `fato_venda`
-
-| Parâmetro | Valor |
-|-----------|-------|
-| **Parâmetro M `RangeStart`** | Tipo `DateTime`; valor inicial `#datetime(2024, 1, 1, 0, 0, 0)` |
-| **Parâmetro M `RangeEnd`** | Tipo `DateTime`; valor inicial `#datetime(2027, 12, 31, 23, 59, 59)` |
-| **Coluna de filtro** | `fato_venda[data_pedido]` (tipo `DateTime`) |
-| **Arquivar dados >** | 2 anos |
-| **Atualizar os últimos** | 3 dias |
-| **Resultado esperado** | Delta diário ~15 MB vs. carga completa ~700 MB |
-
-### Filtro Power Query obrigatório (na query de `fato_venda`)
-
-```m
-Table.SelectRows(
-    fato_venda_source,
-    each [data_pedido] >= RangeStart and [data_pedido] < RangeEnd
+Taxa Conversao =
+DIVIDE(
+    CALCULATE(COUNT(fato_cliente_interacao[sk_sessao]),
+              fato_cliente_interacao[converteu] = TRUE()),
+    [Total Sessoes]
 )
 ```
 
-> **Atenção:** os parâmetros `RangeStart` e `RangeEnd` devem ser do tipo `DateTime`
-> (não `Date`), caso contrário o Incremental Refresh não é reconhecido pelo Power BI Service.
+### 6.2 ROI de Campanha
+```dax
+-- dim_campanha[orcamento] = investimento
+-- Receita atribuída = fato_venda onde sk_campanha não é blank
+Receita Atribuida =
+CALCULATE(
+    [Receita Liquida],
+    NOT ISBLANK(fato_venda[sk_campanha])
+)
+
+ROI Campanha =
+DIVIDE(
+    [Receita Atribuida] - SUM(dim_campanha[orcamento]),
+    SUM(dim_campanha[orcamento])
+)
+```
+
+### 6.3 Abandono de Carrinho
+```dax
+-- Reutilizar medida do Dashboard de Clientes (seção 2.6)
+Taxa Abandono Carrinho =
+DIVIDE(
+    CALCULATE(COUNT(fato_cliente_interacao[sk_sessao]),
+              fato_cliente_interacao[fl_abandono_carrinho] = TRUE()),
+    CALCULATE(COUNT(fato_cliente_interacao[sk_sessao]),
+              fato_cliente_interacao[qtd_add_cart] > 0)
+)
+```
+
+---
+
+## 7. Configuração de Incremental Refresh
+
+### Coluna de filtro: `fato_venda[dt_pedido_data]` (tipo DATE)
+
+```m
+// No Power Query, criar os parâmetros:
+// RangeStart — tipo DateTime
+// RangeEnd   — tipo DateTime
+
+// Filtro obrigatório na query de fato_venda:
+Table.SelectRows(
+    fato_venda_source,
+    each
+        Date.From([dt_pedido_data]) >= Date.From(RangeStart) and
+        Date.From([dt_pedido_data]) < Date.From(RangeEnd)
+)
+```
+
+**Política recomendada:**
+- Arquivar dados mais antigos que: **2 anos**
+- Atualizar os últimos: **3 dias** (buffer para reprocessamento)
+
+---
+
+## 8. Relacionamentos no Modelo Power BI
+
+| Tabela | Coluna | → | Tabela | Coluna | Cardinalidade |
+|--------|--------|---|--------|--------|---------------|
+| `fato_venda` | `sk_cliente` | → | `dim_cliente` | `sk_cliente` | N:1 |
+| `fato_venda` | `sk_produto` | → | `dim_produto` | `sk_produto` | N:1 |
+| `fato_venda` | `sk_loja` | → | `dim_loja` | `sk_loja` | N:1 |
+| `fato_venda` | `sk_tempo` | → | `dim_tempo` | `sk_tempo` | N:1 |
+| `fato_venda` | `sk_canal_venda` | → | `dim_canal_venda` | `sk_canal_venda` | N:1 |
+| `fato_venda` | `sk_campanha` | → | `dim_campanha` | `sk_campanha` | N:1 |
+| `fato_entrega` | `sk_transportadora` | → | `dim_transportadora` | `sk_transportadora` | N:1 |
+| `fato_entrega` | `sk_modalidade_entrega` | → | `dim_modalidade_entrega` | `sk_modalidade_entrega` | N:1 |
+| `fato_entrega` | `sk_loja` | → | `dim_loja` | `sk_loja` | N:1 |
+| `fato_entrega` | `sk_tempo_postagem` | → | `dim_tempo` | `sk_tempo` | N:1 |
+| `fato_estoque` | `sk_produto` | → | `dim_produto` | `sk_produto` | N:1 |
+| `fato_estoque` | `sk_loja` | → | `dim_loja` | `sk_loja` | N:1 |
+| `fato_estoque` | `sk_tempo` | → | `dim_tempo` | `sk_tempo` | N:1 |
+| `fato_financeiro` | `sk_loja` | → | `dim_loja` | `sk_loja` | N:1 |
+| `fato_financeiro` | `sk_tempo_competencia` | → | `dim_tempo` | `sk_tempo` | N:1 |
+| `fato_orcamento` | `sk_loja` | → | `dim_loja` | `sk_loja` | N:1 |
+| `fato_orcamento` | `sk_tempo` | → | `dim_tempo` | `sk_tempo` | N:1 |
+| `fato_cliente_interacao` | `sk_cliente` | → | `dim_cliente` | `sk_cliente` | N:1 |
+| `fato_cliente_interacao` | `sk_tempo` | → | `dim_tempo` | `sk_tempo` | N:1 |
+
+> **Atenção SCD2:** `dim_cliente`, `dim_produto`, `dim_vendedor`, `dim_loja` têm múltiplos registros por entidade (histórico). Sempre filtrar `fl_current = TRUE()` em medidas de dimensão, ou usar o `sk_*` de `fato_venda` (que aponta para a versão correta na época da transação).
 
 ---
 
@@ -603,8 +582,7 @@ Table.SelectRows(
 
 | Item | Limite | Ação se excedido |
 |------|--------|-----------------|
-| Tamanho do dataset Power BI Pro | 1 GB | Agregar fato_venda anualmente; considerar PPU |
-| Gold DuckDB alvo | ≤ 900 MB | Rodar `scripts/compact_gold.py` (agregação anual) |
-| Tempo de refresh (fato_venda com IR) | < 30s | Verificar se IR está ativo; checar tamanho da janela |
-| Refresh máximo/dia | 8× (Pro) / 48× (PPU) | Consolidar em 1×/dia após pipeline |
-| Tempo máximo de refresh total | 2 horas (Pro) | Aumentar agregações; migrar para PPU |
+| Tamanho do dataset Power BI Pro | 1 GB | Gold atual: 362 MB — margem de 638 MB |
+| Gold DuckDB alvo | ≤ 900 MB | Pipeline diário adiciona ~15 MB/dia → ~43 dias de margem |
+| Tempo de refresh `fato_venda` (IR) | < 30s | Verificar se Incremental Refresh está ativo |
+| Refresh máximo/dia | 8× (Pro) | Consolidar em 1×/dia após pipeline (05:30 BRT) |
