@@ -1,17 +1,5 @@
 {{ config(unique_key='id_techpoints') }}
 
-{% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/clientes/techpoints/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
-{% if _n == 0 %}
-  {% if is_incremental() %}SELECT * FROM {{ this }} WHERE false
-  {% else %}
-SELECT NULL::INTEGER AS id_techpoints, NULL::INTEGER AS id_cliente,
-       NULL::INTEGER AS pontos_acumulados, NULL::INTEGER AS pontos_resgatados,
-       NULL::INTEGER AS saldo_pontos, NULL::VARCHAR AS nivel_fidelidade,
-       NULL::TIMESTAMPTZ AS updated_at, NULL::TIMESTAMPTZ AS _ingested_at
-WHERE false
-  {% endif %}
-{% else %}
-
 WITH source AS (
     SELECT *
     FROM read_parquet('{{ var("bronze_path") }}/clientes/techpoints/**/*.parquet')
@@ -38,4 +26,3 @@ SELECT
     _ingested_at::TIMESTAMPTZ         AS _ingested_at
 FROM deduplicado
 WHERE rn = 1
-{% endif %}

@@ -1,18 +1,5 @@
 {{ config(unique_key='id_orcamento') }}
 
-{% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/financeiro/orcamentos/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
-{% if _n == 0 %}
-  {% if is_incremental() %}SELECT * FROM {{ this }} WHERE false
-  {% else %}
-SELECT NULL::INTEGER AS id_orcamento, NULL::INTEGER AS id_loja, NULL::VARCHAR AS canal_venda,
-       NULL::INTEGER AS ano, NULL::INTEGER AS mes,
-       NULL::DECIMAL AS valor_meta_receita, NULL::DECIMAL AS valor_meta_margem,
-       NULL::INTEGER AS qtd_meta_pedidos,
-       NULL::TIMESTAMPTZ AS updated_at, NULL::TIMESTAMPTZ AS _ingested_at
-WHERE false
-  {% endif %}
-{% else %}
-
 WITH source AS (
     SELECT *
     FROM read_parquet('{{ var("bronze_path") }}/financeiro/orcamentos/**/*.parquet')
@@ -39,4 +26,3 @@ SELECT
     updated_at::TIMESTAMPTZ           AS updated_at,
     _ingested_at::TIMESTAMPTZ         AS _ingested_at
 FROM deduplicado WHERE rn = 1
-{% endif %}
