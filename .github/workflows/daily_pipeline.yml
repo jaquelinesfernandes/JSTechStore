@@ -69,6 +69,7 @@ jobs:
       # que não foram extraídas nesta execução (IO Budget Supabase).
       # ─────────────────────────────────────────────
       - name: "2b · Criar Parquet stubs para tabelas estáticas ausentes"
+        if: success() || failure()
         run: python scripts/ensure_bronze_parquet.py
 
       # ─────────────────────────────────────────────
