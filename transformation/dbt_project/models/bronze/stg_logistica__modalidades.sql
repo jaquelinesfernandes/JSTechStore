@@ -1,7 +1,16 @@
 {{ config(unique_key='id_modalidade') }}
 
 {% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/logistica/modalidades/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
-{% if _n == 0 and is_incremental() %}SELECT * FROM {{ this }} WHERE false{% else %}
+{% if _n == 0 %}
+  {% if is_incremental() %}SELECT * FROM {{ this }} WHERE false
+  {% else %}
+SELECT NULL::INTEGER AS id_modalidade, NULL::INTEGER AS id_transportadora,
+       NULL::VARCHAR AS nome, NULL::VARCHAR AS codigo, NULL::INTEGER AS prazo_dias,
+       NULL::DECIMAL AS frete_base, NULL::VARCHAR AS tipo,
+       NULL::TIMESTAMPTZ AS updated_at, NULL::TIMESTAMPTZ AS _ingested_at
+WHERE false
+  {% endif %}
+{% else %}
 
 WITH source AS (
     SELECT *

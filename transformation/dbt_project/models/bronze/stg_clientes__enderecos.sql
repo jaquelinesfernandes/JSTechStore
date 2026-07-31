@@ -1,7 +1,17 @@
 {{ config(unique_key='id_endereco') }}
 
 {% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/clientes/enderecos/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
-{% if _n == 0 and is_incremental() %}SELECT * FROM {{ this }} WHERE false{% else %}
+{% if _n == 0 %}
+  {% if is_incremental() %}SELECT * FROM {{ this }} WHERE false
+  {% else %}
+SELECT NULL::INTEGER AS id_endereco, NULL::INTEGER AS id_cliente,
+       NULL::VARCHAR AS logradouro, NULL::VARCHAR AS numero, NULL::VARCHAR AS complemento,
+       NULL::VARCHAR AS bairro, NULL::VARCHAR AS cep, NULL::VARCHAR AS cidade,
+       NULL::VARCHAR AS uf, NULL::VARCHAR AS tipo,
+       NULL::TIMESTAMPTZ AS updated_at, NULL::TIMESTAMPTZ AS _ingested_at
+WHERE false
+  {% endif %}
+{% else %}
 
 WITH source AS (
     SELECT *
@@ -27,7 +37,7 @@ SELECT
     TRIM(bairro)::VARCHAR             AS bairro,
     TRIM(cep)::VARCHAR                AS cep,
     TRIM(cidade)::VARCHAR             AS cidade,
-    UPPER(TRIM(uf))::CHAR(2)         AS uf,
+    UPPER(TRIM(uf))::VARCHAR          AS uf,
     tipo::VARCHAR                     AS tipo,
     updated_at::TIMESTAMPTZ           AS updated_at,
     _ingested_at::TIMESTAMPTZ         AS _ingested_at

@@ -1,7 +1,16 @@
 {{ config(unique_key='id_vendedor') }}
 
 {% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/rh/vendedores/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
-{% if _n == 0 and is_incremental() %}SELECT * FROM {{ this }} WHERE false{% else %}
+{% if _n == 0 %}
+  {% if is_incremental() %}SELECT * FROM {{ this }} WHERE false
+  {% else %}
+SELECT NULL::INTEGER AS id_vendedor, NULL::INTEGER AS id_loja,
+       NULL::VARCHAR AS nome, NULL::VARCHAR AS cpf, NULL::VARCHAR AS email,
+       NULL::VARCHAR AS cargo, NULL::DATE AS data_admissao, NULL::BOOLEAN AS ativo,
+       NULL::TIMESTAMPTZ AS updated_at, NULL::TIMESTAMPTZ AS _ingested_at
+WHERE false
+  {% endif %}
+{% else %}
 
 WITH source AS (
     SELECT *

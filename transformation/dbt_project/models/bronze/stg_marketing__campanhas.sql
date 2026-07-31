@@ -1,7 +1,16 @@
 {{ config(unique_key='id_campanha') }}
 
 {% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/marketing/campanhas/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
-{% if _n == 0 and is_incremental() %}SELECT * FROM {{ this }} WHERE false{% else %}
+{% if _n == 0 %}
+  {% if is_incremental() %}SELECT * FROM {{ this }} WHERE false
+  {% else %}
+SELECT NULL::INTEGER AS id_campanha, NULL::VARCHAR AS nome, NULL::VARCHAR AS tipo,
+       NULL::VARCHAR AS canal, NULL::DATE AS dt_inicio, NULL::DATE AS dt_fim,
+       NULL::DECIMAL AS orcamento, NULL::VARCHAR AS objetivo, NULL::BOOLEAN AS ativo,
+       NULL::TIMESTAMPTZ AS updated_at, NULL::TIMESTAMPTZ AS _ingested_at
+WHERE false
+  {% endif %}
+{% else %}
 
 WITH source AS (
     SELECT *
