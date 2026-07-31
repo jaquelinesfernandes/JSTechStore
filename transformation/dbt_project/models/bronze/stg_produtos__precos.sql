@@ -1,5 +1,8 @@
 {{ config(unique_key=['id_produto', 'dt_vigencia_inicio']) }}
 
+{% if execute %}{% set _n = run_query("SELECT count(*) FROM glob('" ~ var('bronze_path') ~ "/produtos/precos/**/*.parquet')").columns[0].values()[0] %}{% else %}{% set _n = 1 %}{% endif %}
+{% if _n == 0 and is_incremental() %}SELECT * FROM {{ this }} WHERE false{% else %}
+
 WITH source AS (
     SELECT *
     FROM read_parquet('{{ var("bronze_path") }}/produtos/precos/**/*.parquet')
@@ -28,3 +31,4 @@ SELECT
     updated_at::TIMESTAMPTZ           AS updated_at,
     _ingested_at::TIMESTAMPTZ         AS _ingested_at
 FROM deduplicado WHERE rn = 1
+{% endif %}
