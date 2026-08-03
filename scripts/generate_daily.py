@@ -77,7 +77,7 @@ def _load_context_from_cache() -> dict | None:
             return None
         log.info(f"Contexto carregado do cache local ({age_hours:.1f}h de idade) — IO Supabase economizado")
         return raw
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         log.warning(f"Cache de contexto inválido ({exc}) — re-lendo Supabase")
         return None
 
