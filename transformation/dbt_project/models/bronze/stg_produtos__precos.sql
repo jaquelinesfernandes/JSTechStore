@@ -2,7 +2,7 @@
 
 WITH source AS (
     SELECT *
-    FROM read_parquet('{{ var("bronze_path") }}/produtos/precos/**/*.parquet')
+    FROM read_parquet('{{ var("bronze_path") }}/produtos/precos/**/*.parquet', union_by_name := true)
     {% if is_incremental() %}
     WHERE _ingested_at::TIMESTAMPTZ > (
         SELECT COALESCE(MAX(_ingested_at::TIMESTAMPTZ), '1970-01-01'::TIMESTAMPTZ)
