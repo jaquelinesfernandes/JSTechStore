@@ -226,6 +226,10 @@ data/silver/**
 !data/bronze/.watermarks/
 !data/bronze/.watermarks/**
 
+# Manter stubs de schema no Git — garantem que tabelas estáticas têm Parquet
+# em qualquer runner GHA mesmo sem cache, evitando IO Error no dbt.
+!data/bronze/**/stub_empty.parquet
+
 # Cache local de contexto do generate_daily (reduz Disk IO Supabase)
 data/.context_cache.json
 
