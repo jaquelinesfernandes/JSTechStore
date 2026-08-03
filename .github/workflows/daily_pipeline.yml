@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 4 * * *"   # 04:00 UTC = 01:00 BRT
   workflow_dispatch:
+    inputs:
+      full_refresh:
+        description: 'Reconstruir Gold do zero (dbt run --full-refresh)'
+        type: boolean
+        default: false
 
 jobs:
   pipeline:
@@ -114,8 +119,14 @@ jobs:
         if: always()
         run: python scripts/ensure_bronze_parquet.py
 
-      - name: "3 · dbt run (incremental)"
-        run: dbt run --project-dir transformation/dbt_project --profiles-dir transformation/dbt_project
+      - name: "3 · dbt run (incremental ou full-refresh)"
+        run: |
+          FLAGS=""
+          if [ "${{ github.event.inputs.full_refresh }}" = "true" ]; then
+            FLAGS="--full-refresh"
+            echo "::notice::Modo full-refresh ativado — reconstruindo Gold do zero."
+          fi
+          dbt run $FLAGS --project-dir transformation/dbt_project --profiles-dir transformation/dbt_project
 
       # ─────────────────────────────────────────────
       # Step 4 — Testes de qualidade dbt (Gold)
