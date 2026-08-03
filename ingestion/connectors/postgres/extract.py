@@ -77,12 +77,29 @@ def write_watermark(table: TableConfig, value: datetime) -> None:
             {
                 "last_updated_at": value.isoformat(),
                 "updated_at_utc": datetime.now(timezone.utc).isoformat(),
+                "last_checked_at": datetime.now(timezone.utc).isoformat(),
             },
             indent=2,
         ),
         encoding="utf-8",
     )
     tmp.replace(path)  # atômico no mesmo filesystem
+
+
+def touch_watermark(table: TableConfig) -> None:
+    """Registra que a extração rodou mesmo sem novas linhas (last_checked_at=now)."""
+    WATERMARKS_DIR.mkdir(parents=True, exist_ok=True)
+    path = WATERMARKS_DIR / f"{table.watermark_key}.json"
+    existing: dict = {}
+    if path.exists():
+        try:
+            existing = json.loads(path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            pass
+    existing["last_checked_at"] = datetime.now(timezone.utc).isoformat()
+    tmp = path.with_suffix(f".tmp_{uuid4().hex}.json")
+    tmp.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+    tmp.replace(path)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -182,6 +199,7 @@ def process_table(
 
     if rows == 0:
         log.info(f"[{table.full_name}] Nenhum registro novo — skip")
+        touch_watermark(table)
         return {"table": table.full_name, "rows_extracted": 0, "status": "skip"}
 
     final_path = write_parquet_atomic(df, table, ingested_at)

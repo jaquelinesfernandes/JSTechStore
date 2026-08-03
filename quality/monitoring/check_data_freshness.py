@@ -17,6 +17,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import os
 import sys
@@ -67,19 +68,44 @@ EXPECTED_DAILY_ROWS: dict[str, tuple[int, int]] = {
 }
 
 
+def _read_watermark_ts(schema: str, table: str) -> datetime | None:
+    """Retorna o timestamp mais recente do watermark (last_checked_at ou last_updated_at)."""
+    wm_path = BRONZE_PATH / ".watermarks" / f"{schema}__{table}.json"
+    if not wm_path.exists():
+        return None
+    try:
+        data = json.loads(wm_path.read_text(encoding="utf-8"))
+        ts_str = data.get("last_checked_at") or data.get("last_updated_at")
+        if not ts_str:
+            return None
+        ts = datetime.fromisoformat(ts_str)
+        return ts if ts.tzinfo is not None else ts.replace(tzinfo=timezone.utc)
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def check_bronze_freshness(tolerance_hours: int) -> list[str]:
-    """Verifica se as tabelas críticas do Bronze têm Parquet recente."""
+    """Verifica se as tabelas críticas do Bronze têm Parquet ou watermark recente."""
     errors: list[str] = []
     cutoff = datetime.now(timezone.utc) - timedelta(hours=tolerance_hours)
     today = datetime.now(timezone.utc)
 
     for schema, table in BRONZE_CRITICAL_TABLES:
+        # 1. Watermark tem precedência: se a extração rodou recentemente (mesmo sem novas
+        #    linhas), a tabela é considerada fresca — evita falsos positivos em tabelas
+        #    que não atualizam todo dia (ex: clientes.clientes, estoque.saldo_estoque).
+        wm_ts = _read_watermark_ts(schema, table)
+        if wm_ts is not None and wm_ts >= cutoff:
+            age_h = (today - wm_ts).total_seconds() / 3600
+            log.info(f"BRONZE [{schema}.{table}] OK (via watermark) — {age_h:.1f}h atrás")
+            continue
+
+        # 2. Fallback: verifica mtime do Parquet mais recente
         base = BRONZE_PATH / schema / table
         if not base.exists():
             errors.append(f"BRONZE [{schema}.{table}] Diretório não encontrado: {base}")
             continue
 
-        # Procura o Parquet mais recente nas últimas tolerance_hours
         latest_file: Path | None = None
         latest_mtime: float = 0.0
         for parquet in base.rglob("*.parquet"):
