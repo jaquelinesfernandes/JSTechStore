@@ -64,15 +64,6 @@ jobs:
         run: python -m ingestion.connectors.postgres.extract --mode smart
 
       # ─────────────────────────────────────────────
-      # Step 2b — Stubs Bronze para tabelas sem dados no runner
-      # Garante que read_parquet() nunca falhe para tabelas estáticas
-      # que não foram extraídas nesta execução (IO Budget Supabase).
-      # ─────────────────────────────────────────────
-      - name: "2b · Criar Parquet stubs para tabelas estáticas ausentes"
-        if: success() || failure()
-        run: python scripts/ensure_bronze_parquet.py
-
-      # ─────────────────────────────────────────────
       # Step 3 — dbt transformações incrementais
       # ─────────────────────────────────────────────
       - name: "3 · Criar diretórios data/gold e data/silver"
@@ -83,6 +74,12 @@ jobs:
 
       - name: "3 · dbt seed (feriados_nacionais)"
         run: dbt seed --select feriados_nacionais --project-dir transformation/dbt_project --profiles-dir transformation/dbt_project
+
+      # Valida e garante que TODAS as tabelas estáticas têm Parquet antes do dbt run.
+      # Roda com if:always() — falha aqui com mensagem clara antes de entrar no dbt.
+      - name: "3 · Validar e garantir Parquet Bronze (pré-dbt)"
+        if: always()
+        run: python scripts/ensure_bronze_parquet.py
 
       - name: "3 · dbt run (incremental)"
         run: dbt run --project-dir transformation/dbt_project --profiles-dir transformation/dbt_project
