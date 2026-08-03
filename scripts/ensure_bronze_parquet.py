@@ -34,62 +34,161 @@ _META = ["_source_schema", "_source_table", "_ingested_at", "_row_count_batch"]
 # Cada entrada mapeia "schema/table" → lista de colunas (sem _META).
 STATIC_TABLES: dict[str, list[str]] = {
     "clientes/clientes": [
-        "id_cliente", "cpf", "email", "telefone", "primeiro_nome", "nome_completo",
-        "cep", "cidade", "uf", "data_cadastro", "canal_origem", "nivel_fidelidade",
-        "ativo", "created_at", "updated_at",
+        "id_cliente",
+        "cpf",
+        "email",
+        "telefone",
+        "primeiro_nome",
+        "nome_completo",
+        "cep",
+        "cidade",
+        "uf",
+        "data_cadastro",
+        "canal_origem",
+        "nivel_fidelidade",
+        "ativo",
+        "created_at",
+        "updated_at",
     ],
     "clientes/enderecos": [
-        "id_endereco", "id_cliente", "logradouro", "numero", "complemento",
-        "bairro", "cep", "cidade", "uf", "tipo", "updated_at",
+        "id_endereco",
+        "id_cliente",
+        "logradouro",
+        "numero",
+        "complemento",
+        "bairro",
+        "cep",
+        "cidade",
+        "uf",
+        "tipo",
+        "updated_at",
     ],
     "clientes/techpoints": [
-        "id_techpoints", "id_cliente", "pontos_acumulados", "pontos_resgatados",
-        "saldo_pontos", "nivel_fidelidade", "updated_at",
+        "id_techpoints",
+        "id_cliente",
+        "pontos_acumulados",
+        "pontos_resgatados",
+        "saldo_pontos",
+        "nivel_fidelidade",
+        "updated_at",
     ],
     "estoque/saldo_estoque": [
-        "id_saldo", "id_produto", "id_loja", "qtd_disponivel", "qtd_reservada",
-        "qtd_minima", "dt_ultima_atualizacao", "updated_at",
+        "id_saldo",
+        "id_produto",
+        "id_loja",
+        "qtd_disponivel",
+        "qtd_reservada",
+        "qtd_minima",
+        "dt_ultima_atualizacao",
+        "updated_at",
     ],
     "financeiro/orcamentos": [
-        "id_orcamento", "id_loja", "canal_venda", "ano", "mes",
-        "valor_meta_receita", "valor_meta_margem", "qtd_meta_pedidos", "updated_at",
+        "id_orcamento",
+        "id_loja",
+        "canal_venda",
+        "ano",
+        "mes",
+        "valor_meta_receita",
+        "valor_meta_margem",
+        "qtd_meta_pedidos",
+        "updated_at",
     ],
     "logistica/modalidades": [
-        "id_modalidade", "id_transportadora", "nome", "codigo",
-        "prazo_dias", "frete_base", "tipo", "updated_at",
+        "id_modalidade",
+        "id_transportadora",
+        "nome",
+        "codigo",
+        "prazo_dias",
+        "frete_base",
+        "tipo",
+        "updated_at",
     ],
     "logistica/transportadoras": [
-        "id_transportadora", "nome", "cnpj", "prazo_dias_min", "prazo_dias_max",
-        "ativo", "updated_at",
+        "id_transportadora",
+        "nome",
+        "cnpj",
+        "prazo_dias_min",
+        "prazo_dias_max",
+        "ativo",
+        "updated_at",
     ],
     "marketing/campanhas": [
-        "id_campanha", "nome", "tipo", "canal", "dt_inicio", "dt_fim",
-        "orcamento", "objetivo", "ativo", "updated_at",
+        "id_campanha",
+        "nome",
+        "tipo",
+        "canal",
+        "dt_inicio",
+        "dt_fim",
+        "orcamento",
+        "objetivo",
+        "ativo",
+        "updated_at",
     ],
     "produtos/categorias": ["id_categoria", "nome", "subcategoria", "updated_at"],
     "produtos/fornecedores": [
-        "id_fornecedor", "nome_fornecedor", "cnpj", "categoria_principal",
-        "pais_origem", "prazo_entrega_dias", "ativo", "updated_at",
+        "id_fornecedor",
+        "nome_fornecedor",
+        "cnpj",
+        "categoria_principal",
+        "pais_origem",
+        "prazo_entrega_dias",
+        "ativo",
+        "updated_at",
     ],
     "produtos/precos": [
-        "id_preco", "id_produto", "preco_venda", "custo_unitario",
-        "dt_vigencia_inicio", "dt_vigencia_fim", "updated_at",
+        "id_preco",
+        "id_produto",
+        "preco_venda",
+        "custo_unitario",
+        "dt_vigencia_inicio",
+        "dt_vigencia_fim",
+        "updated_at",
     ],
     "produtos/produtos": [
-        "id_produto", "id_categoria", "id_fornecedor", "sku", "nome", "marca",
-        "peso_kg", "ativo", "created_at", "updated_at",
+        "id_produto",
+        "id_categoria",
+        "id_fornecedor",
+        "sku",
+        "nome",
+        "marca",
+        "peso_kg",
+        "ativo",
+        "created_at",
+        "updated_at",
     ],
     "rh/lojas": [
-        "id_loja", "codigo", "nome_loja", "tipo_loja", "regiao", "cidade",
-        "uf", "gerente", "capacidade_m2", "dt_abertura", "ativo", "updated_at",
+        "id_loja",
+        "codigo",
+        "nome_loja",
+        "tipo_loja",
+        "regiao",
+        "cidade",
+        "uf",
+        "gerente",
+        "capacidade_m2",
+        "dt_abertura",
+        "ativo",
+        "updated_at",
     ],
     "rh/metas": [
-        "id_meta", "id_vendedor", "ano", "mes", "meta_valor",
-        "meta_qtd_pedidos", "updated_at",
+        "id_meta",
+        "id_vendedor",
+        "ano",
+        "mes",
+        "meta_valor",
+        "meta_qtd_pedidos",
+        "updated_at",
     ],
     "rh/vendedores": [
-        "id_vendedor", "id_loja", "nome", "cpf", "email", "cargo",
-        "data_admissao", "ativo", "updated_at",
+        "id_vendedor",
+        "id_loja",
+        "nome",
+        "cpf",
+        "email",
+        "cargo",
+        "data_admissao",
+        "ativo",
+        "updated_at",
     ],
 }
 
@@ -100,13 +199,7 @@ def _has_parquet(table_path: Path) -> bool:
 
 def _create_stub(schema_table: str, columns: list[str]) -> Path:
     now = datetime.now(timezone.utc)
-    dest = (
-        BRONZE_PATH
-        / schema_table
-        / f"year={now.year}"
-        / f"month={now.month:02d}"
-        / f"day={now.day:02d}"
-    )
+    dest = BRONZE_PATH / schema_table / f"year={now.year}" / f"month={now.month:02d}" / f"day={now.day:02d}"
     dest.mkdir(parents=True, exist_ok=True)
     stub_path = dest / "stub_empty.parquet"
     df = pd.DataFrame(columns=columns + _META)
@@ -176,8 +269,7 @@ def main() -> int:
 
     # Relatório
     log.info(
-        f"=== Resultado: {len(already_ok)} OK | {len(stubs_created)} stubs criados"
-        f" | {len(still_missing)} ausentes ==="
+        f"=== Resultado: {len(already_ok)} OK | {len(stubs_created)} stubs criados | {len(still_missing)} ausentes ==="
     )
     _write_summary(summary_rows)
 

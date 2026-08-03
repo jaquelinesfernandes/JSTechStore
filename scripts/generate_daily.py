@@ -57,7 +57,11 @@ def _serialize_ctx(ctx: dict) -> dict:
             ]
         elif isinstance(v, dict):
             result[k] = {
-                dk: ({dkk: (dvv.isoformat() if hasattr(dvv, "isoformat") else dvv) for dkk, dvv in dv.items()} if isinstance(dv, dict) else dv)
+                dk: (
+                    {dkk: (dvv.isoformat() if hasattr(dvv, "isoformat") else dvv) for dkk, dvv in dv.items()}
+                    if isinstance(dv, dict)
+                    else dv
+                )
                 for dk, dv in v.items()
             }
         else:
@@ -73,7 +77,9 @@ def _load_context_from_cache() -> dict | None:
         cached_at = datetime.fromisoformat(raw.pop("_cached_at"))
         age_hours = (datetime.now(timezone.utc) - cached_at).total_seconds() / 3600
         if age_hours > _CONTEXT_CACHE_MAX_AGE_HOURS:
-            log.info(f"Cache de contexto expirado ({age_hours:.1f}h > {_CONTEXT_CACHE_MAX_AGE_HOURS}h) — re-lendo Supabase")
+            log.info(
+                f"Cache de contexto expirado ({age_hours:.1f}h > {_CONTEXT_CACHE_MAX_AGE_HOURS}h) — re-lendo Supabase"
+            )
             return None
         log.info(f"Contexto carregado do cache local ({age_hours:.1f}h de idade) — IO Supabase economizado")
         return raw
@@ -149,7 +155,9 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Gerador de dados diários JSTechStore → Supabase")
     p.add_argument("--date", required=True, help="Data a gerar: 'today' ou YYYY-MM-DD")
     p.add_argument("--seed", type=int, default=None, help="Semente fixa (default: derivada da data)")
-    p.add_argument("--refresh-context", action="store_true", help="Força re-leitura do contexto do Supabase (ignora cache)")
+    p.add_argument(
+        "--refresh-context", action="store_true", help="Força re-leitura do contexto do Supabase (ignora cache)"
+    )
     return p.parse_args()
 
 
