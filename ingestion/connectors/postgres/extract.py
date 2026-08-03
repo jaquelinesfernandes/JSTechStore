@@ -229,8 +229,12 @@ def process_table(
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Extrator incremental Supabase → Bronze Parquet")
-    p.add_argument("--mode", choices=["full", "incremental", "smart"], required=True,
-                   help="smart: full por tabela se sem Parquet, incremental se já existe")
+    p.add_argument(
+        "--mode",
+        choices=["full", "incremental", "smart"],
+        required=True,
+        help="smart: full por tabela se sem Parquet, incremental se já existe",
+    )
     p.add_argument("--table", help="Processar apenas esta tabela (ex: vendas.pedidos)")
     return p.parse_args()
 
