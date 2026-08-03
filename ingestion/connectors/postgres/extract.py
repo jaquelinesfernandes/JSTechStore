@@ -22,6 +22,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import json
 import logging
 import os
@@ -92,10 +93,8 @@ def touch_watermark(table: TableConfig) -> None:
     path = WATERMARKS_DIR / f"{table.watermark_key}.json"
     existing: dict = {}
     if path.exists():
-        try:
+        with contextlib.suppress(Exception):
             existing = json.loads(path.read_text(encoding="utf-8"))
-        except Exception:  # noqa: BLE001
-            pass
     existing["last_checked_at"] = datetime.now(timezone.utc).isoformat()
     tmp = path.with_suffix(f".tmp_{uuid4().hex}.json")
     tmp.write_text(json.dumps(existing, indent=2), encoding="utf-8")
