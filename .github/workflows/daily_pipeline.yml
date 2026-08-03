@@ -47,6 +47,22 @@ jobs:
           restore-keys: |
             watermarks-
 
+      # Garante que os diretórios base existam mesmo em caso de cache miss total
+      - name: "0 · Garantir diretórios Bronze e watermarks"
+        run: mkdir -p data/bronze data/bronze/.watermarks
+
+      # Falha rápida se o secret não está configurado — evita erro obscuro na ingestão
+      - name: "0 · Verificar secret SUPABASE_DB_URL"
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Secret SUPABASE_DB_URL não está configurado no repositório."
+            echo "::error::Acesse Settings → Secrets → Actions e adicione SUPABASE_DB_URL."
+            exit 1
+          fi
+          echo "SUPABASE_DB_URL: configurado (${#SUPABASE_DB_URL} chars)"
+
       # ─────────────────────────────────────────────
       # Step 1 — Geração de dados diários
       # ─────────────────────────────────────────────
@@ -62,6 +78,23 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: python -m ingestion.connectors.postgres.extract --mode smart
+
+      # Diagnóstico pós-ingestão: lista o que foi escrito e quantos arquivos existem.
+      # Não falha se count=0 — o step de stubs a seguir trata tabelas ausentes.
+      - name: "2 · Diagnóstico Bronze pós-ingestão"
+        if: always()
+        run: |
+          echo "=== Estrutura data/bronze ==="
+          find data/bronze -type f -name '*.parquet' | sort | head -100 || true
+          PARQUET_COUNT=$(find data/bronze -type f -name '*.parquet' 2>/dev/null | wc -l)
+          echo ""
+          echo "Total de arquivos Parquet em data/bronze: $PARQUET_COUNT"
+          echo ""
+          echo "=== Contagem por tabela ==="
+          find data/bronze -type f -name '*.parquet' 2>/dev/null \
+            | sed 's|data/bronze/||;s|/year=.*||' \
+            | sort | uniq -c | sort -rn \
+            || echo "(nenhum arquivo encontrado)"
 
       # ─────────────────────────────────────────────
       # Step 3 — dbt transformações incrementais
