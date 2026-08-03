@@ -70,19 +70,28 @@ jobs:
 
       # ─────────────────────────────────────────────
       # Step 1 — Geração de dados diários
+      # Pulado quando full_refresh=true: não inserir dados novos durante rebuild do Gold.
       # ─────────────────────────────────────────────
       - name: "1 · Gerar dados do dia (generate_daily.py)"
+        if: ${{ github.event.inputs.full_refresh != 'true' }}
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: python scripts/generate_daily.py --date today
 
       # ─────────────────────────────────────────────
       # Step 2 — Ingestão Bronze (watermark atômico)
+      # full_refresh=true → extração full (sem watermark) para garantir Bronze completo.
       # ─────────────────────────────────────────────
       - name: "2 · Ingestão Bronze (smart: full por tabela sem Parquet, incremental p/ resto)"
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: python -m ingestion.connectors.postgres.extract --mode smart
+        run: |
+          if [ "${{ github.event.inputs.full_refresh }}" = "true" ]; then
+            echo "::notice::full_refresh=true — extração FULL (sem watermark) para sincronizar Bronze com Supabase."
+            python -m ingestion.connectors.postgres.extract --mode full
+          else
+            python -m ingestion.connectors.postgres.extract --mode smart
+          fi
 
       # Diagnóstico pós-ingestão: lista o que foi escrito e quantos arquivos existem.
       # Não falha se count=0 — o step de stubs a seguir trata tabelas ausentes.
