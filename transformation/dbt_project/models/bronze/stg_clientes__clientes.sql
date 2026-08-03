@@ -24,7 +24,7 @@ SELECT
     TRIM(nome_completo)::VARCHAR      AS nome_completo,
     TRIM(cep)::VARCHAR                AS cep,
     TRIM(cidade)::VARCHAR             AS cidade,
-    UPPER(TRIM(uf))::CHAR(2)         AS uf,
+    UPPER(TRIM(uf))::VARCHAR          AS uf,
     data_cadastro::DATE               AS data_cadastro,
     canal_origem::VARCHAR             AS canal_origem,
     nivel_fidelidade::VARCHAR         AS nivel_fidelidade,

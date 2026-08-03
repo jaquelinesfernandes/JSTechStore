@@ -10,11 +10,13 @@ Pressupõe que os dados mestres já foram criados por generate_data.py.
 Uso:
     python scripts/generate_daily.py --date today
     python scripts/generate_daily.py --date 2026-07-21
+    python scripts/generate_daily.py --date today --refresh-context  # força re-leitura do Supabase
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import random
 import sys
@@ -37,9 +39,65 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
+# Cache local: evita 5+ full table scans no Supabase por execução
+_CONTEXT_CACHE_PATH = Path(__file__).parent.parent / "data" / ".context_cache.json"
+_CONTEXT_CACHE_MAX_AGE_HOURS = 23  # renova uma vez por dia
 
-def load_context(conn) -> dict:
-    """Carrega IDs dos dados mestres do Supabase para o contexto de geração."""
+
+def _serialize_ctx(ctx: dict) -> dict:
+    """Converte datas para string antes de salvar em JSON."""
+    result = {}
+    for k, v in ctx.items():
+        if isinstance(v, list):
+            result[k] = [
+                {kk: (vv.isoformat() if hasattr(vv, "isoformat") else vv) for kk, vv in item.items()}
+                if isinstance(item, dict)
+                else item
+                for item in v
+            ]
+        elif isinstance(v, dict):
+            result[k] = {
+                dk: ({dkk: (dvv.isoformat() if hasattr(dvv, "isoformat") else dvv) for dkk, dvv in dv.items()} if isinstance(dv, dict) else dv)
+                for dk, dv in v.items()
+            }
+        else:
+            result[k] = v
+    return result
+
+
+def _load_context_from_cache() -> dict | None:
+    if not _CONTEXT_CACHE_PATH.exists():
+        return None
+    try:
+        raw = json.loads(_CONTEXT_CACHE_PATH.read_text(encoding="utf-8"))
+        cached_at = datetime.fromisoformat(raw.pop("_cached_at"))
+        age_hours = (datetime.now(timezone.utc) - cached_at).total_seconds() / 3600
+        if age_hours > _CONTEXT_CACHE_MAX_AGE_HOURS:
+            log.info(f"Cache de contexto expirado ({age_hours:.1f}h > {_CONTEXT_CACHE_MAX_AGE_HOURS}h) — re-lendo Supabase")
+            return None
+        log.info(f"Contexto carregado do cache local ({age_hours:.1f}h de idade) — IO Supabase economizado")
+        return raw
+    except Exception as exc:
+        log.warning(f"Cache de contexto inválido ({exc}) — re-lendo Supabase")
+        return None
+
+
+def _save_context_to_cache(ctx: dict) -> None:
+    _CONTEXT_CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    payload = _serialize_ctx(ctx)
+    payload["_cached_at"] = datetime.now(timezone.utc).isoformat()
+    _CONTEXT_CACHE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    log.info(f"Contexto salvo em cache local: {_CONTEXT_CACHE_PATH}")
+
+
+def load_context(conn, refresh: bool = False) -> dict:
+    """Carrega IDs dos dados mestres. Usa cache local para reduzir Disk IO no Supabase."""
+    if not refresh:
+        cached = _load_context_from_cache()
+        if cached is not None:
+            return cached
+
+    log.info("Carregando contexto do Supabase...")
     ctx: dict = {}
     with conn.cursor() as cur:
         cur.execute(
@@ -82,18 +140,16 @@ def load_context(conn) -> dict:
         f"{len(ctx['cliente_ids']):,} clientes, "
         f"{len(ctx['loja_ids'])} lojas"
     )
+
+    _save_context_to_cache(ctx)
     return ctx
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Gerador de dados diários JSTechStore → Supabase")
     p.add_argument("--date", required=True, help="Data a gerar: 'today' ou YYYY-MM-DD")
-    p.add_argument(
-        "--seed",
-        type=int,
-        default=None,
-        help="Semente fixa (default: derivada da data)",
-    )
+    p.add_argument("--seed", type=int, default=None, help="Semente fixa (default: derivada da data)")
+    p.add_argument("--refresh-context", action="store_true", help="Força re-leitura do contexto do Supabase (ignora cache)")
     return p.parse_args()
 
 
@@ -111,7 +167,7 @@ def main() -> int:
 
     conn = connect()
     try:
-        ctx = load_context(conn)
+        ctx = load_context(conn, refresh=args.refresh_context)
         gen_daily(conn, target_date, ctx, rng)
     except Exception:
         log.exception("Erro durante geração de dados diários.")

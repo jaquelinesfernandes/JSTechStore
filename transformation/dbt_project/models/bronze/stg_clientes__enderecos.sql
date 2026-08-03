@@ -24,7 +24,7 @@ SELECT
     TRIM(bairro)::VARCHAR             AS bairro,
     TRIM(cep)::VARCHAR                AS cep,
     TRIM(cidade)::VARCHAR             AS cidade,
-    UPPER(TRIM(uf))::CHAR(2)         AS uf,
+    UPPER(TRIM(uf))::VARCHAR          AS uf,
     tipo::VARCHAR                     AS tipo,
     updated_at::TIMESTAMPTZ           AS updated_at,
     _ingested_at::TIMESTAMPTZ         AS _ingested_at

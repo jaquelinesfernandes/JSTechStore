@@ -21,7 +21,7 @@ SELECT
     tipo_loja::VARCHAR                AS tipo_loja,
     regiao::VARCHAR                   AS regiao,
     TRIM(cidade)::VARCHAR             AS cidade,
-    UPPER(TRIM(uf))::CHAR(2)         AS uf,
+    UPPER(TRIM(uf))::VARCHAR          AS uf,
     TRIM(gerente)::VARCHAR            AS gerente,
     capacidade_m2::INTEGER            AS capacidade_m2,
     dt_abertura::DATE                 AS dt_abertura,

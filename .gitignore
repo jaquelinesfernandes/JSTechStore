@@ -226,6 +226,9 @@ data/silver/**
 !data/bronze/.watermarks/
 !data/bronze/.watermarks/**
 
+# Cache local de contexto do generate_daily (reduz Disk IO Supabase)
+data/.context_cache.json
+
 # DuckDB Gold (arquivo binário gerado — não versionar)
 data/gold/*.duckdb
 data/gold/*.duckdb.wal
