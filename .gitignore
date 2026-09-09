@@ -248,6 +248,15 @@ data/backups/gold/parquet_*/
 powerbi/datasets/*.pbix
 powerbi/reports/*.pbix
 
+# Gold Export — Parquet para Power BI (gerado pelo pipeline, não versionar)
+data/gold_export/
+!data/gold_export/.gitkeep
+
+# Power BI — cache local e configurações de sessão (não versionar)
+powerbi/reports/**/.pbi/cache.abf
+powerbi/reports/**/.pbi/localSettings.json
+powerbi/reports/**/.pbi/editorSettings.json
+
 # ─── dbt ──────────────────────────────────────────────────────────
 # Pacotes instalados (equivalente a node_modules)
 transformation/dbt_project/dbt_packages/

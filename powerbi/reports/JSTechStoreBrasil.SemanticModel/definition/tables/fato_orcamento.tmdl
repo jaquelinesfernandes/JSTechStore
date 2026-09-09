@@ -180,16 +180,15 @@ table fato_orcamento
 
 		annotation SummarizationSetBy = Automatic
 
+
 	partition fato_orcamento = m
 		mode: import
 		source =
 				let
-				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
-				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
-				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
-				    fato_orcamento_Table = main_Schema{[Name="fato_orcamento",Kind="Table"]}[Data]
+				    FilePath = "Z:/Projetos_Engenharia_Analitycs/JSTechStore/data/gold_export/fato_orcamento.parquet",
+				    Source = Parquet.Document(File.Contents(FilePath))
 				in
-				    fato_orcamento_Table
+				    Source
 
 	annotation PBI_NavigationStepName = Navigation
 

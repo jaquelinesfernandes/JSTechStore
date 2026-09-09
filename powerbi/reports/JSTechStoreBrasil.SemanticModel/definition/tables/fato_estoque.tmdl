@@ -149,16 +149,15 @@ table fato_estoque
 
 		annotation SummarizationSetBy = Automatic
 
+
 	partition fato_estoque = m
 		mode: import
 		source =
 				let
-				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
-				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
-				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
-				    fato_estoque_Table = main_Schema{[Name="fato_estoque",Kind="Table"]}[Data]
+				    FilePath = "Z:/Projetos_Engenharia_Analitycs/JSTechStore/data/gold_export/fato_estoque.parquet",
+				    Source = Parquet.Document(File.Contents(FilePath))
 				in
-				    fato_estoque_Table
+				    Source
 
 	annotation PBI_NavigationStepName = Navigation
 

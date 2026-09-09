@@ -317,21 +317,17 @@ table fato_venda
 		mode: import
 		source =
 				let
-				    DataInicio = Date.ToText(DateTime.Date(RangeStart), "yyyy-MM-dd"),
-				    DataFim    = Date.ToText(DateTime.Date(RangeEnd),   "yyyy-MM-dd"),
-				
-				    Source = Odbc.Query(
-				        "DSN=JSTechStoreGold",
-				        "SELECT * FROM fato_venda "
-				            & "WHERE dt_pedido_data >= '" & DataInicio & "' "
-				            & "AND dt_pedido_data < '"   & DataFim    & "'"
+				    FilePath = "Z:/Projetos_Engenharia_Analitycs/JSTechStore/data/gold_export/fato_venda.parquet",
+				    Source   = Parquet.Document(File.Contents(FilePath)),
+				    Filtrado = Table.SelectRows(
+				        Source,
+				        each Date.From([dt_pedido_data]) >= Date.From(RangeStart)
+				          and Date.From([dt_pedido_data]) < Date.From(RangeEnd)
 				    )
 				in
-				    Source
+				    Filtrado
 
 	annotation PBI_NavigationStepName = Navigation
 
 	annotation PBI_ResultType = Table
-
-	annotation PBI_IsMQueryFoldable = True
 

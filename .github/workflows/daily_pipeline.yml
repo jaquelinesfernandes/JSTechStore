@@ -198,6 +198,25 @@ jobs:
           echo "| 7 · Backup Gold | ✅ \`${{ env.BACKUP_FILE }}\` |" >> $GITHUB_STEP_SUMMARY
 
       # ─────────────────────────────────────────────
+      # Step 8 — Exportar Gold → Parquet para Power BI
+      # Gera 16 arquivos Parquet em data/gold_export/
+      # Power BI Desktop lê esses arquivos diretamente (sem ODBC, sem lock)
+      # ─────────────────────────────────────────────
+      - name: "8 · Exportar Gold → Parquet (Power BI)"
+        env:
+          DUCKDB_PATH: ${{ github.workspace }}/data/gold/jstechstore.duckdb
+          GOLD_EXPORT_PATH: ${{ github.workspace }}/data/gold_export
+        run: python scripts/export_gold_parquet.py
+
+      - name: "8 · Upload Parquet Gold como Artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: gold-parquet-${{ github.run_id }}
+          path: data/gold_export/*.parquet
+          retention-days: 7
+          if-no-files-found: error
+
+      # ─────────────────────────────────────────────
       # Notificação em caso de falha (qualquer step)
       # ─────────────────────────────────────────────
       - name: Notificar falha do pipeline
