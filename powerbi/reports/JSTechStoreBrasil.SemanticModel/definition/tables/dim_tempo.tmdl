@@ -148,12 +148,9 @@ table dim_tempo
 		mode: import
 		source =
 				let
-				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
-				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
-				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
-				    dim_tempo_Table = main_Schema{[Name="dim_tempo",Kind="Table"]}[Data]
+				    FilePath = "Z:/Projetos_Engenharia_Analitycs/JSTechStore/data/gold_export/dim_tempo.parquet",
+				    Source = Parquet.Document(File.Contents(FilePath))
 				in
-				    dim_tempo_Table
-
-	annotation PBI_ResultType = Table
+				    Source
+annotation PBI_ResultType = Table
 
