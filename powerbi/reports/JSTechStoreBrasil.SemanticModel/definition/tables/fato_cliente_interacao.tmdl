@@ -1,0 +1,193 @@
+table fato_cliente_interacao
+	lineageTag: 41da455f-f226-408e-9ce2-bbe362b901cd
+
+	column sk_sessao
+		dataType: string
+		lineageTag: ee477b6a-bbb1-4cd4-9ab5-94b1ce2abb52
+		summarizeBy: none
+		sourceColumn: sk_sessao
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_cliente
+		dataType: string
+		lineageTag: 98723b19-7d62-40e2-a68d-b6632749103a
+		summarizeBy: none
+		sourceColumn: sk_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: 0c2ed60c-e146-46ca-8f9c-ce0b029c471a
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_sessao_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 0565a4e5-0350-49ba-8dd8-09a21486759e
+		summarizeBy: sum
+		sourceColumn: id_sessao_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_pedido_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 61bf43e4-abc6-497c-a9a8-eed0ee69e74b
+		summarizeBy: none
+		sourceColumn: id_pedido_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal_origem
+		dataType: string
+		lineageTag: 55dc3e6a-0863-4e4b-ae22-4dfa01db13a9
+		summarizeBy: none
+		sourceColumn: canal_origem
+
+		annotation SummarizationSetBy = Automatic
+
+	column device_type
+		dataType: string
+		lineageTag: 7d04c7c2-948d-46c9-92cc-0bf9ad17de15
+		summarizeBy: none
+		sourceColumn: device_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_inicio
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 2ca9a323-841f-4f47-ab45-76bd5f956d7a
+		summarizeBy: none
+		sourceColumn: dt_inicio
+
+		variation Variation
+			isDefault
+			relationship: d2a65918-c8d0-4672-8334-8d5ac12bb39e
+			defaultHierarchy: LocalDateTable_6cf40733-a826-4c04-93a1-ea6e2f4d1a27.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_fim
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 7deed460-ab48-4b13-8edd-bf116180f143
+		summarizeBy: none
+		sourceColumn: dt_fim
+
+		variation Variation
+			isDefault
+			relationship: 01191d9f-6056-4ab2-9148-abd25e490420
+			defaultHierarchy: LocalDateTable_c507f314-09a7-4958-ab46-3732f0652340.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column paginas_visitadas
+		dataType: int64
+		formatString: 0
+		lineageTag: b8ed9cb1-48da-4926-885a-19d84445c712
+		summarizeBy: sum
+		sourceColumn: paginas_visitadas
+
+		annotation SummarizationSetBy = Automatic
+
+	column duracao_min
+		dataType: double
+		lineageTag: dca6c251-8e89-431a-9d03-41b57e575be8
+		summarizeBy: sum
+		sourceColumn: duracao_min
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column converteu
+		dataType: string
+		lineageTag: ec2a2fab-643b-43d2-8f98-6e250ec14d3e
+		summarizeBy: none
+		sourceColumn: converteu
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_produtos_vistos
+		dataType: int64
+		formatString: 0
+		lineageTag: 4dcc26be-a38f-4870-b6ef-5ba7a199fb18
+		summarizeBy: sum
+		sourceColumn: qtd_produtos_vistos
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_add_cart
+		dataType: double
+		lineageTag: b7d9c938-4b2c-4042-a716-6afd71aa7ce3
+		summarizeBy: sum
+		sourceColumn: qtd_add_cart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_remove_cart
+		dataType: double
+		lineageTag: 01ac2765-43cf-4534-bfcc-68533efd644c
+		summarizeBy: sum
+		sourceColumn: qtd_remove_cart
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_compras
+		dataType: double
+		lineageTag: aebe9bbf-731b-4f3a-8edb-8e71bb3a278b
+		summarizeBy: sum
+		sourceColumn: qtd_compras
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column fl_abandono_carrinho
+		dataType: string
+		lineageTag: 4f74de89-1bc8-458e-80fe-ae4e01b9a9e9
+		summarizeBy: none
+		sourceColumn: fl_abandono_carrinho
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_sessao
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ec04f25c-fac5-4f1f-8a45-342614bbe4f4
+		summarizeBy: none
+		sourceColumn: dt_sessao
+
+		variation Variation
+			isDefault
+			relationship: 888e1d6c-d018-4435-8017-3d6ca6cd4ebf
+			defaultHierarchy: LocalDateTable_35b9ba44-c138-45b3-b2fa-ba7d53b993ea.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition fato_cliente_interacao = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    fato_cliente_interacao_Table = main_Schema{[Name="fato_cliente_interacao",Kind="Table"]}[Data]
+				in
+				    fato_cliente_interacao_Table
+
+	annotation PBI_ResultType = Table
+

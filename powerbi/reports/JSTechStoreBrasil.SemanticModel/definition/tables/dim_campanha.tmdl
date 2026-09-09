@@ -1,0 +1,183 @@
+table dim_campanha
+	lineageTag: 7e1dae71-e592-4fac-8f74-20d767038d51
+
+	column sk_campanha
+		dataType: string
+		lineageTag: e465935f-e529-4dc4-be35-4ad0ae124de4
+		summarizeBy: none
+		sourceColumn: sk_campanha
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_campanha_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 380bde36-6889-4d72-873d-fd6874b837ec
+		summarizeBy: sum
+		sourceColumn: id_campanha_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		lineageTag: 36b86cf8-1d6d-4b7c-b993-f4b40bb30abc
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo
+		dataType: string
+		lineageTag: f169de2b-ee20-4db4-a5e6-454fc9639a62
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal
+		dataType: string
+		lineageTag: 979513c4-b1b0-4c7f-acdd-17e32b689721
+		summarizeBy: none
+		sourceColumn: canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_inicio
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 37773924-da79-4b7c-97e9-bc5db85157ad
+		summarizeBy: none
+		sourceColumn: dt_inicio
+
+		variation Variation
+			isDefault
+			relationship: c17385d1-bd11-4eec-bd36-984e239cedfc
+			defaultHierarchy: LocalDateTable_40f8e32d-4ef3-43ed-b605-5a9a85687054.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dt_fim
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6035a4f6-7ddf-48ff-9cfd-3bdb6b20b3cb
+		summarizeBy: none
+		sourceColumn: dt_fim
+
+		variation Variation
+			isDefault
+			relationship: 805a3746-4ba2-4507-a83c-8732cbeb0593
+			defaultHierarchy: LocalDateTable_62833256-f29a-47b8-a87f-b96f1965e484.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column duracao_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 267f8016-7787-45a3-bf1a-4ada4ed551be
+		summarizeBy: sum
+		sourceColumn: duracao_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column orcamento
+		dataType: double
+		lineageTag: 00cc3323-4caf-4bf3-9693-e399e99cab44
+		summarizeBy: sum
+		sourceColumn: orcamento
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column objetivo
+		dataType: string
+		lineageTag: 7b749bd1-01ed-45e7-a570-e530b037c5a3
+		summarizeBy: none
+		sourceColumn: objetivo
+
+		annotation SummarizationSetBy = Automatic
+
+	column ativo
+		dataType: string
+		lineageTag: e227ddaa-1b90-4359-bdf8-8b4eddf5c004
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano_campanha
+		dataType: int64
+		formatString: 0
+		lineageTag: ea79e643-d1a6-4389-a074-c1fdc4f98dd3
+		summarizeBy: sum
+		sourceColumn: ano_campanha
+
+		annotation SummarizationSetBy = Automatic
+
+	column valid_from
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b8834e52-646e-4de5-a3e1-77a6f4da4b12
+		summarizeBy: none
+		sourceColumn: valid_from
+
+		variation Variation
+			isDefault
+			relationship: 109b5285-0277-4fde-86a9-b2010ca4a3de
+			defaultHierarchy: LocalDateTable_5cbf7972-2086-47aa-8be2-7b9269226409.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valid_to
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2aac4ef5-abec-4bf5-9767-68d27a76f410
+		summarizeBy: none
+		sourceColumn: valid_to
+
+		variation Variation
+			isDefault
+			relationship: 2e1e0999-7904-4a27-998c-d9fb3d32ee1d
+			defaultHierarchy: LocalDateTable_a4065158-2968-411f-8653-5dcddd423ea4.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fl_current
+		dataType: string
+		lineageTag: f2e40960-c06c-4c9a-9d01-6ee9f7660798
+		summarizeBy: none
+		sourceColumn: fl_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column hash_row
+		dataType: string
+		lineageTag: 9590708d-7a43-447e-a3dd-7d6f42605e5c
+		summarizeBy: none
+		sourceColumn: hash_row
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_campanha = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_campanha_Table = main_Schema{[Name="dim_campanha",Kind="Table"]}[Data]
+				in
+				    dim_campanha_Table
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

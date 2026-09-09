@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "007a85be88b7db737d3d",
+  "displayName": "Page 4 - Logística",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}

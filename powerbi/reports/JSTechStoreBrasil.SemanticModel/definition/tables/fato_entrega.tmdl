@@ -1,0 +1,200 @@
+table fato_entrega
+	lineageTag: 89afea67-2f36-430a-8a4a-8d6020afbc99
+
+	column sk_entrega
+		dataType: string
+		lineageTag: a961d4c8-21ec-4c0b-9c26-6ecbe7ee9d95
+		summarizeBy: none
+		sourceColumn: sk_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_cliente
+		dataType: string
+		lineageTag: cc79ce45-9be9-43bb-9c74-774296f786f6
+		summarizeBy: none
+		sourceColumn: sk_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_loja
+		dataType: string
+		lineageTag: 9a8f90e5-ce5c-46dc-841b-9a563e7dd399
+		summarizeBy: none
+		sourceColumn: sk_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_transportadora
+		dataType: string
+		lineageTag: 1dbbfe59-db2b-4679-aa23-8b06bf406f67
+		summarizeBy: none
+		sourceColumn: sk_transportadora
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_modalidade_entrega
+		dataType: string
+		lineageTag: cc7a5ce3-e584-4274-bdf2-cf495130691f
+		summarizeBy: none
+		sourceColumn: sk_modalidade_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo_postagem
+		dataType: int64
+		formatString: 0
+		lineageTag: 950054eb-66c7-4113-afee-715dddfb141c
+		summarizeBy: sum
+		sourceColumn: sk_tempo_postagem
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_entrega_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: d8a1af51-5aa2-41df-b821-12dbf8c509ff
+		summarizeBy: sum
+		sourceColumn: id_entrega_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_pedido_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 685580e2-eee8-4bf5-ac71-03b477396223
+		summarizeBy: sum
+		sourceColumn: id_pedido_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column codigo_rastreio
+		dataType: string
+		lineageTag: ed6c89ae-78a5-45a3-b3f8-d3f8cacd04dd
+		summarizeBy: none
+		sourceColumn: codigo_rastreio
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_postagem
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: c0d28cfe-4779-4792-a4f3-b7a54f5b507a
+		summarizeBy: none
+		sourceColumn: dt_postagem
+
+		variation Variation
+			isDefault
+			relationship: eb16423a-535b-49c7-9eaf-9a3e4d663400
+			defaultHierarchy: LocalDateTable_a4455435-6e49-4cff-bfeb-ade3518aefd8.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dt_promessa
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 2018d80b-170a-49a6-aae4-10d4b80b2efe
+		summarizeBy: none
+		sourceColumn: dt_promessa
+
+		variation Variation
+			isDefault
+			relationship: 2c38d568-5c0f-4a7f-b855-d1f06a0fe804
+			defaultHierarchy: LocalDateTable_d6fafd4e-26cd-49fe-b3dc-a0c23f9bec8f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dt_efetiva
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1b485ebf-8f66-4e76-919d-5a6005e929c9
+		summarizeBy: none
+		sourceColumn: dt_efetiva
+
+		variation Variation
+			isDefault
+			relationship: a9eaec51-9811-424f-8c49-67bb18cfbddc
+			defaultHierarchy: LocalDateTable_128c0d81-76f1-4320-a66b-0360a2689d39.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column lead_time_prometido_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 4ee8c0b8-c1e2-490c-86bb-2acc750c37c7
+		summarizeBy: sum
+		sourceColumn: lead_time_prometido_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column lead_time_real_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 8f04ac65-432d-4c0c-b66a-e23237d559de
+		summarizeBy: sum
+		sourceColumn: lead_time_real_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column atraso_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 99b8b3f9-0655-4397-8b65-b92697080cca
+		summarizeBy: sum
+		sourceColumn: atraso_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_sla_atendido
+		dataType: string
+		lineageTag: 9f1c157b-68d8-4725-961c-58b863ad2175
+		summarizeBy: none
+		sourceColumn: fl_sla_atendido
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_entregue
+		dataType: string
+		lineageTag: e2b4d9a8-430c-4724-81ed-b0b49997be30
+		summarizeBy: none
+		sourceColumn: fl_entregue
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 4daff94e-7760-4333-be63-909a30271bf3
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal_venda
+		dataType: string
+		lineageTag: 1ec47abd-c18f-439f-ae42-de83548dea31
+		summarizeBy: none
+		sourceColumn: canal_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_entrega = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    fato_entrega_Table = main_Schema{[Name="fato_entrega",Kind="Table"]}[Data]
+				in
+				    fato_entrega_Table
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

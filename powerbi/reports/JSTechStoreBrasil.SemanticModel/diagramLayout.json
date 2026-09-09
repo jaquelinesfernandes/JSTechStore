@@ -1,0 +1,230 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 1200.7723889945846
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 336.91236220236158,
+            "y": 1631.7387122629366
+          },
+          "nodeIndex": "dim_campanha",
+          "nodeLineageTag": "7e1dae71-e592-4fac-8f74-20d767038d51",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1020.4717599433775,
+            "y": 369.27324205484433
+          },
+          "nodeIndex": "dim_canal_venda",
+          "nodeLineageTag": "4b4aefbd-43d3-4772-8046-2014a04e5ab8",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1210.780903436148,
+            "y": 1470.0290931401059
+          },
+          "nodeIndex": "dim_cliente",
+          "nodeLineageTag": "b1a81f46-4de5-4cb1-b305-16b2cba2aa9a",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": 571.056874483397
+          },
+          "nodeIndex": "dim_fornecedor",
+          "nodeLineageTag": "fbc8ca1d-4c79-42f2-86e9-53043ba695e6",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 814.87254421632292,
+            "y": 623.75734779119739
+          },
+          "nodeIndex": "dim_loja",
+          "nodeLineageTag": "8810c482-fe48-48f3-bf25-fdb727c8bc61",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1721.0346897572488,
+            "y": 932.25754140646563
+          },
+          "nodeIndex": "dim_modalidade_entrega",
+          "nodeLineageTag": "c15a7edb-f4a6-4dfa-af08-67b088a67311",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 51.187169150083434,
+            "y": 1274.8269527321797
+          },
+          "nodeIndex": "dim_produto",
+          "nodeLineageTag": "2c68d4d8-6d1c-46f9-8788-181304451886",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 525.01790143612948,
+            "y": 904.63479122749322
+          },
+          "nodeIndex": "dim_tempo",
+          "nodeLineageTag": "9ca5da06-58f2-42c8-854e-d082343cf777",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1768.9944263901834,
+            "y": 1285.2064756057543
+          },
+          "nodeIndex": "dim_transportadora",
+          "nodeLineageTag": "39116315-2d19-41ab-bc6e-0f66eb15fecd",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 339.86011915015922,
+            "y": 306.14869827690609
+          },
+          "nodeIndex": "dim_vendedor",
+          "nodeLineageTag": "c9d5a9b2-0835-4fd6-8605-fa905af8cdd7",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 808.59149990288074,
+            "y": 1470.0426406846493
+          },
+          "nodeIndex": "fato_cliente_interacao",
+          "nodeLineageTag": "41da455f-f226-408e-9ce2-bbe362b901cd",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1431.058807163502,
+            "y": 1112.7446523898625
+          },
+          "nodeIndex": "fato_entrega",
+          "nodeLineageTag": "89afea67-2f36-430a-8a4a-8d6020afbc99",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 240.05185745700112,
+            "y": 921.34988109169512
+          },
+          "nodeIndex": "fato_estoque",
+          "nodeLineageTag": "e5c511c8-d4a7-46cd-a1b8-28600dfc58b7",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1035.5548933027312,
+            "y": 1112.8423769201361
+          },
+          "nodeIndex": "fato_financeiro",
+          "nodeLineageTag": "1af294f7-135c-4757-9947-c7d1bb276f99",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 193.09611679904563,
+            "y": -50
+          },
+          "nodeIndex": "fato_orcamento",
+          "nodeLineageTag": "50deb65f-6ef4-45f8-83c0-49cce500e874",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 520.63579606909525,
+            "y": 1274.8295014517641
+          },
+          "nodeIndex": "fato_venda",
+          "nodeLineageTag": "951c1d67-2cd3-4219-a48e-b09e9d0f9d4f",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 89.19259052056951,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

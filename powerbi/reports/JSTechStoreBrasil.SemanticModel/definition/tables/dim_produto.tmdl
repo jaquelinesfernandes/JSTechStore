@@ -1,0 +1,211 @@
+table dim_produto
+	lineageTag: 2c68d4d8-6d1c-46f9-8788-181304451886
+
+	column sk_produto
+		dataType: string
+		lineageTag: 410d1f49-3fb7-4287-b41f-6eac2948935d
+		summarizeBy: none
+		sourceColumn: sk_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_produto_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: b55b9091-b2ac-4175-a55e-14d25cbde9f1
+		summarizeBy: sum
+		sourceColumn: id_produto_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column sku
+		dataType: string
+		lineageTag: 54bf7a4c-68a7-4987-9115-7a1b5b39af54
+		summarizeBy: none
+		sourceColumn: sku
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_produto
+		dataType: string
+		lineageTag: 7d61d8ee-2435-4f25-9d51-93f43086cf38
+		summarizeBy: none
+		sourceColumn: nome_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column marca
+		dataType: string
+		lineageTag: 69cdb42d-f383-44e0-8404-1b75675543c9
+		summarizeBy: none
+		sourceColumn: marca
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria
+		dataType: string
+		lineageTag: 4441b84e-820b-4092-96f0-1ab0009b47c6
+		summarizeBy: none
+		sourceColumn: categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column subcategoria
+		dataType: string
+		lineageTag: 663eaf31-f83e-4ee4-bd4b-16304a3a2171
+		summarizeBy: none
+		sourceColumn: subcategoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_categoria
+		dataType: int64
+		formatString: 0
+		lineageTag: 28061022-fd4a-4469-badd-5b85eccf077d
+		summarizeBy: sum
+		sourceColumn: id_categoria
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_fornecedor
+		dataType: string
+		lineageTag: ea1adff6-158c-4422-a24d-c3be3f357921
+		summarizeBy: none
+		sourceColumn: nome_fornecedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column cnpj_fornecedor
+		dataType: string
+		lineageTag: 5190f306-1d41-4b57-b79a-d90ba2024996
+		summarizeBy: none
+		sourceColumn: cnpj_fornecedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column pais_origem
+		dataType: string
+		lineageTag: af96c86a-f12f-4d51-93a7-cf1726a034db
+		summarizeBy: none
+		sourceColumn: pais_origem
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_entrega_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 09088e8c-3a19-48d2-87b3-862747eb7430
+		summarizeBy: sum
+		sourceColumn: prazo_entrega_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column peso_kg
+		dataType: double
+		lineageTag: e7fc68bc-5ac6-4d89-bc2a-f0b04514f231
+		summarizeBy: sum
+		sourceColumn: peso_kg
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column preco_venda_vigente
+		dataType: double
+		lineageTag: da481e7e-c140-4804-a83e-8368cdd6241c
+		summarizeBy: sum
+		sourceColumn: preco_venda_vigente
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column custo_vigente
+		dataType: double
+		lineageTag: 974faf48-6ed2-41b8-a402-c4727f2ecd4f
+		summarizeBy: sum
+		sourceColumn: custo_vigente
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column margem_pct_vigente
+		dataType: double
+		lineageTag: c320ae94-1b56-4bf9-b98e-a5d82e03f11d
+		summarizeBy: sum
+		sourceColumn: margem_pct_vigente
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ativo
+		dataType: string
+		lineageTag: e7c3f938-ed13-4830-bcc0-15eb8045e309
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column valid_from
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 881ad375-04ae-42a5-b7c0-0644ad4ca62c
+		summarizeBy: none
+		sourceColumn: valid_from
+
+		variation Variation
+			isDefault
+			relationship: fc8e0873-55dc-4700-9d5f-52025e1d585b
+			defaultHierarchy: LocalDateTable_818e3ef1-4bb8-4ea2-8c50-732ae0b58c4e.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valid_to
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3d62e65b-7888-4952-bb13-3e5481bb1c9e
+		summarizeBy: none
+		sourceColumn: valid_to
+
+		variation Variation
+			isDefault
+			relationship: 187afc89-2d14-466d-9c59-2f5a74e767d7
+			defaultHierarchy: LocalDateTable_7115bfaa-ee77-4547-9c69-8195b539f979.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fl_current
+		dataType: string
+		lineageTag: a272f183-c3a8-443b-bdd9-aaca20e5ec37
+		summarizeBy: none
+		sourceColumn: fl_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column hash_row
+		dataType: string
+		lineageTag: b47598af-81ab-4047-9ef8-aed46946aaec
+		summarizeBy: none
+		sourceColumn: hash_row
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_produto = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_produto_Table = main_Schema{[Name="dim_produto",Kind="Table"]}[Data]
+				in
+				    dim_produto_Table
+
+	annotation PBI_ResultType = Table
+

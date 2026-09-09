@@ -1,0 +1,159 @@
+table dim_tempo
+	lineageTag: 9ca5da06-58f2-42c8-854e-d082343cf777
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: 3b80430c-37f7-4314-9ce5-f0ef8efa2e8f
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_full
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1fb68024-42a9-4e86-a5c7-eddbadc46a45
+		summarizeBy: none
+		sourceColumn: data_full
+
+		variation Variation
+			isDefault
+			relationship: 2c5fe01c-6a72-415c-bb6e-e198bc9dda68
+			defaultHierarchy: LocalDateTable_70a61b3e-c186-4c57-9545-0c455a93f9ef.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 144bf1bf-b9f1-40e5-9aeb-1f9498d8885f
+		summarizeBy: sum
+		sourceColumn: ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: int64
+		formatString: 0
+		lineageTag: 5eac597f-0b96-42c8-8755-e6c7b2262152
+		summarizeBy: sum
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column dia
+		dataType: int64
+		formatString: 0
+		lineageTag: fb1ed4b3-8546-49c8-9baf-91de7694f7a8
+		summarizeBy: sum
+		sourceColumn: dia
+
+		annotation SummarizationSetBy = Automatic
+
+	column trimestre
+		dataType: int64
+		formatString: 0
+		lineageTag: 70403545-47b6-4cd3-a751-f194798faf09
+		summarizeBy: sum
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column semana_iso
+		dataType: int64
+		formatString: 0
+		lineageTag: 6a2208f5-d4a0-4719-b8f2-efeca171858e
+		summarizeBy: sum
+		sourceColumn: semana_iso
+
+		annotation SummarizationSetBy = Automatic
+
+	column dia_semana_num
+		dataType: int64
+		formatString: 0
+		lineageTag: 328cb261-9225-468e-ba77-477a5cf18460
+		summarizeBy: sum
+		sourceColumn: dia_semana_num
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_mes
+		dataType: string
+		lineageTag: 392c288d-d0df-4536-b9cd-f8804bfc297d
+		summarizeBy: none
+		sourceColumn: nome_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_dia_semana
+		dataType: string
+		lineageTag: 47499be6-1f6e-4f0d-88c1-9d5f06892c8f
+		summarizeBy: none
+		sourceColumn: nome_dia_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_trimestre
+		dataType: string
+		lineageTag: c45e093e-6737-49f6-b46e-111b3f4d4f8b
+		summarizeBy: none
+		sourceColumn: nome_trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_fim_de_semana
+		dataType: string
+		lineageTag: 8c512aff-8bf8-460e-bddd-dfb32138ab33
+		summarizeBy: none
+		sourceColumn: fl_fim_de_semana
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_feriado_nacional
+		dataType: string
+		lineageTag: c092018d-810e-4cdc-a941-d74eae862163
+		summarizeBy: none
+		sourceColumn: fl_feriado_nacional
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_black_friday
+		dataType: string
+		lineageTag: 06613759-85a0-4216-9e29-484fa60502e1
+		summarizeBy: none
+		sourceColumn: fl_black_friday
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano_mes
+		dataType: string
+		lineageTag: 4a89e1d5-f6e2-412c-a810-5f3b97cb4035
+		summarizeBy: none
+		sourceColumn: ano_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano_trimestre
+		dataType: string
+		lineageTag: 93a7662a-437c-4487-b161-cb7d7783851d
+		summarizeBy: none
+		sourceColumn: ano_trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_tempo = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_tempo_Table = main_Schema{[Name="dim_tempo",Kind="Table"]}[Data]
+				in
+				    dim_tempo_Table
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,92 @@
+table dim_modalidade_entrega
+	lineageTag: c15a7edb-f4a6-4dfa-af08-67b088a67311
+
+	column sk_modalidade_entrega
+		dataType: string
+		lineageTag: ddc5a221-16dd-4ec0-a665-d526a8d56f8d
+		summarizeBy: none
+		sourceColumn: sk_modalidade_entrega
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_modalidade_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 8cd62697-57b7-4f59-a83b-04fc9454798a
+		summarizeBy: none
+		sourceColumn: id_modalidade_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column codigo
+		dataType: string
+		lineageTag: c6e0412b-a96b-4dda-9492-34ab981bf564
+		summarizeBy: none
+		sourceColumn: codigo
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_modalidade
+		dataType: string
+		lineageTag: f66bd012-c919-45a1-8419-3c790de5c01e
+		summarizeBy: none
+		sourceColumn: nome_modalidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo
+		dataType: string
+		lineageTag: 2ad18cc7-9354-4263-808a-80eb66c52244
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 1e23b34f-3b91-456c-ba78-0de8b3056d9f
+		summarizeBy: none
+		sourceColumn: prazo_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column frete_base
+		dataType: double
+		lineageTag: 672c3cd0-7233-435e-ade5-372addd75416
+		summarizeBy: none
+		sourceColumn: frete_base
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column nome_transportadora
+		dataType: string
+		lineageTag: 5df0872b-4eb7-49d3-bfa2-bc2798015815
+		summarizeBy: none
+		sourceColumn: nome_transportadora
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_retirada_loja
+		dataType: string
+		lineageTag: ff9f24cc-532c-48f5-9e82-e09eda7f3ac2
+		summarizeBy: none
+		sourceColumn: fl_retirada_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_modalidade_entrega = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_modalidade_entrega_Table = main_Schema{[Name="dim_modalidade_entrega",Kind="Table"]}[Data]
+				in
+				    dim_modalidade_entrega_Table
+
+	annotation PBI_ResultType = Table
+

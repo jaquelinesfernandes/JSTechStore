@@ -1,0 +1,90 @@
+table dim_fornecedor
+	lineageTag: fbc8ca1d-4c79-42f2-86e9-53043ba695e6
+
+	column sk_fornecedor
+		dataType: string
+		lineageTag: 1e438d28-9468-4d8a-abac-64d2b8b6ad14
+		summarizeBy: none
+		sourceColumn: sk_fornecedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_fornecedor_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: fd040f19-60ac-4b01-a6c0-50955b1c1f1a
+		summarizeBy: none
+		sourceColumn: id_fornecedor_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_fornecedor
+		dataType: string
+		lineageTag: 87221174-6a44-4c0c-bccf-bb170f668e8f
+		summarizeBy: none
+		sourceColumn: nome_fornecedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column cnpj
+		dataType: string
+		lineageTag: 9e32aa6b-e836-4a87-8b7b-c13e63ed0fc0
+		summarizeBy: none
+		sourceColumn: cnpj
+
+		annotation SummarizationSetBy = Automatic
+
+	column categoria_principal
+		dataType: string
+		lineageTag: 4720539e-ef23-41ec-8fc5-8a75e4388578
+		summarizeBy: none
+		sourceColumn: categoria_principal
+
+		annotation SummarizationSetBy = Automatic
+
+	column pais_origem
+		dataType: string
+		lineageTag: 10ec85aa-6bfe-4949-bc4f-cf30f31e5e1c
+		summarizeBy: none
+		sourceColumn: pais_origem
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_entrega_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 3168ffa5-5337-488e-ae6b-6b7611d34036
+		summarizeBy: none
+		sourceColumn: prazo_entrega_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column ativo
+		dataType: string
+		lineageTag: d06a655b-de6b-4cbf-895b-e8a760837046
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_importado
+		dataType: string
+		lineageTag: 63e6a6c8-02b6-45dc-9345-683b5d087c6f
+		summarizeBy: none
+		sourceColumn: fl_importado
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_fornecedor = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_fornecedor_Table = main_Schema{[Name="dim_fornecedor",Kind="Table"]}[Data]
+				in
+				    dim_fornecedor_Table
+
+	annotation PBI_ResultType = Table
+

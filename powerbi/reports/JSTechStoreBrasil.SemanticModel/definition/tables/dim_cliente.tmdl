@@ -1,0 +1,281 @@
+table dim_cliente
+	lineageTag: b1a81f46-4de5-4cb1-b305-16b2cba2aa9a
+
+	column sk_cliente
+		dataType: string
+		lineageTag: e64ac5df-bc70-49f4-876b-d750d8ee6b63
+		summarizeBy: none
+		sourceColumn: sk_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_cliente_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 5b876a11-da5f-41ef-a30c-96f0087ac5e3
+		summarizeBy: sum
+		sourceColumn: id_cliente_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column cpf
+		dataType: string
+		lineageTag: e58be258-551c-4bbe-b292-2009db1f187e
+		summarizeBy: none
+		sourceColumn: cpf
+
+		annotation SummarizationSetBy = Automatic
+
+	column email
+		dataType: string
+		lineageTag: a92cf25a-b177-4f8d-b60b-932aa09ccb3c
+		summarizeBy: none
+		sourceColumn: email
+
+		annotation SummarizationSetBy = Automatic
+
+	column primeiro_nome
+		dataType: string
+		lineageTag: 35845419-91ad-4556-ab9c-1c9f6022be11
+		summarizeBy: none
+		sourceColumn: primeiro_nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_completo
+		dataType: string
+		lineageTag: c2c3c594-b95f-497c-b494-362969e8c5e0
+		summarizeBy: none
+		sourceColumn: nome_completo
+
+		annotation SummarizationSetBy = Automatic
+
+	column cep
+		dataType: string
+		lineageTag: 85e3cc86-3b9b-4b7e-a43a-833d5055beb5
+		summarizeBy: none
+		sourceColumn: cep
+
+		annotation SummarizationSetBy = Automatic
+
+	column cidade
+		dataType: string
+		lineageTag: b0aa6c3b-e627-4cc7-8d23-68fec8bfe684
+		summarizeBy: none
+		sourceColumn: cidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column uf
+		dataType: string
+		lineageTag: 029b1ce6-0e9c-438e-87d2-bd38e256aaf0
+		summarizeBy: none
+		sourceColumn: uf
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_cadastro
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 66211725-310e-4ef5-a7cf-59a554eed769
+		summarizeBy: none
+		sourceColumn: data_cadastro
+
+		variation Variation
+			isDefault
+			relationship: cece4692-ff22-4d3a-9f9b-78a9d410deaf
+			defaultHierarchy: LocalDateTable_dfe7353b-f9af-4116-b060-ad0778e5300d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column canal_origem
+		dataType: string
+		lineageTag: 7b655afa-9ea5-4b87-aea7-0621004cd280
+		summarizeBy: none
+		sourceColumn: canal_origem
+
+		annotation SummarizationSetBy = Automatic
+
+	column nivel_fidelidade
+		dataType: string
+		lineageTag: 508c7a3a-3fd3-4bb3-90e2-2066ceeae724
+		summarizeBy: none
+		sourceColumn: nivel_fidelidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_pedidos
+		dataType: int64
+		formatString: 0
+		lineageTag: 6f98bdf4-3b72-4aac-803f-4f4999b24803
+		summarizeBy: sum
+		sourceColumn: qtd_pedidos
+
+		annotation SummarizationSetBy = Automatic
+
+	column ltv
+		dataType: double
+		lineageTag: 63f76f54-6aa4-4d73-a97b-de08f31ee031
+		summarizeBy: sum
+		sourceColumn: ltv
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ultima_compra
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 16e6ea80-e78c-4ad3-abf5-fe72fbdd443f
+		summarizeBy: none
+		sourceColumn: ultima_compra
+
+		variation Variation
+			isDefault
+			relationship: 2e6f4f22-8a36-4a85-8ef2-1097254c3c43
+			defaultHierarchy: LocalDateTable_24c8c805-1473-46bd-925f-42e73b320938.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column primeira_compra
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ef9c416e-70e4-4c9c-9bcd-665ca0c961f6
+		summarizeBy: none
+		sourceColumn: primeira_compra
+
+		variation Variation
+			isDefault
+			relationship: b11b8976-0287-44b0-9a3b-5c49349b4bc4
+			defaultHierarchy: LocalDateTable_712437ea-3742-4b11-a00c-d1273c1263ab.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column recencia_dias
+		dataType: int64
+		formatString: 0
+		lineageTag: 940a75bd-a082-4835-8fb3-c9f0292ac7de
+		summarizeBy: sum
+		sourceColumn: recencia_dias
+
+		annotation SummarizationSetBy = Automatic
+
+	column score_recencia
+		dataType: int64
+		formatString: 0
+		lineageTag: 03857840-386f-4d14-8699-567696271b6f
+		summarizeBy: sum
+		sourceColumn: score_recencia
+
+		annotation SummarizationSetBy = Automatic
+
+	column score_frequencia
+		dataType: int64
+		formatString: 0
+		lineageTag: 99e92dc2-f651-4dc5-a985-1f143d4d8637
+		summarizeBy: sum
+		sourceColumn: score_frequencia
+
+		annotation SummarizationSetBy = Automatic
+
+	column score_monetario
+		dataType: int64
+		formatString: 0
+		lineageTag: 8b77e152-641c-4e80-b017-2aec1041e97b
+		summarizeBy: sum
+		sourceColumn: score_monetario
+
+		annotation SummarizationSetBy = Automatic
+
+	column segmento_rfm
+		dataType: string
+		lineageTag: ba3ce37e-5954-4bcb-947b-4850fae8a03d
+		summarizeBy: none
+		sourceColumn: segmento_rfm
+
+		annotation SummarizationSetBy = Automatic
+
+	column saldo_techpoints
+		dataType: int64
+		formatString: 0
+		lineageTag: 553dc26a-3a54-4fc1-9522-53e35fe2d6ed
+		summarizeBy: sum
+		sourceColumn: saldo_techpoints
+
+		annotation SummarizationSetBy = Automatic
+
+	column ativo
+		dataType: string
+		lineageTag: eab2c83a-f5a7-4aa9-a6c8-9c4c7a543d51
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column valid_from
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 9312b36d-7e40-40e7-ae8e-3416504e5eb9
+		summarizeBy: none
+		sourceColumn: valid_from
+
+		variation Variation
+			isDefault
+			relationship: 6492c942-0aa7-47d8-97df-5e41cc3c9961
+			defaultHierarchy: LocalDateTable_4c6d0ea4-2e34-443d-b39b-86302e259e3c.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valid_to
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 10a489f1-50ff-46a7-bcd7-51c6c1935452
+		summarizeBy: none
+		sourceColumn: valid_to
+
+		variation Variation
+			isDefault
+			relationship: 5cfe9a2e-e845-4853-b22b-8a4a99a2742d
+			defaultHierarchy: LocalDateTable_cb616337-6f5a-4827-812b-0cf9a37bea0f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fl_current
+		dataType: string
+		lineageTag: 4138c5b2-8500-4921-84fa-a725acda8679
+		summarizeBy: none
+		sourceColumn: fl_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column hash_row
+		dataType: string
+		lineageTag: 8476f1c8-1950-4fd9-8309-952e80d08789
+		summarizeBy: none
+		sourceColumn: hash_row
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_cliente = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_cliente_Table = main_Schema{[Name="dim_cliente",Kind="Table"]}[Data]
+				in
+				    dim_cliente_Table
+
+	annotation PBI_ResultType = Table
+

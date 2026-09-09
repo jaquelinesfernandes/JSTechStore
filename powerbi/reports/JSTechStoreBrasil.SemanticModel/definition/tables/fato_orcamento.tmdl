@@ -1,0 +1,197 @@
+table fato_orcamento
+	lineageTag: 50deb65f-6ef4-45f8-83c0-49cce500e874
+
+	column sk_orcamento
+		dataType: string
+		lineageTag: 20c5bf29-eab8-441e-ba30-930e0931d67d
+		summarizeBy: none
+		sourceColumn: sk_orcamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_loja
+		dataType: string
+		lineageTag: 4d3d6686-3c63-4de4-aa4e-c3aeeef4fb9e
+		summarizeBy: none
+		sourceColumn: sk_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: 030e8f1b-8c01-4fe2-a5f9-a00d586d4bc0
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_orcamento_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: cc66a89b-faa0-4efa-9d1c-96965fba654e
+		summarizeBy: sum
+		sourceColumn: id_orcamento_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_loja_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 50e21ee3-94c6-4e88-918d-911f53092c36
+		summarizeBy: sum
+		sourceColumn: id_loja_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal_venda
+		dataType: string
+		lineageTag: c9e156b3-fc01-426f-8445-988be1264217
+		summarizeBy: none
+		sourceColumn: canal_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column ano
+		dataType: int64
+		formatString: 0
+		lineageTag: fff4507b-3aee-4219-95e0-7613620a7729
+		summarizeBy: sum
+		sourceColumn: ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: int64
+		formatString: 0
+		lineageTag: ff4eb779-0da3-442d-b631-3ecbdc270fd8
+		summarizeBy: sum
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_inicio_mes
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b0b45797-979b-4bc1-8e7c-f350471d0dc4
+		summarizeBy: none
+		sourceColumn: dt_inicio_mes
+
+		variation Variation
+			isDefault
+			relationship: 2258ccc6-c472-465b-a94e-46c7de82c251
+			defaultHierarchy: LocalDateTable_f05c2d78-4643-42eb-a05c-4ee2d130ea35.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valor_meta_receita
+		dataType: double
+		lineageTag: e2084809-2bc3-44e3-965e-046705fb5886
+		summarizeBy: sum
+		sourceColumn: valor_meta_receita
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_meta_margem
+		dataType: double
+		lineageTag: 494c7979-a3de-4f8c-a87e-c88ae777b9f1
+		summarizeBy: sum
+		sourceColumn: valor_meta_margem
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_meta_pedidos
+		dataType: int64
+		formatString: 0
+		lineageTag: 06417b21-49f8-48d6-be76-ec0d02122609
+		summarizeBy: sum
+		sourceColumn: qtd_meta_pedidos
+
+		annotation SummarizationSetBy = Automatic
+
+	column receita_realizada
+		dataType: double
+		lineageTag: f9c109ec-60da-441c-921f-0148cfe2a4e6
+		summarizeBy: sum
+		sourceColumn: receita_realizada
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column margem_realizada
+		dataType: double
+		lineageTag: 27842468-ee71-4d00-8a0b-ed2f36be0332
+		summarizeBy: sum
+		sourceColumn: margem_realizada
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_pedidos_realizados
+		dataType: int64
+		formatString: 0
+		lineageTag: 3c6575fc-b848-45b2-894e-671f405b9d01
+		summarizeBy: sum
+		sourceColumn: qtd_pedidos_realizados
+
+		annotation SummarizationSetBy = Automatic
+
+	column var_receita_pct
+		dataType: double
+		lineageTag: 5d1c2883-3078-4531-b188-27111146b52a
+		summarizeBy: sum
+		sourceColumn: var_receita_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column var_margem_pct
+		dataType: double
+		lineageTag: 2173935d-68e7-4eea-b4d2-546ac0dc4fbd
+		summarizeBy: sum
+		sourceColumn: var_margem_pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column fl_meta_receita_atingida
+		dataType: string
+		lineageTag: 1a14b127-2660-4e90-a182-f98e98aa6eb6
+		summarizeBy: none
+		sourceColumn: fl_meta_receita_atingida
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_meta_pedidos_atingida
+		dataType: string
+		lineageTag: 2789ff02-594f-4277-a11c-1d7c8fba1d8a
+		summarizeBy: none
+		sourceColumn: fl_meta_pedidos_atingida
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_orcamento = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    fato_orcamento_Table = main_Schema{[Name="fato_orcamento",Kind="Table"]}[Data]
+				in
+				    fato_orcamento_Table
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

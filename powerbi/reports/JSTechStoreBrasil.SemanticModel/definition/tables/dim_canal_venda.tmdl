@@ -1,0 +1,58 @@
+table dim_canal_venda
+	lineageTag: 4b4aefbd-43d3-4772-8046-2014a04e5ab8
+
+	column sk_canal_venda
+		dataType: string
+		lineageTag: b8703c54-b895-4acb-a7e9-cc56ffdc7439
+		summarizeBy: none
+		sourceColumn: sk_canal_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column canal_venda
+		dataType: string
+		lineageTag: 3f69b8b2-63f8-478c-abcf-7e7a21ee20a0
+		summarizeBy: none
+		sourceColumn: canal_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column descricao_canal
+		dataType: string
+		lineageTag: ec7cfed1-f66a-4577-9a23-3045af603330
+		summarizeBy: none
+		sourceColumn: descricao_canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_canal
+		dataType: string
+		lineageTag: 147c533e-0f2b-4d56-b4ec-15344539a0a4
+		summarizeBy: none
+		sourceColumn: tipo_canal
+
+		annotation SummarizationSetBy = Automatic
+
+	column plataforma
+		dataType: string
+		lineageTag: ec7a50c7-947e-4730-b0e8-16636f56ee3d
+		summarizeBy: none
+		sourceColumn: plataforma
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_canal_venda = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_canal_venda_Table = main_Schema{[Name="dim_canal_venda",Kind="Table"]}[Data]
+				in
+				    dim_canal_venda_Table
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

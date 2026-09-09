@@ -1,0 +1,337 @@
+table fato_venda
+	lineageTag: 951c1d67-2cd3-4219-a48e-b09e9d0f9d4f
+
+	column sk_venda
+		dataType: string
+		lineageTag: d8ab5eab-6a86-4898-adc0-ef678950ac1a
+		summarizeBy: none
+		sourceColumn: sk_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_cliente
+		dataType: string
+		lineageTag: 200d1cc3-4e8d-4d26-89fa-3f4fb80b925e
+		summarizeBy: none
+		sourceColumn: sk_cliente
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_produto
+		dataType: string
+		lineageTag: 5afc3102-6271-4d3b-877e-be863644d238
+		summarizeBy: none
+		sourceColumn: sk_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_loja
+		dataType: string
+		lineageTag: b9e0473a-3dc1-4b50-8a01-7fc832264044
+		summarizeBy: none
+		sourceColumn: sk_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: 8c76f992-49ec-4324-8075-9ddc69c66077
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_canal_venda
+		dataType: string
+		lineageTag: 096747c5-1585-4b1f-894d-f03cc9d934cc
+		summarizeBy: none
+		sourceColumn: sk_canal_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_campanha
+		dataType: string
+		lineageTag: f7aaa268-c04a-4a78-9f76-b64a769fedb6
+		summarizeBy: none
+		sourceColumn: sk_campanha
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_pedido_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 884140b9-2281-41fe-95e0-b3ba4da09855
+		summarizeBy: sum
+		sourceColumn: id_pedido_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_item_pedido_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 5e90d7dd-1c54-45bd-99eb-dd6f7f9540ea
+		summarizeBy: sum
+		sourceColumn: id_item_pedido_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_pedido_data
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 754ab019-caf6-4fc6-ab06-d927d96dfd14
+		summarizeBy: none
+		sourceColumn: dt_pedido_data
+
+		variation Variation
+			isDefault
+			relationship: 041fb1ac-9e82-47f8-adb0-b0a84f940ef1
+			defaultHierarchy: LocalDateTable_d5de566d-7b59-4259-a6a6-53baa8d6e3b4.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dt_pedido
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d9ff57f3-127a-43c2-8f13-c28c3958ebdb
+		summarizeBy: none
+		sourceColumn: dt_pedido
+
+		variation Variation
+			isDefault
+			relationship: bd29a748-a932-4a8b-a262-053d7b20675d
+			defaultHierarchy: LocalDateTable_ecf61332-f27d-4a8c-b058-0fd73c07a0ff.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_confirmacao
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6ea8d5c0-e0e5-4ef5-b36c-3458e5e4faf8
+		summarizeBy: none
+		sourceColumn: dt_confirmacao
+
+		variation Variation
+			isDefault
+			relationship: 764d96b9-a2b0-4681-803d-0593f0c01cad
+			defaultHierarchy: LocalDateTable_74d5d24d-f663-4f3b-9f36-96c7ec71440e.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_vendida
+		dataType: int64
+		formatString: 0
+		lineageTag: c7f15dfb-4a16-4ca8-aec7-a0c03468cade
+		summarizeBy: sum
+		sourceColumn: qtd_vendida
+
+		annotation SummarizationSetBy = Automatic
+
+	column preco_unitario
+		dataType: double
+		lineageTag: 4a5cafd1-53d0-46a1-b75f-3664db8fe392
+		summarizeBy: sum
+		sourceColumn: preco_unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column custo_unitario
+		dataType: double
+		lineageTag: 357f71ff-3988-49c1-8b8c-3c864116da7a
+		summarizeBy: sum
+		sourceColumn: custo_unitario
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column desconto_item
+		dataType: double
+		lineageTag: 0736aeca-56bb-48fa-8306-79cd7795e148
+		summarizeBy: sum
+		sourceColumn: desconto_item
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_liquido_item
+		dataType: double
+		lineageTag: da41ab67-d7f8-4491-b004-ba25b7978fbb
+		summarizeBy: sum
+		sourceColumn: valor_liquido_item
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column margem_bruta_item
+		dataType: double
+		lineageTag: 734a8921-3ff4-4e1c-bf98-8ea96b0a8982
+		summarizeBy: sum
+		sourceColumn: margem_bruta_item
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column taxa_desconto_item
+		dataType: double
+		lineageTag: 77a12845-ec7a-4b60-99de-e3a1248d06a4
+		summarizeBy: sum
+		sourceColumn: taxa_desconto_item
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_bruto_pedido
+		dataType: double
+		lineageTag: 45d4b754-e406-4165-8947-aee498fcd7ec
+		summarizeBy: sum
+		sourceColumn: valor_bruto_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_desconto_pedido
+		dataType: double
+		lineageTag: 3bffafbd-61e2-4fe6-8bff-3d59d5853aa7
+		summarizeBy: sum
+		sourceColumn: valor_desconto_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_frete_pedido
+		dataType: double
+		lineageTag: ae8316db-a552-44a4-a211-9fca40821b9f
+		summarizeBy: sum
+		sourceColumn: valor_frete_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column valor_liquido_pedido
+		dataType: double
+		lineageTag: 84653a2b-3fd1-4c2d-b6fd-99f9c5f14cf6
+		summarizeBy: sum
+		sourceColumn: valor_liquido_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_itens_pedido
+		dataType: int64
+		formatString: 0
+		lineageTag: ecf7af11-6147-4096-a39e-1fb15d35f6ea
+		summarizeBy: sum
+		sourceColumn: qtd_itens_pedido
+
+		annotation SummarizationSetBy = Automatic
+
+	column parcelas
+		dataType: int64
+		formatString: 0
+		lineageTag: 1acbe5dc-7be0-4846-80e1-130917e2b093
+		summarizeBy: sum
+		sourceColumn: parcelas
+
+		annotation SummarizationSetBy = Automatic
+
+	column metodo_pagamento
+		dataType: string
+		lineageTag: 49c987c9-b290-44ac-a72f-57198a44ae15
+		summarizeBy: none
+		sourceColumn: metodo_pagamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: ce5d8219-7bd3-44af-89f4-dec9a9d140b5
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_venda_valida
+		dataType: string
+		lineageTag: 9c8f15f2-db79-42bd-8df5-af4f456fee0b
+		summarizeBy: none
+		sourceColumn: fl_venda_valida
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_cancelado
+		dataType: string
+		lineageTag: a690f33f-ed6f-4749-9429-c579c96f0fb3
+		summarizeBy: none
+		sourceColumn: fl_cancelado
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_devolvido
+		dataType: string
+		lineageTag: 31eb705d-f874-45d5-8c8a-c32ed990bc16
+		summarizeBy: none
+		sourceColumn: fl_devolvido
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_online
+		dataType: string
+		lineageTag: 7b041be5-3343-4bbd-a6d2-bc930ef71f8a
+		summarizeBy: none
+		sourceColumn: fl_online
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor_comissao
+		dataType: double
+		lineageTag: 28345d11-e374-45dc-a42a-beaa62f8a49f
+		summarizeBy: sum
+		sourceColumn: valor_comissao
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column canal_venda
+		dataType: string
+		lineageTag: 239375cc-9e1e-46c0-97e4-93f547aec706
+		summarizeBy: none
+		sourceColumn: canal_venda
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_venda = m
+		mode: import
+		source =
+				let
+				    DataInicio = Date.ToText(DateTime.Date(RangeStart), "yyyy-MM-dd"),
+				    DataFim    = Date.ToText(DateTime.Date(RangeEnd),   "yyyy-MM-dd"),
+				
+				    Source = Odbc.Query(
+				        "DSN=JSTechStoreGold",
+				        "SELECT * FROM fato_venda "
+				            & "WHERE dt_pedido_data >= '" & DataInicio & "' "
+				            & "AND dt_pedido_data < '"   & DataFim    & "'"
+				    )
+				in
+				    Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
+	annotation PBI_IsMQueryFoldable = True
+

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "JSTechStoreBrasil"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "32aa2b0d-33ed-4ce0-b438-054a5834d425"
+  }
+}

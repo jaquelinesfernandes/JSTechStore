@@ -1,0 +1,186 @@
+table dim_loja
+	lineageTag: 8810c482-fe48-48f3-bf25-fdb727c8bc61
+
+	column sk_loja
+		dataType: string
+		lineageTag: d18644a3-c6f1-4696-8a0b-296fe74ca482
+		summarizeBy: none
+		sourceColumn: sk_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_loja_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 346ad6ab-504d-4355-8885-9753359d8180
+		summarizeBy: sum
+		sourceColumn: id_loja_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column codigo
+		dataType: string
+		lineageTag: f0fbdbaa-b407-4f98-a8e0-3533144eb9b1
+		summarizeBy: none
+		sourceColumn: codigo
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_loja
+		dataType: string
+		lineageTag: 8b038527-f152-44c8-b0d5-847a35e255e5
+		summarizeBy: none
+		sourceColumn: nome_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo_loja
+		dataType: string
+		lineageTag: 192f3f17-c40f-4848-8db7-c7ee740924d6
+		summarizeBy: none
+		sourceColumn: tipo_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column regiao
+		dataType: string
+		lineageTag: a5a52617-df70-4f0c-b90b-b6d873caa901
+		summarizeBy: none
+		sourceColumn: regiao
+
+		annotation SummarizationSetBy = Automatic
+
+	column cidade
+		dataType: string
+		lineageTag: 8007d2db-7bd4-40e9-8e9d-46d0a3ed6a01
+		summarizeBy: none
+		sourceColumn: cidade
+
+		annotation SummarizationSetBy = Automatic
+
+	column uf
+		dataType: string
+		lineageTag: 85c56a6c-0c87-43f5-83e3-82b23a790faf
+		summarizeBy: none
+		sourceColumn: uf
+
+		annotation SummarizationSetBy = Automatic
+
+	column gerente
+		dataType: string
+		lineageTag: 0f700b21-c802-488e-9726-5cc5eb841487
+		summarizeBy: none
+		sourceColumn: gerente
+
+		annotation SummarizationSetBy = Automatic
+
+	column capacidade_m2
+		dataType: int64
+		formatString: 0
+		lineageTag: 7ccea844-c241-408b-bacf-436f93fac186
+		summarizeBy: sum
+		sourceColumn: capacidade_m2
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_abertura
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b26863c0-af93-465f-8982-cc03b08fc2f6
+		summarizeBy: none
+		sourceColumn: dt_abertura
+
+		variation Variation
+			isDefault
+			relationship: cc6f62c3-e73d-4748-8c66-97d631a5440f
+			defaultHierarchy: LocalDateTable_84573c24-5431-4910-a801-87822c540f7a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ativo
+		dataType: string
+		lineageTag: 033fad56-b897-471a-8537-a8c7938f2ebe
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_loja_fisica
+		dataType: string
+		lineageTag: 08734d75-53ee-4582-b154-50248ce61b15
+		summarizeBy: none
+		sourceColumn: fl_loja_fisica
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_ecommerce
+		dataType: string
+		lineageTag: 491ac09c-52a8-41ae-8457-5f08a8535acf
+		summarizeBy: none
+		sourceColumn: fl_ecommerce
+
+		annotation SummarizationSetBy = Automatic
+
+	column valid_from
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 4c6089ff-d91d-42a4-8ba5-88dfd2b0475c
+		summarizeBy: none
+		sourceColumn: valid_from
+
+		variation Variation
+			isDefault
+			relationship: db14c256-0d34-4374-a428-9146fc948b57
+			defaultHierarchy: LocalDateTable_90fb2765-e146-408f-99cc-5f6de9f550fa.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valid_to
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f46fbf46-8e7e-4cb3-bab6-dc66cf6d7088
+		summarizeBy: none
+		sourceColumn: valid_to
+
+		variation Variation
+			isDefault
+			relationship: 963ae176-911a-47ba-94ab-e041a63a1263
+			defaultHierarchy: LocalDateTable_3bdb478f-205a-4e1a-b75b-67ddd2b91408.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fl_current
+		dataType: string
+		lineageTag: d31aaf4e-1302-4254-8efe-fc5591a407e5
+		summarizeBy: none
+		sourceColumn: fl_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column hash_row
+		dataType: string
+		lineageTag: 2f02a3f6-5e5c-4a9e-9962-4c1189a2ea0f
+		summarizeBy: none
+		sourceColumn: hash_row
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_loja = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_loja_Table = main_Schema{[Name="dim_loja",Kind="Table"]}[Data]
+				in
+				    dim_loja_Table
+
+	annotation PBI_ResultType = Table
+

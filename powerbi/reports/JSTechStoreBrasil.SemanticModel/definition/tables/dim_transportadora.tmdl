@@ -1,0 +1,85 @@
+table dim_transportadora
+	lineageTag: 39116315-2d19-41ab-bc6e-0f66eb15fecd
+
+	column sk_transportadora
+		dataType: string
+		lineageTag: ff32a885-35cd-49d8-8c4c-be1dc6fc2022
+		summarizeBy: none
+		sourceColumn: sk_transportadora
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_transportadora_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 25de3919-f041-4bd8-b6b8-f12d10819dc4
+		summarizeBy: none
+		sourceColumn: id_transportadora_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		lineageTag: 9f2931e1-3fe4-4b16-bcb6-93095d162c6c
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column cnpj
+		dataType: string
+		lineageTag: d2bf97e9-3820-4352-a4d1-31febba38b6e
+		summarizeBy: none
+		sourceColumn: cnpj
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_dias_min
+		dataType: int64
+		formatString: 0
+		lineageTag: c07d9549-db41-4986-9ff3-6003d89fb72e
+		summarizeBy: none
+		sourceColumn: prazo_dias_min
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_dias_max
+		dataType: int64
+		formatString: 0
+		lineageTag: f4225592-6d4c-4ff2-8671-74af930f9262
+		summarizeBy: none
+		sourceColumn: prazo_dias_max
+
+		annotation SummarizationSetBy = Automatic
+
+	column prazo_medio_dias
+		dataType: double
+		lineageTag: 82276ad6-c63b-4a84-90c8-bb7b0bbbedcb
+		summarizeBy: none
+		sourceColumn: prazo_medio_dias
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column ativo
+		dataType: string
+		lineageTag: c0a3a61b-06f0-40bd-8bc3-8faeab7719a6
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_transportadora = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_transportadora_Table = main_Schema{[Name="dim_transportadora",Kind="Table"]}[Data]
+				in
+				    dim_transportadora_Table
+
+	annotation PBI_ResultType = Table
+

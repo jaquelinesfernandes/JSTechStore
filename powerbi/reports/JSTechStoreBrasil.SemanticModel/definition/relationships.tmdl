@@ -1,0 +1,264 @@
+relationship c17385d1-bd11-4eec-bd36-984e239cedfc
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_campanha.dt_inicio
+	toColumn: LocalDateTable_40f8e32d-4ef3-43ed-b605-5a9a85687054.Date
+
+relationship 805a3746-4ba2-4507-a83c-8732cbeb0593
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_campanha.dt_fim
+	toColumn: LocalDateTable_62833256-f29a-47b8-a87f-b96f1965e484.Date
+
+relationship 109b5285-0277-4fde-86a9-b2010ca4a3de
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_campanha.valid_from
+	toColumn: LocalDateTable_5cbf7972-2086-47aa-8be2-7b9269226409.Date
+
+relationship 2e1e0999-7904-4a27-998c-d9fb3d32ee1d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_campanha.valid_to
+	toColumn: LocalDateTable_a4065158-2968-411f-8653-5dcddd423ea4.Date
+
+relationship cece4692-ff22-4d3a-9f9b-78a9d410deaf
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_cliente.data_cadastro
+	toColumn: LocalDateTable_dfe7353b-f9af-4116-b060-ad0778e5300d.Date
+
+relationship 2e6f4f22-8a36-4a85-8ef2-1097254c3c43
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_cliente.ultima_compra
+	toColumn: LocalDateTable_24c8c805-1473-46bd-925f-42e73b320938.Date
+
+relationship b11b8976-0287-44b0-9a3b-5c49349b4bc4
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_cliente.primeira_compra
+	toColumn: LocalDateTable_712437ea-3742-4b11-a00c-d1273c1263ab.Date
+
+relationship 6492c942-0aa7-47d8-97df-5e41cc3c9961
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_cliente.valid_from
+	toColumn: LocalDateTable_4c6d0ea4-2e34-443d-b39b-86302e259e3c.Date
+
+relationship 5cfe9a2e-e845-4853-b22b-8a4a99a2742d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_cliente.valid_to
+	toColumn: LocalDateTable_cb616337-6f5a-4827-812b-0cf9a37bea0f.Date
+
+relationship cc6f62c3-e73d-4748-8c66-97d631a5440f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_loja.dt_abertura
+	toColumn: LocalDateTable_84573c24-5431-4910-a801-87822c540f7a.Date
+
+relationship db14c256-0d34-4374-a428-9146fc948b57
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_loja.valid_from
+	toColumn: LocalDateTable_90fb2765-e146-408f-99cc-5f6de9f550fa.Date
+
+relationship 963ae176-911a-47ba-94ab-e041a63a1263
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_loja.valid_to
+	toColumn: LocalDateTable_3bdb478f-205a-4e1a-b75b-67ddd2b91408.Date
+
+relationship fc8e0873-55dc-4700-9d5f-52025e1d585b
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_produto.valid_from
+	toColumn: LocalDateTable_818e3ef1-4bb8-4ea2-8c50-732ae0b58c4e.Date
+
+relationship 187afc89-2d14-466d-9c59-2f5a74e767d7
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_produto.valid_to
+	toColumn: LocalDateTable_7115bfaa-ee77-4547-9c69-8195b539f979.Date
+
+relationship 2c5fe01c-6a72-415c-bb6e-e198bc9dda68
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_tempo.data_full
+	toColumn: LocalDateTable_70a61b3e-c186-4c57-9545-0c455a93f9ef.Date
+
+relationship ba06d35e-540b-4ac5-a1d1-091c30ab3c56
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_vendedor.data_admissao
+	toColumn: LocalDateTable_ca85685d-db42-477d-ae5c-50b30ce65c4f.Date
+
+relationship 67647938-c045-4c18-8767-f82ef4bce40c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_vendedor.valid_from
+	toColumn: LocalDateTable_536b0274-1862-4eb6-ae22-1040ed7a01de.Date
+
+relationship 2ac37356-de04-4cf2-b058-abb101e7f075
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_vendedor.valid_to
+	toColumn: LocalDateTable_b497422d-8e52-4e51-9586-593b636d5fb8.Date
+
+relationship d2a65918-c8d0-4672-8334-8d5ac12bb39e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_cliente_interacao.dt_inicio
+	toColumn: LocalDateTable_6cf40733-a826-4c04-93a1-ea6e2f4d1a27.Date
+
+relationship 01191d9f-6056-4ab2-9148-abd25e490420
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_cliente_interacao.dt_fim
+	toColumn: LocalDateTable_c507f314-09a7-4958-ab46-3732f0652340.Date
+
+relationship 888e1d6c-d018-4435-8017-3d6ca6cd4ebf
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_cliente_interacao.dt_sessao
+	toColumn: LocalDateTable_35b9ba44-c138-45b3-b2fa-ba7d53b993ea.Date
+
+relationship eb16423a-535b-49c7-9eaf-9a3e4d663400
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_entrega.dt_postagem
+	toColumn: LocalDateTable_a4455435-6e49-4cff-bfeb-ade3518aefd8.Date
+
+relationship 2c38d568-5c0f-4a7f-b855-d1f06a0fe804
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_entrega.dt_promessa
+	toColumn: LocalDateTable_d6fafd4e-26cd-49fe-b3dc-a0c23f9bec8f.Date
+
+relationship a9eaec51-9811-424f-8c49-67bb18cfbddc
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_entrega.dt_efetiva
+	toColumn: LocalDateTable_128c0d81-76f1-4320-a66b-0360a2689d39.Date
+
+relationship 6bcbd261-158f-488b-8648-ac9d86bcccf5
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_estoque.dt_ultima_atualizacao
+	toColumn: LocalDateTable_4c394459-e064-41a1-92d6-fbd7a30e09e4.Date
+
+relationship bce38f3e-a000-418b-94ca-4006e7b6220e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_financeiro.dt_lancamento
+	toColumn: LocalDateTable_97f3b200-608a-4460-ac57-bbf53fc49547.Date
+
+relationship ae012440-8408-43a7-9bbc-d42f01ed6f42
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_financeiro.dt_competencia
+	toColumn: LocalDateTable_d40b0e27-5adc-406f-aedd-bd99b1c2b78a.Date
+
+relationship 8bbff5d9-c38b-46d1-92d8-5dc16d03929f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_financeiro.dt_pagamento
+	toColumn: LocalDateTable_c140ba0e-c6bb-4f55-918d-3bbb8e2a69b6.Date
+
+relationship 041fb1ac-9e82-47f8-adb0-b0a84f940ef1
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_venda.dt_pedido_data
+	toColumn: LocalDateTable_d5de566d-7b59-4259-a6a6-53baa8d6e3b4.Date
+
+relationship bd29a748-a932-4a8b-a262-053d7b20675d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_venda.dt_pedido
+	toColumn: LocalDateTable_ecf61332-f27d-4a8c-b058-0fd73c07a0ff.Date
+
+relationship 764d96b9-a2b0-4681-803d-0593f0c01cad
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_venda.dt_confirmacao
+	toColumn: LocalDateTable_74d5d24d-f663-4f3b-9f36-96c7ec71440e.Date
+
+relationship 2258ccc6-c472-465b-a94e-46c7de82c251
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fato_orcamento.dt_inicio_mes
+	toColumn: LocalDateTable_f05c2d78-4643-42eb-a05c-4ee2d130ea35.Date
+
+relationship AutoDetected_7576954a-c71e-4b35-9897-643b4170c254
+	fromColumn: fato_venda.sk_campanha
+	toColumn: dim_campanha.sk_campanha
+
+relationship AutoDetected_112452d0-4996-43bb-a1f3-8679277fa36d
+	fromColumn: fato_venda.sk_canal_venda
+	toColumn: dim_canal_venda.sk_canal_venda
+
+relationship AutoDetected_ed106842-6440-4af0-8fda-1ded61d608f5
+	fromColumn: fato_entrega.canal_venda
+	toColumn: dim_canal_venda.canal_venda
+
+relationship AutoDetected_73e11cbe-f3f7-498a-92da-70d4d12ebc8d
+	fromColumn: fato_orcamento.canal_venda
+	toColumn: dim_canal_venda.canal_venda
+
+relationship AutoDetected_c6522723-37a3-498f-9cae-e74d4104c080
+	fromColumn: fato_cliente_interacao.sk_cliente
+	toColumn: dim_cliente.sk_cliente
+
+relationship AutoDetected_b96e933f-9754-44b0-925f-114247d99ecd
+	fromColumn: fato_entrega.sk_cliente
+	toColumn: dim_cliente.sk_cliente
+
+relationship AutoDetected_e09f6f1c-dba3-41de-a848-e8b22e0122b7
+	fromColumn: fato_venda.sk_cliente
+	toColumn: dim_cliente.sk_cliente
+
+relationship AutoDetected_d81b7790-dfae-463b-bb59-bdc1269579f6
+	fromColumn: dim_produto.nome_fornecedor
+	toColumn: dim_fornecedor.nome_fornecedor
+
+relationship AutoDetected_897ebc25-375e-4bfe-8367-f5fc74561f36
+	fromColumn: fato_entrega.sk_loja
+	toColumn: dim_loja.sk_loja
+
+relationship AutoDetected_df2ab20b-619c-4b63-b663-a0a7c2018ac3
+	fromColumn: fato_estoque.sk_loja
+	toColumn: dim_loja.sk_loja
+
+relationship AutoDetected_4284bd32-a35e-4847-be28-fc83991c9ec5
+	fromColumn: fato_financeiro.sk_loja
+	toColumn: dim_loja.sk_loja
+
+relationship AutoDetected_753f279d-f109-4a19-85cf-100f5562ab90
+	fromColumn: fato_venda.sk_loja
+	toColumn: dim_loja.sk_loja
+
+relationship AutoDetected_5deb974e-5dca-4761-91b5-e7e3511bb8cc
+	fromColumn: fato_orcamento.sk_loja
+	toColumn: dim_loja.sk_loja
+
+relationship AutoDetected_81ca9180-582b-413d-a31c-2a69ef3037bf
+	fromColumn: dim_vendedor.nome_loja
+	toColumn: dim_loja.nome_loja
+
+relationship AutoDetected_b8f4826c-fc06-4366-9fe3-91f54e1e405e
+	fromColumn: fato_entrega.sk_modalidade_entrega
+	toColumn: dim_modalidade_entrega.sk_modalidade_entrega
+
+relationship AutoDetected_13ac512a-1533-4ced-b48f-9d2fda4a02e6
+	fromColumn: fato_estoque.sk_produto
+	toColumn: dim_produto.sk_produto
+
+relationship AutoDetected_640d8c9e-0c67-4969-bc3d-cbb2542db553
+	fromColumn: fato_venda.sk_produto
+	toColumn: dim_produto.sk_produto
+
+relationship AutoDetected_a17ccb48-fe97-42d0-ac43-60777f8f2286
+	fromColumn: fato_cliente_interacao.sk_tempo
+	toColumn: dim_tempo.sk_tempo
+
+relationship AutoDetected_90df1fec-f9f9-45b0-8276-b33e48fccd03
+	fromColumn: fato_estoque.sk_tempo
+	toColumn: dim_tempo.sk_tempo
+
+relationship AutoDetected_38243c1c-af30-4a56-9f51-ca84b1707dd5
+	fromColumn: fato_venda.sk_tempo
+	toColumn: dim_tempo.sk_tempo
+
+relationship AutoDetected_1c5fe2d6-8494-49a1-8b30-e03eab703d92
+	fromColumn: fato_orcamento.sk_tempo
+	toColumn: dim_tempo.sk_tempo
+
+relationship AutoDetected_82404664-4605-429f-81b6-921d43d5864a
+	fromColumn: fato_entrega.sk_transportadora
+	toColumn: dim_transportadora.sk_transportadora
+
+relationship AutoDetected_193bfe94-b977-49b8-9a92-c65e17b9b776
+	fromColumn: fato_cliente_interacao.id_pedido_dg
+	toColumn: fato_financeiro.id_pedido_dg
+
+relationship AutoDetected_970a5845-e818-4dd0-92f8-50e53b8b005b
+	isActive: false
+	crossFilteringBehavior: bothDirections
+	fromCardinality: one
+	fromColumn: fato_entrega.id_pedido_dg
+	toColumn: fato_financeiro.id_pedido_dg
+
+relationship AutoDetected_4383c45c-84fe-4a7c-8fb7-4c28ca63618d
+	isActive: false
+	fromColumn: fato_venda.id_pedido_dg
+	toColumn: fato_financeiro.id_pedido_dg
+

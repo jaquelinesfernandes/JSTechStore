@@ -1,0 +1,170 @@
+table dim_vendedor
+	lineageTag: c9d5a9b2-0835-4fd6-8605-fa905af8cdd7
+
+	column sk_vendedor
+		dataType: string
+		lineageTag: 566046bd-fbe4-4bbf-93ef-b91f925f0f5f
+		summarizeBy: none
+		sourceColumn: sk_vendedor
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_vendedor_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: ce62f26a-6392-4f96-86b5-200effc322b5
+		summarizeBy: sum
+		sourceColumn: id_vendedor_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome
+		dataType: string
+		lineageTag: 3678ea57-fd6b-4831-80af-b36299aa6961
+		summarizeBy: none
+		sourceColumn: nome
+
+		annotation SummarizationSetBy = Automatic
+
+	column cpf
+		dataType: string
+		lineageTag: d4a8a82c-8de1-4b9a-9aa1-634ceb176ad8
+		summarizeBy: none
+		sourceColumn: cpf
+
+		annotation SummarizationSetBy = Automatic
+
+	column email
+		dataType: string
+		lineageTag: 88454a2c-fd4d-41ee-b93e-afd81930cd93
+		summarizeBy: none
+		sourceColumn: email
+
+		annotation SummarizationSetBy = Automatic
+
+	column cargo
+		dataType: string
+		lineageTag: a0c680f3-5d65-4400-bfba-009c6d473c76
+		summarizeBy: none
+		sourceColumn: cargo
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_admissao
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 9fa6238e-43c1-4310-b6b7-c3d312dea46a
+		summarizeBy: none
+		sourceColumn: data_admissao
+
+		variation Variation
+			isDefault
+			relationship: ba06d35e-540b-4ac5-a1d1-091c30ab3c56
+			defaultHierarchy: LocalDateTable_ca85685d-db42-477d-ae5c-50b30ce65c4f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column ativo
+		dataType: string
+		lineageTag: 6ccca151-5a7b-4547-9569-e986508ae0a5
+		summarizeBy: none
+		sourceColumn: ativo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_loja
+		dataType: int64
+		formatString: 0
+		lineageTag: d6f72c75-97de-44de-a1d9-27b9118b16ec
+		summarizeBy: sum
+		sourceColumn: id_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column nome_loja
+		dataType: string
+		lineageTag: 2c5fbdfa-f225-442a-9c13-49e595ffaa71
+		summarizeBy: none
+		sourceColumn: nome_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column regiao
+		dataType: string
+		lineageTag: 286b9682-cd35-462e-ab9d-00afc806ee15
+		summarizeBy: none
+		sourceColumn: regiao
+
+		annotation SummarizationSetBy = Automatic
+
+	column uf
+		dataType: string
+		lineageTag: 09106f26-87bd-424b-9ee8-6c0f0875c1de
+		summarizeBy: none
+		sourceColumn: uf
+
+		annotation SummarizationSetBy = Automatic
+
+	column valid_from
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 11057195-8419-4db7-a9d2-dadcfa71aff8
+		summarizeBy: none
+		sourceColumn: valid_from
+
+		variation Variation
+			isDefault
+			relationship: 67647938-c045-4c18-8767-f82ef4bce40c
+			defaultHierarchy: LocalDateTable_536b0274-1862-4eb6-ae22-1040ed7a01de.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valid_to
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: cb4d3423-e5aa-4e56-a529-8eeb85b56b82
+		summarizeBy: none
+		sourceColumn: valid_to
+
+		variation Variation
+			isDefault
+			relationship: 2ac37356-de04-4cf2-b058-abb101e7f075
+			defaultHierarchy: LocalDateTable_b497422d-8e52-4e51-9586-593b636d5fb8.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column fl_current
+		dataType: string
+		lineageTag: 673f819b-ebee-4ad2-a2d3-9700e9bf64de
+		summarizeBy: none
+		sourceColumn: fl_current
+
+		annotation SummarizationSetBy = Automatic
+
+	column hash_row
+		dataType: string
+		lineageTag: dd5b772e-a8d5-4884-a725-ea1aad736b5a
+		summarizeBy: none
+		sourceColumn: hash_row
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_vendedor = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    dim_vendedor_Table = main_Schema{[Name="dim_vendedor",Kind="Table"]}[Data]
+				in
+				    dim_vendedor_Table
+
+	annotation PBI_ResultType = Table
+

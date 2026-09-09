@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "963e34834040d00e4a43",
+  "displayName": "Page 6 - Marketing",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}

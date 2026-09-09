@@ -1,0 +1,16 @@
+/// Início do intervalo de refresh
+expression RangeStart = #datetime(2025, 7, 21, 0, 0, 0) meta [IsParameterQuery=true, Type="DateTime", IsParameterQueryRequired=true]
+	lineageTag: cc8427d8-979d-440c-885e-414292969043
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = DateTime
+
+/// Fim do intervalo de refresh
+expression RangeEnd = #datetime(2026, 12, 31, 23, 59, 59) meta [IsParameterQuery=true, Type="DateTime", IsParameterQueryRequired=true]
+	lineageTag: aba80750-3c51-429a-815a-4190240597af
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = DateTime
+

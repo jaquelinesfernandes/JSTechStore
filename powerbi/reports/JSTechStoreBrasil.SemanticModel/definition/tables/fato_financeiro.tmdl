@@ -1,0 +1,169 @@
+table fato_financeiro
+	lineageTag: 1af294f7-135c-4757-9947-c7d1bb276f99
+
+	column sk_lancamento
+		dataType: string
+		lineageTag: 689364ad-0a42-40cf-bd79-459e9a7215bc
+		summarizeBy: none
+		sourceColumn: sk_lancamento
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_loja
+		dataType: string
+		lineageTag: 7b84e5c1-633e-4a40-aa83-32e02932fb10
+		summarizeBy: none
+		sourceColumn: sk_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo_competencia
+		dataType: int64
+		formatString: 0
+		lineageTag: d2c4f9de-b703-4eba-8a32-b2c429c595a0
+		summarizeBy: sum
+		sourceColumn: sk_tempo_competencia
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_lancamento_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 64fe36c5-491b-427e-b995-a1d6edc3f2fb
+		summarizeBy: sum
+		sourceColumn: id_lancamento_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_pedido_dg
+		dataType: int64
+		formatString: 0
+		lineageTag: 66439eef-2250-460b-9b78-4c7084eff120
+		summarizeBy: none
+		sourceColumn: id_pedido_dg
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo
+		dataType: string
+		lineageTag: db10b5e6-bd28-403d-b976-f5d13fe9ddf3
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor
+		dataType: double
+		lineageTag: 7b5eb45f-875b-4a52-ba8a-abb65a1f719e
+		summarizeBy: sum
+		sourceColumn: valor
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column dt_lancamento
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 86bd31b7-34b4-49f4-bc89-88f074bd173e
+		summarizeBy: none
+		sourceColumn: dt_lancamento
+
+		variation Variation
+			isDefault
+			relationship: bce38f3e-a000-418b-94ca-4006e7b6220e
+			defaultHierarchy: LocalDateTable_97f3b200-608a-4460-ac57-bbf53fc49547.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column dt_competencia
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: b107a7be-cbde-4da7-a8ed-ed072cee844e
+		summarizeBy: none
+		sourceColumn: dt_competencia
+
+		variation Variation
+			isDefault
+			relationship: ae012440-8408-43a7-9bbc-d42f01ed6f42
+			defaultHierarchy: LocalDateTable_d40b0e27-5adc-406f-aedd-bd99b1c2b78a.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column descricao
+		dataType: string
+		lineageTag: dd5873b0-b8d1-4349-a888-8205d9021f70
+		summarizeBy: none
+		sourceColumn: descricao
+
+		annotation SummarizationSetBy = Automatic
+
+	column valor_sinal
+		dataType: double
+		lineageTag: 74037672-19ee-48e3-9bff-e0a215d22746
+		summarizeBy: sum
+		sourceColumn: valor_sinal
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column status_cr
+		dataType: string
+		lineageTag: 0c3084bd-669e-4fd1-a21c-558cf45f90e3
+		summarizeBy: none
+		sourceColumn: status_cr
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_pagamento
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 1d0f4189-37e1-431a-950e-0f143e933c0f
+		summarizeBy: none
+		sourceColumn: dt_pagamento
+
+		variation Variation
+			isDefault
+			relationship: 8bbff5d9-c38b-46d1-92d8-5dc16d03929f
+			defaultHierarchy: LocalDateTable_c140ba0e-c6bb-4f55-918d-3bbb8e2a69b6.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column valor_pago
+		dataType: double
+		lineageTag: 68703614-947b-42cd-9d09-6724640005a0
+		summarizeBy: sum
+		sourceColumn: valor_pago
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column fl_pago
+		dataType: string
+		lineageTag: 73c8baf2-512d-412a-a064-b7c14f24fa65
+		summarizeBy: none
+		sourceColumn: fl_pago
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_financeiro = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    fato_financeiro_Table = main_Schema{[Name="fato_financeiro",Kind="Table"]}[Data]
+				in
+				    fato_financeiro_Table
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,166 @@
+table fato_estoque
+	lineageTag: e5c511c8-d4a7-46cd-a1b8-28600dfc58b7
+
+	column sk_estoque
+		dataType: string
+		lineageTag: bbfe631a-8aed-4b45-a4dd-1bdc2e1867a7
+		summarizeBy: none
+		sourceColumn: sk_estoque
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_produto
+		dataType: string
+		lineageTag: 631381ff-8027-4ec2-9cef-a42e80a402d7
+		summarizeBy: none
+		sourceColumn: sk_produto
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_loja
+		dataType: string
+		lineageTag: ef3714c9-fd89-4812-9a80-ffeba6eae9a2
+		summarizeBy: none
+		sourceColumn: sk_loja
+
+		annotation SummarizationSetBy = Automatic
+
+	column sk_tempo
+		dataType: int64
+		formatString: 0
+		lineageTag: 586d5db9-4f26-48f9-b932-4b057cf32716
+		summarizeBy: none
+		sourceColumn: sk_tempo
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_produto_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 69e81145-653b-4a79-8df8-9e3eaa0d4a02
+		summarizeBy: sum
+		sourceColumn: id_produto_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_loja_nk
+		dataType: int64
+		formatString: 0
+		lineageTag: 9b2685ff-8738-4ae0-a54f-d5e35020a28f
+		summarizeBy: sum
+		sourceColumn: id_loja_nk
+
+		annotation SummarizationSetBy = Automatic
+
+	column dt_ultima_atualizacao
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: ab472c84-101a-4e7a-8f19-333c637f1b14
+		summarizeBy: none
+		sourceColumn: dt_ultima_atualizacao
+
+		variation Variation
+			isDefault
+			relationship: 6bcbd261-158f-488b-8648-ac9d86bcccf5
+			defaultHierarchy: LocalDateTable_4c394459-e064-41a1-92d6-fbd7a30e09e4.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column qtd_disponivel
+		dataType: int64
+		formatString: 0
+		lineageTag: bdd0cc17-6ef8-4521-bfa6-25b2d93ab727
+		summarizeBy: sum
+		sourceColumn: qtd_disponivel
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_reservada
+		dataType: int64
+		formatString: 0
+		lineageTag: f467af77-d57c-4939-ad6e-f8ec09cebcb3
+		summarizeBy: sum
+		sourceColumn: qtd_reservada
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_minima
+		dataType: int64
+		formatString: 0
+		lineageTag: 632d0d16-1c22-4e32-aee1-ae64739502ec
+		summarizeBy: sum
+		sourceColumn: qtd_minima
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_total
+		dataType: int64
+		formatString: 0
+		lineageTag: ece6d9f7-d033-471c-8755-ee62f8311aa4
+		summarizeBy: sum
+		sourceColumn: qtd_total
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_estoque_critico
+		dataType: string
+		lineageTag: 88864c97-818f-4338-8abf-a1a839bf23c8
+		summarizeBy: none
+		sourceColumn: fl_estoque_critico
+
+		annotation SummarizationSetBy = Automatic
+
+	column fl_ruptura
+		dataType: string
+		lineageTag: 4610ef0b-47b7-4dd1-aafe-dadf4bf0187b
+		summarizeBy: none
+		sourceColumn: fl_ruptura
+
+		annotation SummarizationSetBy = Automatic
+
+	column qtd_entrada_dia
+		dataType: double
+		lineageTag: ceaceadc-681b-4e3f-861e-e2cfe4227145
+		summarizeBy: sum
+		sourceColumn: qtd_entrada_dia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_saida_dia
+		dataType: double
+		lineageTag: 8806898b-34dd-4044-b278-2ba732940e2b
+		summarizeBy: sum
+		sourceColumn: qtd_saida_dia
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column qtd_pedidos_movs
+		dataType: int64
+		formatString: 0
+		lineageTag: ea4209e4-2a77-4277-87db-84ac97484327
+		summarizeBy: sum
+		sourceColumn: qtd_pedidos_movs
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fato_estoque = m
+		mode: import
+		source =
+				let
+				    Source = Odbc.DataSource("dsn=JSTechStoreGold", [HierarchicalNavigation=true]),
+				    jstechstore_Database = Source{[Name="jstechstore",Kind="Database"]}[Data],
+				    main_Schema = jstechstore_Database{[Name="main",Kind="Schema"]}[Data],
+				    fato_estoque_Table = main_Schema{[Name="fato_estoque",Kind="Table"]}[Data]
+				in
+				    fato_estoque_Table
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
