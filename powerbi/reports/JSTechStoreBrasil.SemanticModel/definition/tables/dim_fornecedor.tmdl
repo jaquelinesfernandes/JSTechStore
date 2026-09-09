@@ -74,7 +74,6 @@ table dim_fornecedor
 		sourceColumn: fl_importado
 
 		annotation SummarizationSetBy = Automatic
-
 	partition dim_fornecedor = m
 		mode: import
 		source =
@@ -83,5 +82,5 @@ table dim_fornecedor
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table

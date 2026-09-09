@@ -69,7 +69,6 @@ table dim_transportadora
 		sourceColumn: ativo
 
 		annotation SummarizationSetBy = Automatic
-
 	partition dim_transportadora = m
 		mode: import
 		source =
@@ -78,5 +77,5 @@ table dim_transportadora
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table

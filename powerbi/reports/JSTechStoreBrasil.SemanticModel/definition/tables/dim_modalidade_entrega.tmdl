@@ -76,7 +76,6 @@ table dim_modalidade_entrega
 		sourceColumn: fl_retirada_loja
 
 		annotation SummarizationSetBy = Automatic
-
 	partition dim_modalidade_entrega = m
 		mode: import
 		source =
@@ -85,5 +84,5 @@ table dim_modalidade_entrega
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table

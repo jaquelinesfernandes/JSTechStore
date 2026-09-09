@@ -265,7 +265,6 @@ table dim_cliente
 		sourceColumn: hash_row
 
 		annotation SummarizationSetBy = Automatic
-
 	partition dim_cliente = m
 		mode: import
 		source =
@@ -274,5 +273,5 @@ table dim_cliente
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table

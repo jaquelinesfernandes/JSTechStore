@@ -170,7 +170,6 @@ table dim_loja
 		sourceColumn: hash_row
 
 		annotation SummarizationSetBy = Automatic
-
 	partition dim_loja = m
 		mode: import
 		source =
@@ -179,5 +178,5 @@ table dim_loja
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table

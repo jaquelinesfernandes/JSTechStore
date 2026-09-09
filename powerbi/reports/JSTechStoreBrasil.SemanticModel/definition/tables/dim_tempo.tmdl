@@ -143,7 +143,6 @@ table dim_tempo
 		sourceColumn: ano_trimestre
 
 		annotation SummarizationSetBy = Automatic
-
 	partition dim_tempo = m
 		mode: import
 		source =
@@ -152,5 +151,5 @@ table dim_tempo
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table

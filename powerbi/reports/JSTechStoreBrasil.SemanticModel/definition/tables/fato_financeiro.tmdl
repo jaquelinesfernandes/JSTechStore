@@ -153,7 +153,6 @@ table fato_financeiro
 		sourceColumn: fl_pago
 
 		annotation SummarizationSetBy = Automatic
-
 	partition fato_financeiro = m
 		mode: import
 		source =
@@ -162,5 +161,5 @@ table fato_financeiro
 				    Source = Parquet.Document(File.Contents(FilePath))
 				in
 				    Source
-annotation PBI_ResultType = Table
 
+	annotation PBI_ResultType = Table
