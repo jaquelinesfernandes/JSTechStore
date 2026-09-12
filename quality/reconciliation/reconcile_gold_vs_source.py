@@ -250,6 +250,47 @@ def main() -> int:
     duckdb_con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
     pg_con = __import__("psycopg2").connect(os.environ["SUPABASE_DB_URL"])
 
+    # ── Detecção de modo "master data only" ──────────────────────────────────
+    # Após migração Supabase → Neon (2026-09-11), tabelas transacionais foram
+    # truncadas para liberar espaço no free tier (512 MB). O Neon retém apenas
+    # master data (clientes, produtos, lojas, vendedores, campanhas).
+    # A fonte de verdade transacional passou a ser o Bronze Parquet
+    # (gerado por generate_daily.py --output parquet).
+    # Reconciliar Gold vs. banco neste modo produziria 100%+ de desvio falso.
+    try:
+        with pg_con.cursor() as _cur:
+            _cur.execute("SELECT COUNT(*) FROM vendas.pedidos")
+            _pedidos_count = _cur.fetchone()[0]
+    except Exception:
+        _pedidos_count = 0
+
+    if _pedidos_count == 0:
+        log.info(
+            "=== Reconciliação PULADA: banco em modo 'master data only' "
+            "(vendas.pedidos está vazio). "
+            "Fonte transacional migrada para Bronze Parquet. ==="
+        )
+        log.info("TODO: implementar reconcile_gold_vs_bronze.py (Gold vs Parquet).")
+        _skip_report = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "skipped": True,
+            "reason": "master_data_only_neon",
+            "total_checks": 0,
+            "passed": 0,
+            "failed": 0,
+            "results": [],
+        }
+        _out = args.output or LOG_DIR / f"reconciliation_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.json"
+        _out.parent.mkdir(parents=True, exist_ok=True)
+        _out.write_text(
+            __import__("json").dumps(_skip_report, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        duckdb_con.close()
+        pg_con.close()
+        return 0
+    # ─────────────────────────────────────────────────────────────────────────
+
     results: list[dict] = []
     try:
         for check in checks:
