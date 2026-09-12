@@ -79,6 +79,10 @@ jobs:
         if: ${{ github.event.inputs.full_refresh != 'true' }}
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # PYTHONPATH garante que `import ingestion` resolve mesmo quando o script
+          # é invocado diretamente (python scripts/…) — sem PYTHONPATH o Python coloca
+          # apenas scripts/ no sys.path, não a raiz do projeto.
+          PYTHONPATH: ${{ github.workspace }}
         run: python scripts/generate_daily.py --date today --output parquet
 
       # ─────────────────────────────────────────────
