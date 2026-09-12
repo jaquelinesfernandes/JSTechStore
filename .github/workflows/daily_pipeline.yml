@@ -153,9 +153,15 @@ jobs:
         run: python quality/monitoring/check_data_freshness.py --tolerance-hours 26
 
       # ─────────────────────────────────────────────
-      # Step 6 — Reconciliação Gold vs. Supabase (expandida)
+      # Step 6 — Reconciliação Gold vs. fonte
+      # DESATIVADO: com gen_daily --output parquet, a fonte de verdade
+      # transacional é o Bronze Parquet (não o banco Neon). O Neon retém
+      # apenas master data (clientes, produtos, lojas) — queries de contagem
+      # retornariam 0 e falseariam todas as verificações.
+      # TODO: migrar para reconcile_gold_vs_bronze.py (Gold vs Parquet).
       # ─────────────────────────────────────────────
-      - name: "6 · Reconciliação Gold vs. Supabase (todas as tabelas fato)"
+      - name: "6 · Reconciliação Gold vs. fonte (desativado — fonte migrada para Parquet)"
+        if: false
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: python quality/reconciliation/reconcile_gold_vs_source.py
