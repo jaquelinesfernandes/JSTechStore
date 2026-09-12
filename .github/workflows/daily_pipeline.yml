@@ -70,16 +70,16 @@ jobs:
 
       # ─────────────────────────────────────────────
       # Step 1 — Geração de dados diários
-      # Pulado quando full_refresh=true: não inserir dados novos durante rebuild do Gold.
+      # Modo parquet: zero IO banco — IDs locais, escreve direto em Bronze Parquet.
+      # SUPABASE_DB_URL ainda é necessário apenas para carregar o contexto (produtos,
+      # clientes, lojas) do Neon (master data only — sem writes transacionais).
+      # Pulado quando full_refresh=true: não gerar dados novos durante rebuild do Gold.
       # ─────────────────────────────────────────────
-      - name: "1 · Gerar dados do dia (generate_daily.py)"
-        # PAUSADO: geração diária no Supabase suspensa para preservar Disk IO Budget (Free Tier).
-        # Substituir por --output parquet quando gen_daily_to_parquet() estiver implementado.
-        # Ref: diagnóstico 2026-09-11 — estimativa 1.4–1.7 GB IO/dia vs limite ~1.2 GB.
-        if: false
+      - name: "1 · Gerar dados do dia (generate_daily.py --output parquet)"
+        if: ${{ github.event.inputs.full_refresh != 'true' }}
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: python scripts/generate_daily.py --date today
+        run: python scripts/generate_daily.py --date today --output parquet
 
       # ─────────────────────────────────────────────
       # Step 2 — Ingestão Bronze (watermark atômico)
