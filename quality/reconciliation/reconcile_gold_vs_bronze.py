@@ -105,8 +105,11 @@ CHECKS: tuple[ReconciliationCheck, ...] = (
     ),
 
     # ── fato_estoque ──────────────────────────────────────────────────────────
-    # Snapshot atual: dedup por (id_produto, id_loja) = mesma lógica de
-    # stg_estoque__saldo_estoque.  Contagem deve bater com Gold sk_tempo=MAX.
+    # Snapshot atual: compara Gold (sk_tempo=MAX) vs Bronze SOMENTE do batch
+    # mais recente (_ingested_at=MAX). Bronze acumula batches históricos com
+    # id_produto de ranges diferentes (Supabase original + Parquet-mode IDs);
+    # sem o filtro por _ingested_at o dedup retornaria todos os pares únicos
+    # de TODOS os batches, inflando a contagem vs. o snapshot atual do Gold.
     ReconciliationCheck(
         name="fato_estoque.count",
         gold_query="""
@@ -116,25 +119,30 @@ CHECKS: tuple[ReconciliationCheck, ...] = (
         """,
         bronze_query=f"""
             SELECT COUNT(*) FROM (
-                SELECT id_produto, id_loja
-                FROM (
-                    SELECT id_produto, id_loja, qtd_disponivel,
-                           ROW_NUMBER() OVER (
-                               PARTITION BY id_produto, id_loja
-                               ORDER BY updated_at DESC
-                           ) AS _rn
+                SELECT id_produto, id_loja, qtd_disponivel,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY id_produto, id_loja
+                           ORDER BY updated_at DESC
+                       ) AS _rn
+                FROM read_parquet(
+                    '{_B}/estoque/saldo_estoque/**/*.parquet',
+                    union_by_name := true
+                )
+                WHERE _ingested_at::DATE = (
+                    SELECT MAX(_ingested_at::DATE)
                     FROM read_parquet(
                         '{_B}/estoque/saldo_estoque/**/*.parquet',
                         union_by_name := true
                     )
+                    WHERE id_produto IS NOT NULL
                 )
-                WHERE _rn = 1
                   AND id_produto IS NOT NULL
                   AND id_loja IS NOT NULL
-                  AND CAST(qtd_disponivel AS INTEGER) >= 0
             )
+            WHERE _rn = 1
+              AND CAST(qtd_disponivel AS INTEGER) >= 0
         """,
-        metric_label="linhas fato_estoque (snapshot atual por produto × loja)",
+        metric_label="linhas fato_estoque (snapshot batch mais recente por produto × loja)",
         tolerance=0.0,
     ),
 
