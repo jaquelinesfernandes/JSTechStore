@@ -38,6 +38,7 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 _PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(_PROJECT_ROOT))                   # raiz → ingestion.*
 sys.path.insert(0, str(_PROJECT_ROOT / "scripts"))       # scripts/ → generate_data
+import pandas as pd  # noqa: E402
 from faker import Faker  # noqa: E402
 from generate_data import (  # noqa: E402
     CANAIS,
@@ -50,6 +51,11 @@ from generate_data import (  # noqa: E402
     round2,
     seasonality_factor,
 )
+
+# Importados aqui (nível de módulo) para garantir resolução enquanto sys.path
+# já está configurado — evita ambiguidade de escopo ao importar de dentro de função.
+from ingestion.connectors.postgres.config import TABLES_BY_NAME  # noqa: E402
+from ingestion.connectors.postgres.extract import write_parquet_atomic  # noqa: E402
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -225,11 +231,7 @@ def gen_daily_to_parquet(target_date: date, ctx: dict, rng: random.Random) -> No
     O contexto (produtos, clientes, lojas) é lido do cache JSON — sem queries.
     Saída idêntica à do extrator Bronze: write_parquet_atomic() com metadados.
     """
-    import pandas as pd
     from datetime import timedelta
-
-    from ingestion.connectors.postgres.config import TABLES_BY_NAME
-    from ingestion.connectors.postgres.extract import write_parquet_atomic
 
     ingested_at = datetime.now(timezone.utc)
     seqs = _load_seqs()
