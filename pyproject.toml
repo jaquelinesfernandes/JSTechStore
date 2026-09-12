@@ -1,3 +1,21 @@
+# ── Pacote Python (editable install) ─────────────────────────────────────────
+# Permite `import ingestion` de qualquer diretório sem depender de sys.path.
+# Instalar com: pip install -e . --no-deps
+# O workflow faz isso automaticamente após pip install -r requirements.txt.
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jstechstore-pipeline"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.setuptools.packages.find]
+# Inclui apenas o pacote ingestion e sub-pacotes — scripts/ não é pacote.
+include = ["ingestion*"]
+
+# ── Linting ───────────────────────────────────────────────────────────────────
 [tool.ruff]
 target-version = "py312"
 line-length = 120
