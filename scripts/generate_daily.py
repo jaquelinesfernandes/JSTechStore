@@ -32,8 +32,12 @@ from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-# Adiciona o diretório scripts/ ao path para importar generate_data como módulo
-sys.path.insert(0, str(Path(__file__).parent))
+# Garante que tanto scripts/ (para generate_data) quanto a raiz do projeto
+# (para o pacote ingestion.*) estejam no sys.path — necessário ao rodar o
+# script diretamente (python scripts/generate_daily.py) sem PYTHONPATH.
+_PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(_PROJECT_ROOT))                   # raiz → ingestion.*
+sys.path.insert(0, str(_PROJECT_ROOT / "scripts"))       # scripts/ → generate_data
 from faker import Faker  # noqa: E402
 from generate_data import (  # noqa: E402
     CANAIS,
