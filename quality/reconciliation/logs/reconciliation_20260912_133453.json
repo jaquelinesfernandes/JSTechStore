@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-09-12T13:34:53.219734+00:00",
+  "source": "Bronze Parquet",
+  "total_checks": 8,
+  "passed": 8,
+  "failed": 0,
+  "results": [
+    {
+      "check": "fato_venda.max_data",
+      "metric": "data máxima de pedido (YYYYMMDD) — Gold deve ter dados de hoje",
+      "gold_value": 20260720,
+      "bronze_value": 20260720,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_estoque.count",
+      "metric": "linhas fato_estoque (snapshot atual por produto × loja)",
+      "gold_value": 1104,
+      "bronze_value": 1104,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_entrega.count",
+      "metric": "linhas fato_entrega (últimos 2 dias)",
+      "gold_value": 0,
+      "bronze_value": 0,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_financeiro.count",
+      "metric": "linhas fato_financeiro (últimos 2 dias)",
+      "gold_value": 0,
+      "bronze_value": 0,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_financeiro.valor",
+      "metric": "soma valor lançamentos financeiros (últimos 2 dias, BRL)",
+      "gold_value": null,
+      "bronze_value": null,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.1,
+      "passed": true
+    },
+    {
+      "check": "fato_cliente_interacao.count_sessoes",
+      "metric": "sessões em fato_cliente_interacao (últimos 2 dias)",
+      "gold_value": 0,
+      "bronze_value": 0,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_orcamento.count",
+      "metric": "linhas fato_orcamento (full table)",
+      "gold_value": 1040,
+      "bronze_value": 1040,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_orcamento.receita_meta",
+      "metric": "soma receita meta orçada (BRL)",
+      "gold_value": "220332196.98",
+      "bronze_value": 220332196.98,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.1,
+      "passed": true
+    }
+  ]
+}

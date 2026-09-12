@@ -153,22 +153,16 @@ jobs:
         run: python quality/monitoring/check_data_freshness.py --tolerance-hours 26
 
       # ─────────────────────────────────────────────
-      # Step 6 — Reconciliação Gold vs. fonte
-      # DESATIVADO: com gen_daily --output parquet, a fonte de verdade
-      # transacional é o Bronze Parquet (não o banco Neon). O Neon retém
-      # apenas master data (clientes, produtos, lojas) — queries de contagem
-      # retornariam 0 e falseariam todas as verificações.
-      # TODO: migrar para reconcile_gold_vs_bronze.py (Gold vs Parquet).
+      # Step 6 — Reconciliação Gold vs. Bronze Parquet
+      # Compara os 6 fatos do Gold contra os arquivos Bronze usando DuckDB
+      # em ambos os lados — sem depender do banco Neon/Supabase.
+      # Tolerância: 0% para contagens, 0,1% para somas financeiras.
       # ─────────────────────────────────────────────
-      - name: "6 · Reconciliação Gold vs. fonte (desativado — fonte migrada para Parquet)"
-        continue-on-error: true
+      - name: "6 · Reconciliação Gold vs. Bronze Parquet"
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: |
-          echo "::notice::Step 6 desativado. Fonte de verdade transacional migrada para Bronze Parquet."
-          echo "::notice::reconcile_gold_vs_source.py compara Gold vs banco (Neon tem só master data)."
-          echo "::notice::TODO: implementar reconcile_gold_vs_bronze.py (Gold vs Parquet)."
-          exit 0
+          DUCKDB_PATH: ${{ github.workspace }}/data/gold/jstechstore.duckdb
+          BRONZE_PATH: ${{ github.workspace }}/data/bronze
+        run: python quality/reconciliation/reconcile_gold_vs_bronze.py
 
       - name: "6 · Upload relatório de reconciliação"
         if: always()
@@ -207,7 +201,7 @@ jobs:
           echo "| 3 · dbt run | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| 4 · dbt test | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| 5 · Frescor Bronze+Gold | ✅ |" >> $GITHUB_STEP_SUMMARY
-          echo "| 6 · Reconciliação (6 fatos) | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 6 · Reconciliação Gold vs. Bronze | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "| 7 · Backup Gold | ✅ \`${{ env.BACKUP_FILE }}\` |" >> $GITHUB_STEP_SUMMARY
 
       # ─────────────────────────────────────────────

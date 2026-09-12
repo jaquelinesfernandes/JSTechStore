@@ -1,0 +1,77 @@
+{
+  "timestamp": "2026-09-12T13:34:39.674675+00:00",
+  "source": "Bronze Parquet",
+  "total_checks": 8,
+  "passed": 7,
+  "failed": 1,
+  "results": [
+    {
+      "check": "fato_venda.max_data",
+      "passed": false,
+      "error": "Bronze query falhou: Binder Error: Referenced column \"id_pedido\" not found in FROM clause!\nCandidate bindings: \"dt_pedido\"\n\nLINE 14:               AND id_pedido IS NOT NULL\n                           ^\nSQL:\n\n            SELECT CAST(STRFTIME(MAX(CAST(dt_pedido AS DATE)), '%Y%m%d') AS INTEGER)\n            FROM (\n                SELECT dt_pedido, status,\n                       ROW_NUMBER() OVER (\n                           PARTITION BY id_pedido ORDER BY updated_at DESC\n                       ) AS _rn\n                FROM read_parquet(\n                    'data/bronze/vendas/pedidos/**/*.parquet',\n                    union_by_name := true\n                )\n            )\n            WHERE _rn = 1\n              AND id_pedido IS NOT NULL\n              AND status NOT IN ('cancelado', 'devolvido')\n        "
+    },
+    {
+      "check": "fato_estoque.count",
+      "metric": "linhas fato_estoque (snapshot atual por produto × loja)",
+      "gold_value": 1104,
+      "bronze_value": 1104,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_entrega.count",
+      "metric": "linhas fato_entrega (últimos 2 dias)",
+      "gold_value": 0,
+      "bronze_value": 0,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_financeiro.count",
+      "metric": "linhas fato_financeiro (últimos 2 dias)",
+      "gold_value": 0,
+      "bronze_value": 0,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_financeiro.valor",
+      "metric": "soma valor lançamentos financeiros (últimos 2 dias, BRL)",
+      "gold_value": null,
+      "bronze_value": null,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.1,
+      "passed": true
+    },
+    {
+      "check": "fato_cliente_interacao.count_sessoes",
+      "metric": "sessões em fato_cliente_interacao (últimos 2 dias)",
+      "gold_value": 0,
+      "bronze_value": 0,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_orcamento.count",
+      "metric": "linhas fato_orcamento (full table)",
+      "gold_value": 1040,
+      "bronze_value": 1040,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.0,
+      "passed": true
+    },
+    {
+      "check": "fato_orcamento.receita_meta",
+      "metric": "soma receita meta orçada (BRL)",
+      "gold_value": "220332196.98",
+      "bronze_value": 220332196.98,
+      "deviation_pct": 0.0,
+      "tolerance_pct": 0.1,
+      "passed": true
+    }
+  ]
+}
