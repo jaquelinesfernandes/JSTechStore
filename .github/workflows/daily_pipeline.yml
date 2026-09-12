@@ -161,10 +161,14 @@ jobs:
       # TODO: migrar para reconcile_gold_vs_bronze.py (Gold vs Parquet).
       # ─────────────────────────────────────────────
       - name: "6 · Reconciliação Gold vs. fonte (desativado — fonte migrada para Parquet)"
-        if: false
+        continue-on-error: true
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        run: python quality/reconciliation/reconcile_gold_vs_source.py
+        run: |
+          echo "::notice::Step 6 desativado. Fonte de verdade transacional migrada para Bronze Parquet."
+          echo "::notice::reconcile_gold_vs_source.py compara Gold vs banco (Neon tem só master data)."
+          echo "::notice::TODO: implementar reconcile_gold_vs_bronze.py (Gold vs Parquet)."
+          exit 0
 
       - name: "6 · Upload relatório de reconciliação"
         if: always()
