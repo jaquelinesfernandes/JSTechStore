@@ -250,31 +250,36 @@ def main() -> int:
     duckdb_con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
     pg_con = __import__("psycopg2").connect(os.environ["SUPABASE_DB_URL"])
 
-    # ── Detecção de modo "master data only" ──────────────────────────────────
-    # Após migração Supabase → Neon (2026-09-11), tabelas transacionais foram
-    # truncadas para liberar espaço no free tier (512 MB). O Neon retém apenas
-    # master data (clientes, produtos, lojas, vendedores, campanhas).
-    # A fonte de verdade transacional passou a ser o Bronze Parquet
-    # (gerado por generate_daily.py --output parquet).
-    # Reconciliar Gold vs. banco neste modo produziria 100%+ de desvio falso.
-    try:
-        with pg_con.cursor() as _cur:
-            _cur.execute("SELECT COUNT(*) FROM vendas.pedidos")
-            _pedidos_count = _cur.fetchone()[0]
-    except Exception:
-        _pedidos_count = 0
+    # ── Detecção de modo Parquet Pipeline ────────────────────────────────────
+    # Após migração Supabase → Neon (2026-09-11), a geração diária passou a
+    # escrever direto em Bronze Parquet (generate_daily.py --output parquet).
+    # Quando o pipeline opera nesse modo, data/bronze/.sequences.json existe
+    # (criado/atualizado pelo Step 1, antes deste Step 6 ser executado).
+    # Reconciliar Gold vs. banco Neon neste modo produz desvios falsos porque
+    # o Neon retém apenas master data + resíduo da carga histórica parcial.
+    _sequences_file = Path("data/bronze/.sequences.json")
+    _in_parquet_mode = _sequences_file.exists()
 
-    if _pedidos_count == 0:
+    if not _in_parquet_mode:
+        # Fallback: verifica se vendas.pedidos está vazio (Neon truncado limpo)
+        try:
+            with pg_con.cursor() as _cur:
+                _cur.execute("SELECT COUNT(*) FROM vendas.pedidos")
+                _in_parquet_mode = (_cur.fetchone()[0] == 0)
+        except Exception:
+            _in_parquet_mode = True  # Erro de acesso = banco não é fonte primária
+
+    if _in_parquet_mode:
+        _reason = "sequences_file_present" if _sequences_file.exists() else "pedidos_empty"
         log.info(
-            "=== Reconciliação PULADA: banco em modo 'master data only' "
-            "(vendas.pedidos está vazio). "
-            "Fonte transacional migrada para Bronze Parquet. ==="
+            f"=== Reconciliação PULADA [modo parquet — {_reason}]: "
+            "fonte transacional é Bronze Parquet, não o banco Neon. ==="
         )
         log.info("TODO: implementar reconcile_gold_vs_bronze.py (Gold vs Parquet).")
         _skip_report = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "skipped": True,
-            "reason": "master_data_only_neon",
+            "reason": _reason,
             "total_checks": 0,
             "passed": 0,
             "failed": 0,

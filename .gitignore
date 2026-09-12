@@ -226,6 +226,9 @@ data/silver/**
 !data/bronze/.watermarks/
 !data/bronze/.watermarks/**
 
+# Manter arquivo de sequências — sinaliza modo Parquet ao reconcile script
+!data/bronze/.sequences.json
+
 # Manter stubs de schema no Git — garantem que tabelas estáticas têm Parquet
 # em qualquer runner GHA mesmo sem cache, evitando IO Error no dbt.
 !data/bronze/**/stub_empty.parquet

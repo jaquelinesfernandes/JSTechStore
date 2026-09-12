@@ -1,0 +1,4 @@
+{
+  "_note": "Arquivo criado em 2026-09-12 ao ativar generate_daily --output parquet.",
+  "_note2": "Presença deste arquivo indica que o pipeline opera em modo Parquet (sem DB writes transacionais)."
+}
