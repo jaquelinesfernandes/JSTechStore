@@ -63,12 +63,14 @@ table dim_transportadora
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column ativo
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: c0a3a61b-06f0-40bd-8bc3-8faeab7719a6
 		summarizeBy: none
 		sourceColumn: ativo
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_transportadora = m
 		mode: import
 		source =
@@ -79,3 +81,4 @@ table dim_transportadora
 				    Source
 
 	annotation PBI_ResultType = Table
+

@@ -67,7 +67,8 @@ table dim_vendedor
 		annotation UnderlyingDateTimeDataType = Date
 
 	column ativo
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 6ccca151-5a7b-4547-9569-e986508ae0a5
 		summarizeBy: none
 		sourceColumn: ativo
@@ -140,7 +141,8 @@ table dim_vendedor
 		annotation UnderlyingDateTimeDataType = Date
 
 	column fl_current
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 673f819b-ebee-4ad2-a2d3-9700e9bf64de
 		summarizeBy: none
 		sourceColumn: fl_current
@@ -154,6 +156,7 @@ table dim_vendedor
 		sourceColumn: hash_row
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_vendedor = m
 		mode: import
 		source =
@@ -164,3 +167,4 @@ table dim_vendedor
 				    Source
 
 	annotation PBI_ResultType = Table
+

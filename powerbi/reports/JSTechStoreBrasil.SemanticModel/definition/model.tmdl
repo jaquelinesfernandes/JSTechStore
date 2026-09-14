@@ -3,6 +3,7 @@ model Model
 	defaultPowerBIDataSourceVersion: powerBI_V3
 	sourceQueryCulture: pt-BR
 	dataAccessOptions
+		fastCombine
 		legacyRedirects
 		returnErrorValuesAsNull
 
@@ -35,7 +36,6 @@ ref table dim_produto
 ref table LocalDateTable_818e3ef1-4bb8-4ea2-8c50-732ae0b58c4e
 ref table LocalDateTable_7115bfaa-ee77-4547-9c69-8195b539f979
 ref table dim_tempo
-ref table LocalDateTable_70a61b3e-c186-4c57-9545-0c455a93f9ef
 ref table dim_transportadora
 ref table dim_vendedor
 ref table LocalDateTable_ca85685d-db42-477d-ae5c-50b30ce65c4f

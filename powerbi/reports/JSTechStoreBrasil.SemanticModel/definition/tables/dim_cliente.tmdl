@@ -211,7 +211,8 @@ table dim_cliente
 		annotation SummarizationSetBy = Automatic
 
 	column ativo
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: eab2c83a-f5a7-4aa9-a6c8-9c4c7a543d51
 		summarizeBy: none
 		sourceColumn: ativo
@@ -251,7 +252,8 @@ table dim_cliente
 		annotation UnderlyingDateTimeDataType = Date
 
 	column fl_current
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 4138c5b2-8500-4921-84fa-a725acda8679
 		summarizeBy: none
 		sourceColumn: fl_current
@@ -265,6 +267,7 @@ table dim_cliente
 		sourceColumn: hash_row
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_cliente = m
 		mode: import
 		source =
@@ -275,3 +278,4 @@ table dim_cliente
 				    Source
 
 	annotation PBI_ResultType = Table
+

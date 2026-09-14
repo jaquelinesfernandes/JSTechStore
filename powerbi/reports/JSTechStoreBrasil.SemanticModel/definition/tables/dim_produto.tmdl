@@ -141,7 +141,8 @@ table dim_produto
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column ativo
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: e7c3f938-ed13-4830-bcc0-15eb8045e309
 		summarizeBy: none
 		sourceColumn: ativo
@@ -181,7 +182,8 @@ table dim_produto
 		annotation UnderlyingDateTimeDataType = Date
 
 	column fl_current
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: a272f183-c3a8-443b-bdd9-aaca20e5ec37
 		summarizeBy: none
 		sourceColumn: fl_current
@@ -195,6 +197,7 @@ table dim_produto
 		sourceColumn: hash_row
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_produto = m
 		mode: import
 		source =
@@ -205,3 +208,4 @@ table dim_produto
 				    Source
 
 	annotation PBI_ResultType = Table
+

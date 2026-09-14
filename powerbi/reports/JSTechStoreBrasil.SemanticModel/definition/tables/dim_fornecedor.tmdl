@@ -60,7 +60,8 @@ table dim_fornecedor
 		annotation SummarizationSetBy = Automatic
 
 	column ativo
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: d06a655b-de6b-4cbf-895b-e8a760837046
 		summarizeBy: none
 		sourceColumn: ativo
@@ -68,12 +69,14 @@ table dim_fornecedor
 		annotation SummarizationSetBy = Automatic
 
 	column fl_importado
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 63e6a6c8-02b6-45dc-9345-683b5d087c6f
 		summarizeBy: none
 		sourceColumn: fl_importado
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_fornecedor = m
 		mode: import
 		source =
@@ -84,3 +87,4 @@ table dim_fornecedor
 				    Source
 
 	annotation PBI_ResultType = Table
+

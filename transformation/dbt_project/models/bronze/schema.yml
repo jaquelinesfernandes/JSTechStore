@@ -128,13 +128,19 @@ models:
         tests: [not_null]
 
   - name: stg_estoque__saldo_estoque
-    description: "Saldo de estoque atual por produto × loja."
+    description: "Snapshot diário de saldo de estoque por produto x loja. Grao: 1 linha por (id_produto, id_loja, dt_ultima_atualizacao)."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [id_produto, id_loja, dt_ultima_atualizacao]
     columns:
       - name: id_saldo
-        tests: [not_null, unique]
+        tests: [not_null]
+        description: "ID do registro de saldo no banco (repete por dia — chave natural e id_produto+id_loja+data)."
       - name: id_produto
         tests: [not_null]
       - name: id_loja
+        tests: [not_null]
+      - name: dt_ultima_atualizacao
         tests: [not_null]
 
   - name: stg_estoque__movimentacoes

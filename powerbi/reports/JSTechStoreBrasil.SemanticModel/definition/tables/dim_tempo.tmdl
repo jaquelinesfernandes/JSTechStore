@@ -1,5 +1,6 @@
 table dim_tempo
 	lineageTag: 9ca5da06-58f2-42c8-854e-d082343cf777
+	dataCategory: Time
 
 	column sk_tempo
 		dataType: int64
@@ -12,15 +13,11 @@ table dim_tempo
 
 	column data_full
 		dataType: dateTime
+		isKey
 		formatString: Long Date
 		lineageTag: 1fb68024-42a9-4e86-a5c7-eddbadc46a45
 		summarizeBy: none
 		sourceColumn: data_full
-
-		variation Variation
-			isDefault
-			relationship: 2c5fe01c-6a72-415c-bb6e-e198bc9dda68
-			defaultHierarchy: LocalDateTable_70a61b3e-c186-4c57-9545-0c455a93f9ef.'Date Hierarchy'
 
 		annotation SummarizationSetBy = Automatic
 
@@ -105,7 +102,8 @@ table dim_tempo
 		annotation SummarizationSetBy = Automatic
 
 	column fl_fim_de_semana
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 8c512aff-8bf8-460e-bddd-dfb32138ab33
 		summarizeBy: none
 		sourceColumn: fl_fim_de_semana
@@ -113,7 +111,8 @@ table dim_tempo
 		annotation SummarizationSetBy = Automatic
 
 	column fl_feriado_nacional
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: c092018d-810e-4cdc-a941-d74eae862163
 		summarizeBy: none
 		sourceColumn: fl_feriado_nacional
@@ -121,7 +120,8 @@ table dim_tempo
 		annotation SummarizationSetBy = Automatic
 
 	column fl_black_friday
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 06613759-85a0-4216-9e29-484fa60502e1
 		summarizeBy: none
 		sourceColumn: fl_black_friday
@@ -143,6 +143,7 @@ table dim_tempo
 		sourceColumn: ano_trimestre
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_tempo = m
 		mode: import
 		source =
@@ -153,3 +154,4 @@ table dim_tempo
 				    Source
 
 	annotation PBI_ResultType = Table
+

@@ -108,7 +108,8 @@ table fato_cliente_interacao
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column converteu
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: ec2a2fab-643b-43d2-8f98-6e250ec14d3e
 		summarizeBy: none
 		sourceColumn: converteu
@@ -155,7 +156,8 @@ table fato_cliente_interacao
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column fl_abandono_carrinho
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 4f74de89-1bc8-458e-80fe-ae4e01b9a9e9
 		summarizeBy: none
 		sourceColumn: fl_abandono_carrinho
@@ -177,6 +179,7 @@ table fato_cliente_interacao
 		annotation SummarizationSetBy = Automatic
 
 		annotation UnderlyingDateTimeDataType = Date
+
 	partition fato_cliente_interacao = m
 		mode: import
 		source =
@@ -187,3 +190,4 @@ table fato_cliente_interacao
 				    Source
 
 	annotation PBI_ResultType = Table
+

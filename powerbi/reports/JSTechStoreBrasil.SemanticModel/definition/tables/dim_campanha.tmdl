@@ -102,7 +102,8 @@ table dim_campanha
 		annotation SummarizationSetBy = Automatic
 
 	column ativo
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: e227ddaa-1b90-4359-bdf8-8b4eddf5c004
 		summarizeBy: none
 		sourceColumn: ativo
@@ -151,7 +152,8 @@ table dim_campanha
 		annotation UnderlyingDateTimeDataType = Date
 
 	column fl_current
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: f2e40960-c06c-4c9a-9d01-6ee9f7660798
 		summarizeBy: none
 		sourceColumn: fl_current
@@ -165,7 +167,6 @@ table dim_campanha
 		sourceColumn: hash_row
 
 		annotation SummarizationSetBy = Automatic
-
 
 	partition dim_campanha = m
 		mode: import

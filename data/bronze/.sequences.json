@@ -1,4 +1,15 @@
 {
   "_note": "Arquivo criado em 2026-09-12 ao ativar generate_daily --output parquet.",
-  "_note2": "Presença deste arquivo indica que o pipeline opera em modo Parquet (sem DB writes transacionais)."
+  "_note2": "Presença deste arquivo indica que o pipeline opera em modo Parquet (sem DB writes transacionais).",
+  "vendas__pedidos": 10004377,
+  "vendas__itens_pedido": 10011103,
+  "estoque__movimentacoes": 10010734,
+  "financeiro__lancamentos": 10004224,
+  "financeiro__parcelas": 10017658,
+  "financeiro__contas_receber": 10004224,
+  "rh__comissoes": 10001611,
+  "logistica__entregas": 10002613,
+  "web_analytics__sessoes": 10021624,
+  "vendas__devolucoes": 10000090,
+  "web_analytics__eventos_carrinho": 10009228
 }

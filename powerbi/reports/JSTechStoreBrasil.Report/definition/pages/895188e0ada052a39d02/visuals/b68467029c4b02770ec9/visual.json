@@ -1,0 +1,90 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "b68467029c4b02770ec9",
+  "position": {
+    "x": 994.04255319148945,
+    "y": 0,
+    "z": 4,
+    "height": 204,
+    "width": 251,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_venda"
+                    }
+                  },
+                  "Property": "Taxa Desconto"
+                }
+              },
+              "queryRef": "fato_venda.Taxa Desconto",
+              "nativeQueryRef": "Taxa Desconto",
+              "format": "0.00%;-0.00%;0.00%"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fato_venda"
+                  }
+                },
+                "Property": "Taxa Desconto"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "986db354005ebb8c9640",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fato_venda"
+              }
+            },
+            "Property": "Taxa Desconto"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

@@ -70,12 +70,14 @@ table dim_modalidade_entrega
 		annotation SummarizationSetBy = Automatic
 
 	column fl_retirada_loja
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: ff9f24cc-532c-48f5-9e82-e09eda7f3ac2
 		summarizeBy: none
 		sourceColumn: fl_retirada_loja
 
 		annotation SummarizationSetBy = Automatic
+
 	partition dim_modalidade_entrega = m
 		mode: import
 		source =
@@ -86,3 +88,4 @@ table dim_modalidade_entrega
 				    Source
 
 	annotation PBI_ResultType = Table
+

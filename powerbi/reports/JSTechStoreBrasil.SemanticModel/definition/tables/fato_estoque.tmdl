@@ -105,7 +105,8 @@ table fato_estoque
 		annotation SummarizationSetBy = Automatic
 
 	column fl_estoque_critico
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 88864c97-818f-4338-8abf-a1a839bf23c8
 		summarizeBy: none
 		sourceColumn: fl_estoque_critico
@@ -113,7 +114,8 @@ table fato_estoque
 		annotation SummarizationSetBy = Automatic
 
 	column fl_ruptura
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 4610ef0b-47b7-4dd1-aafe-dadf4bf0187b
 		summarizeBy: none
 		sourceColumn: fl_ruptura
@@ -148,7 +150,6 @@ table fato_estoque
 		sourceColumn: qtd_pedidos_movs
 
 		annotation SummarizationSetBy = Automatic
-
 
 	partition fato_estoque = m
 		mode: import

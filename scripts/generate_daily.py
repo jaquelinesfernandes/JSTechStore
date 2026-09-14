@@ -222,6 +222,96 @@ def _alloc(seqs: dict, key: str, n: int) -> list[int]:
 # Geração diária direta em Bronze Parquet (sem banco de dados)
 # ─────────────────────────────────────────────────────────────────────────────
 
+_BRONZE_PATH = Path(__file__).parent.parent / "data" / "bronze"
+
+
+def _gen_saldo_estoque_snapshot(
+    target_date: date,
+    movs_rows: list[dict],
+    rng: random.Random,
+    ingested_at: datetime,
+) -> list[dict]:
+    """
+    Gera snapshot diário de saldo_estoque aplicando as movimentações do dia.
+
+    Lê o saldo mais recente do Bronze, aplica as saídas do dia (já computadas
+    em movs_rows), gera reabastecimento quando necessário e retorna as linhas
+    prontas para escrita em Parquet.
+
+    Retorna lista vazia se não houver Parquet de saldo no Bronze (sem erro).
+    """
+    import glob as _glob
+
+    # Encontra todos os Parquets reais de saldo_estoque (exclui stubs)
+    parquet_files = sorted(
+        f for f in _glob.glob(
+            str(_BRONZE_PATH / "estoque" / "saldo_estoque" / "**" / "*.parquet"),
+            recursive=True,
+        )
+        if "stub_empty" not in f
+    )
+    if not parquet_files:
+        log.warning("saldo_estoque: nenhum Parquet Bronze encontrado — snapshot ignorado.")
+        return []
+
+    try:
+        import duckdb as _duckdb
+        df_saldo = _duckdb.connect().execute(
+            f"""
+            SELECT id_saldo, id_produto, id_loja,
+                   qtd_disponivel, qtd_reservada, qtd_minima
+            FROM read_parquet({parquet_files!r}, union_by_name := true)
+            QUALIFY ROW_NUMBER() OVER (
+                PARTITION BY id_produto, id_loja
+                ORDER BY updated_at DESC
+            ) = 1
+            """
+        ).df()
+    except Exception as exc:
+        log.warning(f"saldo_estoque: erro ao ler Bronze ({exc}) — snapshot ignorado.")
+        return []
+
+    # Agrega movimentações do dia por (id_produto, id_loja)
+    movs_agg: dict[tuple[int, int], float] = {}
+    for mov in movs_rows:
+        key = (int(mov["id_produto"]), int(mov["id_loja"]))
+        movs_agg[key] = movs_agg.get(key, 0.0) + float(mov["qtd"])
+
+    snapshot_rows: list[dict] = []
+    for _, r in df_saldo.iterrows():
+        id_prod, id_loja = int(r["id_produto"]), int(r["id_loja"])
+        qtd_disp  = int(r["qtd_disponivel"])
+        qtd_min   = int(r["qtd_minima"])
+
+        mov_net   = movs_agg.get((id_prod, id_loja), 0.0)
+        saida     = abs(mov_net) if mov_net < 0 else 0.0
+        entrada   = mov_net      if mov_net > 0 else 0.0
+
+        pos_mov   = qtd_disp - int(saida) + int(entrada)
+        restocking = 0
+        if pos_mov < qtd_min:
+            # Repõe automático: deixa 2× o mínimo com variação
+            restocking = qtd_min * 2 + rng.randint(5, 30)
+        elif rng.random() < 0.08:
+            # ~8% de chance de reabastecimento de rotina
+            restocking = rng.randint(5, 25)
+
+        nova_qtd = max(0, pos_mov + restocking)
+
+        snapshot_rows.append({
+            "id_saldo":              int(r["id_saldo"]),
+            "id_produto":            id_prod,
+            "id_loja":               id_loja,
+            "qtd_disponivel":        nova_qtd,
+            "qtd_reservada":         int(r["qtd_reservada"]),
+            "qtd_minima":            qtd_min,
+            "dt_ultima_atualizacao": target_date,
+            "updated_at":            ingested_at,
+        })
+
+    log.info(f"  [saldo_estoque] snapshot de {len(snapshot_rows)} linhas gerado para {target_date}")
+    return snapshot_rows
+
 
 def gen_daily_to_parquet(target_date: date, ctx: dict, rng: random.Random) -> None:
     """
@@ -543,6 +633,9 @@ def gen_daily_to_parquet(target_date: date, ctx: dict, rng: random.Random) -> No
     # Persiste sequências ANTES de escrever Parquet (atômico em caso de falha parcial)
     _save_seqs(seqs)
 
+    # ── Snapshot diário de saldo_estoque ─────────────────────────────────────
+    saldo_rows = _gen_saldo_estoque_snapshot(target_date, movs_rows, rng, ingested_at)
+
     # ── Escreve em Parquet ────────────────────────────────────────────────────
     batches = [
         ("vendas.pedidos",                  pedidos_rows),
@@ -550,6 +643,7 @@ def gen_daily_to_parquet(target_date: date, ctx: dict, rng: random.Random) -> No
         ("vendas.devolucoes",               dev_rows),
         ("logistica.entregas",              entregas_rows),
         ("estoque.movimentacoes",           movs_rows),
+        ("estoque.saldo_estoque",           saldo_rows),
         ("financeiro.lancamentos",          lancamentos_rows),
         ("financeiro.parcelas",             parcelas_rows),
         ("financeiro.contas_receber",       contas_rec_rows),

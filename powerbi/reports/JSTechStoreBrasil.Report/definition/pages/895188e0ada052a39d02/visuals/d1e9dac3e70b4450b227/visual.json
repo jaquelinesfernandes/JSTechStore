@@ -1,0 +1,74 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "d1e9dac3e70b4450b227",
+  "position": {
+    "x": 250.94224924012158,
+    "y": 0,
+    "z": 1,
+    "height": 204.25531914893617,
+    "width": 250.94224924012158,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "cardVisual",
+    "query": {
+      "queryState": {
+        "Data": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "fato_venda"
+                    }
+                  },
+                  "Property": "Receita Liquida"
+                }
+              },
+              "queryRef": "fato_venda.Receita Liquida",
+              "nativeQueryRef": "Receita Liquida"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "fato_venda"
+                  }
+                },
+                "Property": "Receita Liquida"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "e66a7ade1c008eede2b9",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "fato_venda"
+              }
+            },
+            "Property": "Receita Liquida"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

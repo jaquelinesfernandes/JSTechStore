@@ -41,7 +41,6 @@ table dim_canal_venda
 
 		annotation SummarizationSetBy = Automatic
 
-
 	partition dim_canal_venda = m
 		mode: import
 		source =

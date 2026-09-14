@@ -147,12 +147,14 @@ table fato_financeiro
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column fl_pago
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 73c8baf2-512d-412a-a064-b7c14f24fa65
 		summarizeBy: none
 		sourceColumn: fl_pago
 
 		annotation SummarizationSetBy = Automatic
+
 	partition fato_financeiro = m
 		mode: import
 		source =
@@ -163,3 +165,4 @@ table fato_financeiro
 				    Source
 
 	annotation PBI_ResultType = Table
+

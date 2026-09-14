@@ -165,7 +165,8 @@ table fato_orcamento
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
 	column fl_meta_receita_atingida
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 1a14b127-2660-4e90-a182-f98e98aa6eb6
 		summarizeBy: none
 		sourceColumn: fl_meta_receita_atingida
@@ -173,13 +174,13 @@ table fato_orcamento
 		annotation SummarizationSetBy = Automatic
 
 	column fl_meta_pedidos_atingida
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 2789ff02-594f-4277-a11c-1d7c8fba1d8a
 		summarizeBy: none
 		sourceColumn: fl_meta_pedidos_atingida
 
 		annotation SummarizationSetBy = Automatic
-
 
 	partition fato_orcamento = m
 		mode: import

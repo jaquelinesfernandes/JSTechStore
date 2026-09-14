@@ -152,7 +152,8 @@ table fato_entrega
 		annotation SummarizationSetBy = Automatic
 
 	column fl_sla_atendido
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: 9f1c157b-68d8-4725-961c-58b863ad2175
 		summarizeBy: none
 		sourceColumn: fl_sla_atendido
@@ -160,7 +161,8 @@ table fato_entrega
 		annotation SummarizationSetBy = Automatic
 
 	column fl_entregue
-		dataType: string
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
 		lineageTag: e2b4d9a8-430c-4724-81ed-b0b49997be30
 		summarizeBy: none
 		sourceColumn: fl_entregue
@@ -182,7 +184,6 @@ table fato_entrega
 		sourceColumn: canal_venda
 
 		annotation SummarizationSetBy = Automatic
-
 
 	partition fato_entrega = m
 		mode: import

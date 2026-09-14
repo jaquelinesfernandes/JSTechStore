@@ -68,11 +68,6 @@ relationship 187afc89-2d14-466d-9c59-2f5a74e767d7
 	fromColumn: dim_produto.valid_to
 	toColumn: LocalDateTable_7115bfaa-ee77-4547-9c69-8195b539f979.Date
 
-relationship 2c5fe01c-6a72-415c-bb6e-e198bc9dda68
-	joinOnDateBehavior: datePartOnly
-	fromColumn: dim_tempo.data_full
-	toColumn: LocalDateTable_70a61b3e-c186-4c57-9545-0c455a93f9ef.Date
-
 relationship ba06d35e-540b-4ac5-a1d1-091c30ab3c56
 	joinOnDateBehavior: datePartOnly
 	fromColumn: dim_vendedor.data_admissao
