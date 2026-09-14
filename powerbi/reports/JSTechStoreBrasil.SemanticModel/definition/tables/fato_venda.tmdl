@@ -31,7 +31,7 @@ table fato_venda
 		lineageTag: 9f50cc90-f5d2-4978-970b-8f2aed6ab4d4
 
 	measure 'Taxa Desconto' =
-			
+
 			DIVIDE(
 			    SUM(fato_venda[desconto_item]),
 			    SUMX(fato_venda, fato_venda[preco_unitario] * fato_venda[qtd_vendida])
@@ -39,6 +39,66 @@ table fato_venda
 		lineageTag: 05e795c3-2599-4442-bcbe-7f7f3e6362a5
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Margem Bruta Valor' = SUM(fato_venda[margem_bruta_item])
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678001
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Margem Bruta %' =
+			DIVIDE([Margem Bruta Valor], [Receita Liquida])
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678002
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Mix Canal %' =
+			DIVIDE(
+			    [Receita Liquida],
+			    CALCULATE([Receita Liquida], ALL(fato_venda[canal_venda]))
+			)
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678003
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita YoY' =
+			CALCULATE([Receita Liquida], SAMEPERIODLASTYEAR(dim_tempo[data_full]))
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678004
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita MoM' =
+			CALCULATE([Receita Liquida], DATEADD(dim_tempo[data_full], -1, MONTH))
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678005
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Crescimento YoY %' =
+			DIVIDE(
+			    [Receita Liquida] - [Receita YoY],
+			    [Receita YoY]
+			)
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678006
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Rank Loja Receita' =
+			RANKX(ALL(dim_loja[nome_loja]), [Receita Liquida],, DESC, DENSE)
+		formatString: 0
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678007
+
+	measure 'Taxa Devolucao' =
+			DIVIDE(
+			    CALCULATE(DISTINCTCOUNT(fato_venda[id_pedido_dg]), fato_venda[fl_devolvido] = TRUE()),
+			    DISTINCTCOUNT(fato_venda[id_pedido_dg])
+			)
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678008
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Pedidos Unicos' =
+			DISTINCTCOUNT(fato_venda[id_pedido_dg])
+		formatString: 0
+		lineageTag: b3c4d5e6-f7a8-4901-bcde-fa2345678009
 
 	column sk_venda
 		dataType: string

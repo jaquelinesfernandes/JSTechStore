@@ -1,6 +1,45 @@
 table fato_orcamento
 	lineageTag: 50deb65f-6ef4-45f8-83c0-49cce500e874
 
+	measure 'Atingimento Meta %' =
+			DIVIDE(
+			    SUM(fato_orcamento[receita_realizada]),
+			    SUM(fato_orcamento[valor_meta_receita])
+			)
+		lineageTag: c4d5e6f7-a8b9-4012-cdef-ab3456789001
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Meta Receita Total' =
+			SUM(fato_orcamento[valor_meta_receita])
+		lineageTag: c4d5e6f7-a8b9-4012-cdef-ab3456789002
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Receita Realizada Total' =
+			SUM(fato_orcamento[receita_realizada])
+		lineageTag: c4d5e6f7-a8b9-4012-cdef-ab3456789003
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Atingimento Meta Margem %' =
+			DIVIDE(
+			    SUM(fato_orcamento[margem_realizada]),
+			    SUM(fato_orcamento[valor_meta_margem])
+			)
+		lineageTag: c4d5e6f7-a8b9-4012-cdef-ab3456789004
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Atingimento Meta Pedidos %' =
+			DIVIDE(
+			    SUM(fato_orcamento[qtd_pedidos_realizados]),
+			    SUM(fato_orcamento[qtd_meta_pedidos])
+			)
+		lineageTag: c4d5e6f7-a8b9-4012-cdef-ab3456789005
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
 	column sk_orcamento
 		dataType: string
 		lineageTag: 20c5bf29-eab8-441e-ba30-930e0931d67d
