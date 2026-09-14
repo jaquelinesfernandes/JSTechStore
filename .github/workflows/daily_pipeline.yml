@@ -62,34 +62,34 @@ jobs:
         run: mkdir -p data/bronze data/bronze/.watermarks
 
       # Falha rápida se o secret não está configurado — evita erro obscuro na ingestão
-      - name: "0 · Verificar secret SUPABASE_DB_URL"
+      - name: "0 · Verificar secret DATABASE_URL"
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          if [ -z "$SUPABASE_DB_URL" ]; then
-            echo "::error::Secret SUPABASE_DB_URL não está configurado no repositório."
-            echo "::error::Acesse Settings → Secrets → Actions e adicione SUPABASE_DB_URL."
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Secret DATABASE_URL não está configurado no repositório."
+            echo "::error::Acesse Settings → Secrets → Actions e adicione DATABASE_URL."
             exit 1
           fi
-          echo "SUPABASE_DB_URL: configurado (${#SUPABASE_DB_URL} chars)"
+          echo "DATABASE_URL: configurado (${#DATABASE_URL} chars)"
 
       # ─────────────────────────────────────────────
       # Step 1 — Geração de dados diários
-      # Modo parquet: zero IO banco — IDs locais, escreve direto em Bronze Parquet.
-      # SUPABASE_DB_URL ainda é necessário apenas para carregar o contexto (produtos,
+      # Zero IO banco — IDs locais, escreve direto em Bronze Parquet.
+      # DATABASE_URL necessário apenas para carregar o contexto (produtos,
       # clientes, lojas) do Neon (master data only — sem writes transacionais).
       # Pulado quando full_refresh=true: não gerar dados novos durante rebuild do Gold.
       # ─────────────────────────────────────────────
-      - name: "1 · Gerar dados do dia (generate_daily.py --output parquet)"
+      - name: "1 · Gerar dados do dia (generate_daily.py)"
         if: ${{ github.event.inputs.full_refresh != 'true' }}
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: ${{ github.workspace }}
         run: |
           echo "=== SHA do checkout: ${{ github.sha }} ==="
           echo "=== Verificando import ingestion ==="
           python -c "import ingestion; print('ingestion OK:', ingestion.__file__)"
-          python scripts/generate_daily.py --date today --output parquet
+          python scripts/generate_daily.py --date today
 
       # ─────────────────────────────────────────────
       # Step 2 — Ingestão Bronze (watermark atômico)
@@ -97,10 +97,10 @@ jobs:
       # ─────────────────────────────────────────────
       - name: "2 · Ingestão Bronze (smart: full por tabela sem Parquet, incremental p/ resto)"
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           if [ "${{ github.event.inputs.full_refresh }}" = "true" ]; then
-            echo "::notice::full_refresh=true — extração FULL (sem watermark) para sincronizar Bronze com Supabase."
+            echo "::notice::full_refresh=true — extração FULL (sem watermark) para sincronizar Bronze com Neon."
             python -m ingestion.connectors.postgres.extract --mode full
           else
             python -m ingestion.connectors.postgres.extract --mode smart
@@ -165,7 +165,7 @@ jobs:
       # ─────────────────────────────────────────────
       # Step 6 — Reconciliação Gold vs. Bronze Parquet
       # Compara os 6 fatos do Gold contra os arquivos Bronze usando DuckDB
-      # em ambos os lados — sem depender do banco Neon/Supabase.
+      # em ambos os lados — sem depender do banco Neon.
       # Tolerância: 0% para contagens, 0,1% para somas financeiras.
       # ─────────────────────────────────────────────
       - name: "6 · Reconciliação Gold vs. Bronze Parquet"

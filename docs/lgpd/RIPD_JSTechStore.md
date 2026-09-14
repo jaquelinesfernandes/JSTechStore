@@ -15,7 +15,7 @@
 | **Nome do tratamento** | Plataforma de Engenharia de Dados JSTechStore — Análise de Negócio |
 | **Finalidade** | Análise de desempenho comercial, logístico, financeiro e de marketing para tomada de decisão gerencial |
 | **Controlador** | JSTechStore Brasil Ltda. |
-| **Operador de dados** | Equipe interna de Engenharia de Dados; Supabase Inc. (base PostgreSQL em nuvem) |
+| **Operador de dados** | Equipe interna de Engenharia de Dados; Neon Inc. (base PostgreSQL em nuvem) |
 | **DPO** | A designar conforme Art. 41 LGPD |
 
 ---
@@ -72,7 +72,7 @@
 [Titular / Cliente]
         │ compra em loja física ou e-commerce
         ▼
-[Supabase PostgreSQL — Cloud]
+[Neon PostgreSQL — Cloud]
   • Schema: clientes, vendas, financeiro, logistica, rh, marketing
   • Dados pessoais: nome, e-mail, cpf, telefone, endereço
         │
@@ -101,7 +101,7 @@
 
 | Camada | Retenção | Justificativa |
 |--------|----------|---------------|
-| Supabase (fonte) | Indeterminado (sistema OLTP ativo) | Operação do negócio |
+| Neon (fonte) | Indeterminado (sistema OLTP ativo) | Operação do negócio |
 | Bronze (Parquet) | 3 anos de histórico + janela incremental | Análise de tendências |
 | Gold (DuckDB) | 3 anos | Conformidade com prazo de prescrição fiscal (Art. 195 CTN) |
 | Power BI | Espelho do Gold; refresh diário | Consumo gerencial |
@@ -121,7 +121,7 @@
 
 | Sistema | Controle |
 |---------|----------|
-| Supabase | Autenticação PostgreSQL por usuário; conexão via SSL |
+| Neon | Autenticação PostgreSQL por usuário; conexão via SSL |
 | Bronze/Silver/Gold (local) | Acesso restrito ao sistema de arquivos da máquina de dados |
 | Power BI Service | Workspace com permissões explícitas; MFA na conta organizacional |
 | GitHub | Repositório privado; secrets do GitHub Actions para credenciais |
@@ -130,7 +130,7 @@
 
 | Item | Medida |
 |------|--------|
-| Supabase → máquina local | TLS 1.3 (conexão PostgreSQL via SSL) |
+| Neon → máquina local | TLS 1.3 (conexão PostgreSQL via SSL) |
 | Arquivos Bronze/Gold (local) | Disco do servidor de dados; sem criptografia em repouso nesta fase |
 | `.env` com credenciais | Nunca commitado; protegido por `.gitignore` |
 | GitHub Actions secrets | Armazenados como encrypted secrets no repositório |
@@ -139,7 +139,7 @@
 
 - **Implementação:** `quality/lgpd/exclusao_titular.py`
 - **Modo dry-run:** identifica e lista todos os registros do titular sem excluir
-- **Modo execute:** exclui/anonimiza registros em Supabase, Bronze e Gold referentes ao `cpf_hash`
+- **Modo execute:** exclui/anonimiza registros em Neon, Bronze e Gold referentes ao `cpf_hash`
 - **Prazo de resposta:** ≤ 15 dias úteis após solicitação (Art. 18 § 3 LGPD)
 - **Registro:** cada exclusão deve ser registrada em log de auditoria (a implementar)
 
@@ -149,7 +149,7 @@
 
 | Risco | Probabilidade | Impacto | Medida de mitigação |
 |-------|--------------|---------|---------------------|
-| Vazamento de credenciais Supabase | Média | Alto | Rotação periódica; nunca commitar `.env`; uso de GitHub Secrets |
+| Vazamento de credenciais Neon | Média | Alto | Rotação periódica; nunca commitar `.env`; uso de GitHub Secrets |
 | Exposição do `LGPD_HMAC_SALT` | Baixa | Alto | Variável de ambiente apenas; rotação anual planejada |
 | Acesso indevido ao Gold DuckDB | Baixa | Médio | Controle de acesso ao filesystem; sem exposição em rede |
 | Re-identificação via `cpf_hash` | Muito Baixa | Alto | Salt secreto torna força bruta inviável |
@@ -166,7 +166,7 @@ Conforme Art. 18 LGPD, os titulares têm direito a:
 |---------|-------------|------------|
 | Confirmação de tratamento | Contato com DPO | DPO |
 | Acesso aos dados | Relatório de dados por `cpf_hash` via script | Equipe de Dados |
-| Correção de dados inexatos | Atualização em Supabase + re-run do pipeline | Equipe de Dados |
+| Correção de dados inexatos | Atualização em Neon + re-run do pipeline | Equipe de Dados |
 | Eliminação de dados | `quality/lgpd/exclusao_titular.py --execute` | Equipe de Dados |
 | Portabilidade | Exportação CSV dos dados do titular | A implementar |
 | Revogação de consentimento (marketing) | Opt-out no sistema CRM | CRM / Marketing |
@@ -178,11 +178,11 @@ Conforme Art. 18 LGPD, os titulares têm direito a:
 
 | Terceiro | Dados compartilhados | Finalidade | Garantias |
 |---------|---------------------|-----------|-----------|
-| Supabase Inc. (EUA) | Todos os dados da fonte | Hospedagem do banco OLTP | Data Processing Agreement (DPA) disponível; adequação GDPR via SCCs |
+| Neon Inc. (EUA) | Todos os dados da fonte | Hospedagem do banco OLTP | Data Processing Agreement (DPA) disponível; adequação GDPR via SCCs |
 | Microsoft (Power BI Service) | Dados agregados Gold (sem PII direta) | Visualização gerencial | DPA Microsoft; ISO 27001; adequação LGPD |
 | GitHub Inc. | Código-fonte; secrets criptografados | CI/CD e versionamento | DPA GitHub; sem dados pessoais no repositório |
 
-**Transferência internacional:** Supabase está em `us-east-1` (AWS). A transferência ocorre com base no Art. 33, II LGPD (adequação às normas de proteção de dados aplicáveis) e no DPA disponibilizado pela Supabase.
+**Transferência internacional:** Neon está em `us-east-1` (AWS). A transferência ocorre com base no Art. 33, II LGPD (adequação às normas de proteção de dados aplicáveis) e no DPA disponibilizado pela Neon.
 
 ---
 

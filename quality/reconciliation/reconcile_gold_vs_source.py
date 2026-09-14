@@ -1,5 +1,5 @@
 """
-Reconciliação Gold (DuckDB) vs. fonte (Supabase/PostgreSQL).
+Reconciliação Gold (DuckDB) vs. fonte (Neon/PostgreSQL).
 
 Cobre todas as 6 tabelas fato:
   fato_venda            → vendas.itens_pedido
@@ -56,7 +56,7 @@ class ReconciliationCheck:
 CHECKS: tuple[ReconciliationCheck, ...] = (
     # ── fato_venda ────────────────────────────────────────────────────────
     # generate_daily.py insere novas linhas a cada run (não upsert), portanto
-    # counts e somas acumulam em Supabase enquanto Gold tem só o batch atual.
+    # counts e somas acumulam em Neon enquanto Gold tem só o batch atual.
     # Verificamos frescor via MAX(dt_pedido_data): Gold deve ter dados de hoje.
     ReconciliationCheck(
         name="fato_venda.max_data",
@@ -201,7 +201,7 @@ def run_check(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Reconciliação Gold vs. Supabase para todas as tabelas fato")
+    p = argparse.ArgumentParser(description="Reconciliação Gold vs. Neon para todas as tabelas fato")
     p.add_argument("--table", help="Filtrar por prefixo de check (ex: fato_venda, fato_entrega)")
     p.add_argument(
         "--tolerance",
@@ -245,13 +245,13 @@ def main() -> int:
             for c in checks
         ]
 
-    log.info(f"=== Reconciliação Gold vs. Supabase v2 | {len(checks)} check(s) ===")
+    log.info(f"=== Reconciliação Gold vs. Neon v2 | {len(checks)} check(s) ===")
 
     duckdb_con = duckdb.connect(str(DUCKDB_PATH), read_only=True)
-    pg_con = __import__("psycopg2").connect(os.environ["SUPABASE_DB_URL"])
+    pg_con = __import__("psycopg2").connect(os.environ["DATABASE_URL"])
 
     # ── Detecção de modo Parquet Pipeline ────────────────────────────────────
-    # Após migração Supabase → Neon (2026-09-11), a geração diária passou a
+    # Geração diária em modo parquet — zero IO no banco Neon.
     # escrever direto em Bronze Parquet (generate_daily.py --output parquet).
     # Quando o pipeline opera nesse modo, data/bronze/.sequences.json existe
     # (criado/atualizado pelo Step 1, antes deste Step 6 ser executado).

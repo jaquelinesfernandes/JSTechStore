@@ -12,7 +12,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  FONTE                                                                      │
-│  Supabase (PostgreSQL · southamerica-east1)                                 │
+│  Neon (PostgreSQL · southamerica-east1)                                 │
 │  28 tabelas · 8 schemas · ~5,9 M linhas                                    │
 └────────────────────────┬────────────────────────────────────────────────────┘
                          │ psycopg2 (Python)
@@ -75,7 +75,7 @@
 
 ```
 Linguagem:        Python 3.12
-Fonte:            Supabase (PostgreSQL) via psycopg2
+Fonte:            Neon (PostgreSQL) via psycopg2
 Ingestão:         Python custom (extract.py) → GCS
 Orquestração:     GitHub Actions (cron 04:00 UTC diário)
 Transformação:    dbt Core 1.8+ com adaptador dbt-bigquery
@@ -93,7 +93,7 @@ Autenticação:     GCP Service Account via GitHub Secret
 
 ### Bronze — Google Cloud Storage
 
-**Responsabilidade:** cópia fiel das tabelas Supabase em Parquet, particionada por data de ingestão.
+**Responsabilidade:** cópia fiel das tabelas Neon em Parquet, particionada por data de ingestão.
 
 ```
 gs://jstechstore-bronze/
@@ -128,7 +128,7 @@ extract.py --mode smart
 │
 ├── Para cada tabela:
 │   ├── Ler watermark de gs://jstechstore-bronze/.watermarks/<key>.json
-│   ├── SELECT * FROM supabase WHERE updated_at > watermark
+│   ├── SELECT * FROM neon WHERE updated_at > watermark
 │   ├── Serializar em Parquet (BytesIO, sem disco)
 │   ├── Upload para gs://jstechstore-bronze/<schema>/<table>/year=.../...parquet
 │   └── Atualizar watermark no GCS (somente após upload bem-sucedido)
@@ -249,7 +249,7 @@ GitHub Actions · Cron 04:00 UTC (01:00 BRT)
 ├── Step 5 · Frescor Bronze + Gold
 │   └── python quality/monitoring/check_data_freshness.py --tolerance-hours 26
 │
-├── Step 6 · Reconciliação Gold vs. Supabase
+├── Step 6 · Reconciliação Gold vs. Neon
 │   └── python quality/reconciliation/reconcile_gold_vs_source.py
 │       [query via bigquery.Client]
 │
@@ -261,7 +261,7 @@ GitHub Actions · Cron 04:00 UTC (01:00 BRT)
 
 ```yaml
 env:
-  SUPABASE_DB_URL:  ${{ secrets.SUPABASE_DB_URL }}
+  DATABASE_URL:  ${{ secrets.DATABASE_URL }}
   GCP_PROJECT_ID:   ${{ secrets.GCP_PROJECT_ID }}
   GCS_BUCKET:       ${{ secrets.GCS_BUCKET }}
   GCP_SA_KEY_JSON:  ${{ secrets.GCP_SA_KEY }}
@@ -272,7 +272,7 @@ env:
 
 | Secret | Descrição |
 |--------|-----------|
-| `SUPABASE_DB_URL` | Connection string PostgreSQL do Supabase |
+| `DATABASE_URL` | Connection string PostgreSQL do Neon |
 | `GCP_SA_KEY` | JSON da Service Account GCP (base64 ou inline) |
 | `GCP_PROJECT_ID` | ID do projeto GCP (ex: `jstechstore-data`) |
 | `GCS_BUCKET` | Nome do bucket GCS Bronze (ex: `jstechstore-bronze`) |
@@ -380,7 +380,7 @@ O Bronze em GCS elimina a dependência de ter Parquet local — qualquer máquin
 ```
 ┌──────────────────────────────────────────────────┐
 │  GitHub Secrets (encryptados)                    │
-│  ├── SUPABASE_DB_URL  → extract.py               │
+│  ├── DATABASE_URL  → extract.py               │
 │  ├── GCP_SA_KEY       → google-github-actions    │
 │  ├── GCP_PROJECT_ID   → profiles.yml + scripts   │
 │  └── GCS_BUCKET       → extract.py               │
@@ -404,7 +404,7 @@ O Bronze em GCS elimina a dependência de ter Parquet local — qualquer máquin
 | Escrita GCS Bronze | ✅ | ❌ |
 | Leitura BQ Gold | ✅ | ✅ (via OAuth Google) |
 | Escrita BQ Gold | ✅ (dbt materializa) | ❌ |
-| Leitura Supabase | ✅ (via `extract.py`) | ❌ |
+| Leitura Neon | ✅ (via `extract.py`) | ❌ |
 
 ### O que nunca commitar
 
@@ -420,7 +420,7 @@ key.json                      ← chave da Service Account GCP
 ### Ingestão
 
 ```bash
-# Full load — extrai tudo do Supabase para GCS
+# Full load — extrai tudo do Neon para GCS
 python -m ingestion.connectors.postgres.extract --mode full
 
 # Incremental — extrai apenas registros novos/alterados
@@ -502,8 +502,8 @@ gsutil du -sh gs://jstechstore-bronze/
 Copiar `.env.example` → `.env`. Nunca commitar `.env`.
 
 ```bash
-# ── Supabase (fonte OLTP) ─────────────────────────────────
-SUPABASE_DB_URL=postgresql://postgres:<pw>@<project>.supabase.co:5432/postgres
+# ── Neon (fonte OLTP) ─────────────────────────────────
+DATABASE_URL=postgresql://postgres:<pw>@<project>.neon.tech:5432/postgres
 
 # ── GCP / Google Cloud ────────────────────────────────────
 GCP_PROJECT_ID=jstechstore-data

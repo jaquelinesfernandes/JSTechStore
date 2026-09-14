@@ -9,7 +9,7 @@
 |--------|------|---------|
 | 1.0 | 2026-07-20 | Versão inicial |
 | 2.0 | 2026-07-20 | Fonte unificada em SQL Server Cloud; stack definida (DuckDB, OpenMetadata, Power BI Pro); volumetria; LGPD mínima; modelagem dimensional revisada |
-| 3.0 | 2026-07-21 | **Simplificação de stack:** fonte migrada para Supabase (PostgreSQL); orquestração via GitHub Actions; armazenamento Bronze/Silver em Parquet local; remoção de Airflow, OpenMetadata e Great Expectations; adição de geração de dados sintéticos (3 anos histórico + incremental diário); Power BI com Incremental Refresh |
+| 3.0 | 2026-07-21 | **Simplificação de stack:** fonte migrada para Neon (PostgreSQL); orquestração via GitHub Actions; armazenamento Bronze/Silver em Parquet local; remoção de Airflow, OpenMetadata e Great Expectations; adição de geração de dados sintéticos (3 anos histórico + incremental diário); Power BI com Incremental Refresh |
 
 ---
 
@@ -17,7 +17,7 @@
 
 A JSTechStore Brasil, rede varejista omnichannel com 15 lojas físicas, e-commerce próprio, centro de distribuição e programa de fidelidade, necessita de uma plataforma centralizada de dados para apoiar a tomada de decisão nas áreas Comercial, Clientes, Produtos, Logística, Financeiro e Marketing.
 
-Este projeto entrega uma **plataforma de dados moderna e simplificada** com arquitetura Medallion (Bronze → Silver → Gold), modelagem dimensional (Esquema Estrela) e dashboards executivos no Power BI Pro. A fonte de dados é um banco **Supabase (PostgreSQL)** populado com dados sintéticos gerados por script Python, simulando 3 anos de operação real.
+Este projeto entrega uma **plataforma de dados moderna e simplificada** com arquitetura Medallion (Bronze → Silver → Gold), modelagem dimensional (Esquema Estrela) e dashboards executivos no Power BI Pro. A fonte de dados é um banco **Neon (PostgreSQL)** populado com dados sintéticos gerados por script Python, simulando 3 anos de operação real.
 
 ### Objetivos de Negócio
 
@@ -45,7 +45,7 @@ Este projeto entrega uma **plataforma de dados moderna e simplificada** com arqu
 
 ### 2.2 Fonte de Dados
 
-Toda a operação da JSTechStore Brasil é consolidada em **um único banco de dados Supabase (PostgreSQL)** — cloud-hosted, gratuito para o volume deste projeto. O banco é populado com dados sintéticos gerados por script Python que simula 3 anos de operação real.
+Toda a operação da JSTechStore Brasil é consolidada em **um único banco de dados Neon (PostgreSQL)** — cloud-hosted, gratuito para o volume deste projeto. O banco é populado com dados sintéticos gerados por script Python que simula 3 anos de operação real.
 
 | Schema / Módulo | Dados Principais |
 |-----------------|-----------------|
@@ -59,7 +59,7 @@ Toda a operação da JSTechStore Brasil é consolidada em **um único banco de d
 | `rh` | Vendedores, metas, comissões |
 | `web_analytics` | Sessões de usuário (visitas, origem, duração), eventos de carrinho (add, abandon, checkout) — fonte de `fato_cliente_interacao` |
 
-> **Premissa confirmada:** acesso via string de conexão PostgreSQL ao Supabase Cloud. Controle incremental por coluna `updated_at` em todas as tabelas transacionais (índice criado pelo script de setup).
+> **Premissa confirmada:** acesso via string de conexão PostgreSQL ao Neon Cloud. Controle incremental por coluna `updated_at` em todas as tabelas transacionais (índice criado pelo script de setup).
 
 ### 2.3 Problemas Simulados (contexto do projeto)
 
@@ -79,7 +79,7 @@ Toda a operação da JSTechStore Brasil é consolidada em **um único banco de d
 | Histórico inicial gerado | 3 anos | Script `generate_data.py` — carga full na Fase 1 |
 | Geração incremental | ~2.000 vendas/dia | Script `generate_daily.py` — roda via GitHub Actions |
 | Crescimento anual esperado | 15% | Expansão de lojas + e-commerce |
-| Volume Supabase (PostgreSQL) | ~1–2 GB | Banco transacional simulado |
+| Volume Neon (PostgreSQL) | ~1–2 GB | Banco transacional simulado |
 | Volume Bronze (3 anos, Parquet) | ~2 GB | Parquet particionado por data de ingestão |
 | Volume Silver (Parquet) | ~1,2 GB | Parquet limpo e conformado |
 | Volume Gold (DuckDB) | ~700 MB | Esquema Estrela no DuckDB |
@@ -101,8 +101,8 @@ Toda a operação da JSTechStore Brasil é consolidada em **um único banco de d
 
 ### 3.1 Dentro do Escopo
 
-- Geração de dados sintéticos no Supabase PostgreSQL (histórico 3 anos + incremental diário)
-- Ingestão incremental Bronze a partir do Supabase (Python + psycopg2 + SQLAlchemy)
+- Geração de dados sintéticos no Neon PostgreSQL (histórico 3 anos + incremental diário)
+- Ingestão incremental Bronze a partir do Neon (Python + psycopg2 + SQLAlchemy)
 - Construção do Data Warehouse com arquitetura Medallion (3 camadas) em Parquet + DuckDB
 - Modelagem dimensional com Esquema Estrela — 10 dimensões + 6 tabelas fato (dbt)
 - 6 dashboards executivos no Power BI (1 por área) com Incremental Refresh
@@ -135,7 +135,7 @@ Toda a operação da JSTechStore Brasil é consolidada em **um único banco de d
                            │ INSERT / UPDATE
                            ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│         FONTE — SUPABASE (PostgreSQL Cloud)                          │
+│         FONTE — NEON (PostgreSQL Cloud)                              │
 │  vendas │ clientes │ produtos │ estoque │ logistica │ financeiro     │
 │                   marketing │ rh                                     │
 │                    Volume: ~1–2 GB                                   │
@@ -192,7 +192,7 @@ Suporte horizontal:
 | Camada | Tecnologia | Justificativa |
 |--------|-----------|---------------|
 | Geração de dados | Python + Faker + SQLAlchemy | Simula OLTP real com distribuições realistas |
-| Fonte de dados | Supabase (PostgreSQL Cloud) | Gratuito, fácil setup, pgAdmin incluído, REST API |
+| Fonte de dados | Neon (PostgreSQL Cloud) | Gratuito, fácil setup, pgAdmin incluído, REST API |
 | Ingestão | Python + psycopg2 + SQLAlchemy | Conector nativo PostgreSQL; incremental por `updated_at` |
 | Orquestração | GitHub Actions (cron YAML) | Zero infraestrutura extra; versionado no repositório |
 | Transformação | dbt Core | SQL-first; modelos incrementais; testes de schema integrados |
@@ -209,7 +209,7 @@ Suporte horizontal:
 
 | Removido | Substituído por |
 |----------|----------------|
-| SQL Server (Azure SQL / RDS) | Supabase (PostgreSQL) |
+| SQL Server (Azure SQL / RDS) | Neon (PostgreSQL) |
 | Apache Airflow | GitHub Actions (cron YAML) |
 | Azure Blob Storage / AWS S3 | Parquet em disco local (`data/`) |
 | OpenMetadata | — (removido; docs dbt suprem necessidade básica) |
@@ -222,7 +222,7 @@ O projeto não parte de um sistema legado real — os dados são gerados por scr
 
 #### Script de Carga Inicial: `scripts/generate_data.py`
 
-Gera e insere em lote no Supabase:
+Gera e insere em lote no Neon:
 - **3 anos de histórico** (1.096 dias, de `hoje - 3 anos` até `ontem`)
 - ~2.000 pedidos/dia × 3,2 itens/pedido → ~2,1 milhões de itens de pedido
 - Cadastros mestres (produtos, clientes, lojas, fornecedores, campanhas, vendedores)
@@ -610,7 +610,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 
 #### fato_cliente_interacao *(grain: 1 linha por evento de interação)*
 
-> **Fonte de dados:** Schema `web_analytics` no Supabase — tabelas `sessoes` e `eventos_carrinho`, geradas pelo `generate_daily.py`. Visitantes anônimos são excluídos; apenas sessões vinculadas a um `id_cliente` alimentam a dimensão `sk_cliente`.
+> **Fonte de dados:** Schema `web_analytics` no Neon — tabelas `sessoes` e `eventos_carrinho`, geradas pelo `generate_daily.py`. Visitantes anônimos são excluídos; apenas sessões vinculadas a um `id_cliente` alimentam a dimensão `sk_cliente`.
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
@@ -627,7 +627,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 
 #### fato_orcamento *(grain: 1 linha por orçamento × mês × canal × loja)*
 
-> **Fonte de dados:** `financeiro.orcamentos` no Supabase. Permite comparar receita e margem realizadas (`fato_financeiro`) vs. orçadas nesta tabela, habilitando o KPI "Budget vs. Realizado" do Dashboard Financeiro.
+> **Fonte de dados:** `financeiro.orcamentos` no Neon. Permite comparar receita e margem realizadas (`fato_financeiro`) vs. orçadas nesta tabela, habilitando o KPI "Budget vs. Realizado" do Dashboard Financeiro.
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
@@ -756,12 +756,12 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 
 ### Fase 1 — Geração de Dados + Ingestão Bronze (Meses 1–2)
 
-**Objetivo:** Supabase populado com 3 anos de histórico, pipeline Bronze funcionando com ingestão incremental diária via GitHub Actions.
+**Objetivo:** Neon populado com 3 anos de histórico, pipeline Bronze funcionando com ingestão incremental diária via GitHub Actions.
 
 **Entregas:**
-- [ ] Setup Supabase: criar projeto, schemas, tabelas, índices em `updated_at`
-- [ ] Script `scripts/generate_data.py`: gera 3 anos de dados sintéticos e insere no Supabase
-- [ ] Script `scripts/generate_daily.py`: gera ~2.000 vendas do dia e insere no Supabase
+- [ ] Setup Neon: criar projeto, schemas, tabelas, índices em `updated_at`
+- [ ] Script `scripts/generate_data.py`: gera 3 anos de dados sintéticos e insere no Neon
+- [ ] Script `scripts/generate_daily.py`: gera ~2.000 vendas do dia e insere no Neon
 - [ ] Conector de ingestão: Python + psycopg2 extraindo por `updated_at` → Parquet Bronze local
 - [ ] Estrutura de pastas `data/bronze/` com partição `year=YYYY/month=MM/day=DD/`
 - [ ] GitHub Actions workflow: cron diário (01:00 BRT) → `generate_daily.py` + ingestão Bronze
@@ -770,7 +770,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 - [ ] Repositório GitHub: estrutura de pastas, `requirements.txt`, `.env.example`, `README.md`
 
 **Critérios de Aceite:**
-- 3 anos de dados populados no Supabase sem erros
+- 3 anos de dados populados no Neon sem erros
 - Pipeline Bronze rodando diariamente por 3 dias consecutivos via GitHub Actions
 - Apenas novos registros (delta) escritos no Bronze a cada execução
 - Nenhum dado pessoal direto (CPF, e-mail) no Parquet Bronze
@@ -801,7 +801,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 - `dbt run` com 3 anos de histórico concluindo sem erros (`--full-refresh` na primeira vez)
 - `dbt test` 100% passando nos modelos Gold
 - `dbt run` incremental diário processando apenas dados novos (< 2 min de execução)
-- Reconciliação de totais `fato_venda.valor_liquido_item` vs. Supabase com desvio < 0,1%
+- Reconciliação de totais `fato_venda.valor_liquido_item` vs. Neon com desvio < 0,1%
 - Gold ≤ 900 MB no `jstechstore.duckdb`
 
 ---
@@ -845,7 +845,7 @@ Documento em `docs/lgpd/RIPD_JSTechStore.md`:
 ## 9. Qualidade de Dados
 
 ### Camada Bronze
-- Dados extraídos sem transformação — fiel à fonte Supabase
+- Dados extraídos sem transformação — fiel à fonte Neon
 - Campos de metadados obrigatórios: `_source_schema`, `_source_table`, `_ingested_at`, `_row_count_batch`
 - **Dados 100% fictícios** — CPF, e-mail e telefone gerados por Faker pt_BR; sem necessidade de pseudonimização
 
@@ -884,12 +884,12 @@ Ecommerce_Varejo/
 │       └── RIPD_JSTechStore.md
 │
 ├── scripts/
-│   ├── generate_data.py      # Geração de 3 anos de dados sintéticos → Supabase
-│   └── generate_daily.py     # Geração incremental diária → Supabase
+│   ├── generate_data.py      # Geração de 3 anos de dados sintéticos → Neon
+│   └── generate_daily.py     # Geração incremental diária → Neon
 │
 ├── ingestion/
 │   ├── connectors/
-│   │   └── postgres/         # Conector Supabase (PostgreSQL)
+│   │   └── postgres/         # Conector Neon (PostgreSQL)
 │   │       ├── __init__.py
 │   │       ├── extract.py    # Full load + incremental por updated_at
 │   │       └── config.py     # Mapeamento de tabelas e controle incremental
@@ -913,7 +913,7 @@ Ecommerce_Varejo/
 │           └── hash_pii.sql
 │
 ├── quality/
-│   ├── reconciliation/       # Script de reconciliação Gold vs. Supabase
+│   ├── reconciliation/       # Script de reconciliação Gold vs. Neon
 │   └── lgpd/
 │       ├── pseudonimizacao.py   # Módulo HMAC-SHA256
 │       ├── exclusao_titular.py  # Right-to-erasure no DuckDB
@@ -983,8 +983,8 @@ Jobs:
 Arquivo `.env.example` (nunca commitar `.env`):
 
 ```bash
-# Supabase / PostgreSQL
-SUPABASE_DB_URL=postgresql://postgres:<password>@<project>.supabase.co:5432/postgres
+# Neon / PostgreSQL
+DATABASE_URL=postgresql://postgres:<password>@<project>.neon.tech:5432/postgres
 
 # DuckDB
 DUCKDB_PATH=data/gold/jstechstore.duckdb
@@ -1005,8 +1005,8 @@ SILVER_PATH=data/silver
 |-------|--------------|---------|-----------|
 | Limite do dataset Power BI (1 GB) | Média | Médio | Incremental Refresh em fato_venda; agregar mais na Gold |
 | GitHub Actions: limite de minutos gratuitos | Baixa | Baixo | Pipeline diário roda em < 5 min; plano gratuito tem 2.000 min/mês |
-| Parquet local: falta de backup | Média | Médio | Commitar `.watermarks/` no Git; regenerar Bronze a partir do Supabase se necessário |
-| Supabase free tier: 500 MB de banco | Baixa | Médio | Supabase free inclui 500 MB; dados sintéticos gerados ficam ~200–300 MB no PostgreSQL |
+| Parquet local: falta de backup | Média | Médio | Commitar `.watermarks/` no Git; regenerar Bronze a partir do Neon se necessário |
+| Neon free tier: 500 MB de banco | Baixa | Médio | Neon free inclui 500 MB; dados sintéticos gerados ficam ~200–300 MB no PostgreSQL |
 | Dados sintéticos não realistas | Média | Baixo | Usar seeds fixas (`--seed 42`) e distribuições sazonais validadas; revisar com análise exploratória antes da Fase 3 |
 | dbt run --full-refresh lento (3 anos) | Baixa | Baixo | Rodado apenas 1 vez na Fase 2; incrementais subsequentes < 2 min |
 
@@ -1015,7 +1015,7 @@ SILVER_PATH=data/silver
 ## 14. Critérios de Sucesso
 
 ### Por Fase
-- **Fase 1:** Pipeline Bronze rodando diariamente por 3 dias consecutivos; delta correto (apenas registros novos); Supabase populado com 3 anos de histórico
+- **Fase 1:** Pipeline Bronze rodando diariamente por 3 dias consecutivos; delta correto (apenas registros novos); Neon populado com 3 anos de histórico
 - **Fase 2:** `dbt test` 100% passando; reconciliação ≤ 0,1% de desvio; Gold ≤ 900 MB; `dbt run` incremental diário < 2 min
 - **Fase 3:** 6 dashboards aprovados; Incremental Refresh funcionando (< 30s para fato_venda); usuários-chave treinados
 - **Fase 4:** Modelos preditivos com métricas aprovadas; self-service workspace ativo
@@ -1048,4 +1048,4 @@ SILVER_PATH=data/silver
 | DPO | Data Protection Officer (Encarregado LGPD) |
 | HMAC-SHA256 | Algoritmo de hash criptográfico com chave secreta — usado para pseudonimização |
 | Watermark | Valor do último `updated_at` processado com sucesso — controla ingestão incremental |
-| Supabase | Plataforma BaaS open-source baseada em PostgreSQL — usada como fonte OLTP do projeto |
+| Neon | Plataforma BaaS open-source baseada em PostgreSQL — usada como fonte OLTP do projeto |

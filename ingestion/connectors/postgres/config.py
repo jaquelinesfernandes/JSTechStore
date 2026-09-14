@@ -1,5 +1,5 @@
 """
-Mapeamento de todas as tabelas Supabase para ingestão Bronze.
+Mapeamento de todas as tabelas PostgreSQL (Neon) para ingestão Bronze.
 
 Cada entrada define:
   - schema / table: localização no PostgreSQL

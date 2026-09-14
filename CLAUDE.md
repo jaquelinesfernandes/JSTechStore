@@ -4,18 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Data Engineering platform for **JSTechStore Brasil** — an omnichannel retail chain (15 physical stores + e-commerce) selling tech products. The project uses synthetic data generated into Supabase (PostgreSQL), ingested into a Medallion architecture (Bronze → Silver → Gold) in local Parquet + DuckDB, and delivers 6 executive Power BI dashboards with Incremental Refresh.
+Data Engineering platform for **JSTechStore Brasil** — an omnichannel retail chain (15 physical stores + e-commerce) selling tech products. The project uses synthetic data generated into Neon (PostgreSQL), ingested into a Medallion architecture (Bronze → Silver → Gold) in local Parquet + DuckDB, and delivers 6 executive Power BI dashboards with Incremental Refresh.
 
 Full requirements: `docs/PRD_JSTechStore_Brasil_DataEngineering.md`
 
 ## Architecture
 
 ```
-Supabase (PostgreSQL) → Bronze (Parquet/local) → Silver (Parquet/local) → Gold (DuckDB) → Power BI
+Neon (PostgreSQL) → Bronze (Parquet/local) → Silver (Parquet/local) → Gold (DuckDB) → Power BI
 ```
 
 - **Data Generation:** `scripts/generate_data.py` (3-year full load) + `scripts/generate_daily.py` (daily incremental)
-- **Source:** Supabase (PostgreSQL Cloud) — free tier, ~200–300 MB OLTP
+- **Source:** Neon.tech (PostgreSQL Cloud) — free tier, ~200–300 MB OLTP
 - **Connector:** Python + psycopg2 + SQLAlchemy; incremental control via `updated_at` column
 - **Orchestration:** GitHub Actions (cron daily at 01:00 BRT via `.github/workflows/daily_pipeline.yml`)
 - **Transformations:** dbt Core (`transformation/dbt_project/` — incremental models for Silver and Gold)
@@ -25,7 +25,7 @@ Supabase (PostgreSQL) → Bronze (Parquet/local) → Silver (Parquet/local) → 
 - **BI:** Power BI (Import Mode + Incremental Refresh on `fato_venda`)
 - **Version control + CI/CD:** GitHub + GitHub Actions
 
-## Source Schema Mapping (Supabase / PostgreSQL)
+## Source Schema Mapping (Neon / PostgreSQL)
 
 | Schema | Domain | Key Tables |
 |--------|--------|-----------|
@@ -43,10 +43,10 @@ Supabase (PostgreSQL) → Bronze (Parquet/local) → Silver (Parquet/local) → 
 ### Data Generation
 
 ```bash
-# Generate 3 years of historical data into Supabase (run once in Phase 1)
+# Generate 3 years of historical data into Neon (run once in Phase 1)
 python scripts/generate_data.py --start-date 2023-07-21 --end-date 2026-07-20 --seed 42
 
-# Generate today's incremental data into Supabase (run by GitHub Actions daily)
+# Generate today's incremental data (run by GitHub Actions daily)
 python scripts/generate_daily.py --date today
 
 # Generate for a specific date (backfill)
@@ -59,7 +59,7 @@ python scripts/generate_daily.py --date 2026-07-21
 # Install dependencies
 pip install -r requirements.txt
 
-# Run full load (first time — processes all data from Supabase to Bronze Parquet)
+# Run full load (first time — processes all data from Neon to Bronze Parquet)
 python -m ingestion.connectors.postgres.extract --mode full
 
 # Run incremental load (reads updated_at > last watermark)
@@ -122,14 +122,14 @@ python quality/lgpd/exclusao_titular.py --cpf_hash <hash> --execute
 ### Reconciliation
 
 ```bash
-# Compare Gold totals vs. Supabase source (tolerance <= 0.1%)
+# Compare Gold totals vs. Neon source (tolerance <= 0.1%)
 python quality/reconciliation/reconcile_gold_vs_source.py --table fato_venda
 ```
 
 ## Data Layer Conventions
 
 ### Bronze
-- No transformations — exact copy of each Supabase table as Parquet
+- No transformations — exact copy of each Neon table as Parquet
 - Partitioned by `_ingested_at` date: `data/bronze/<schema>/<table>/year=YYYY/month=MM/day=DD/`
 - Metadata columns added on ingest: `_source_schema`, `_source_table`, `_ingested_at`, `_row_count_batch`
 - **No PII in plain text** — pseudonymization runs before writing Parquet (see `quality/lgpd/pseudonimizacao.py`)
@@ -174,7 +174,7 @@ gold/facts/       →  fato_<entity>.sql
 
 | Layer | Strategy | Key |
 |-------|----------|-----|
-| Supabase → Bronze | Python: `WHERE updated_at > watermark` | `updated_at` column |
+| Neon → Bronze | Python: `WHERE updated_at > watermark` | `updated_at` column |
 | Bronze → Silver (dbt) | `materialized='incremental'`, `unique_key=natural_key` | Natural key per table |
 | Silver → Gold (dbt) | `materialized='incremental'`, filter on `sk_tempo` | Date-based window |
 | Gold → Power BI | Power BI Incremental Refresh on `fato_venda` | `RangeStart`/`RangeEnd` |
@@ -199,7 +199,7 @@ Runs on Pull Requests to `main`:
 Copy `.env.example` to `.env`. Never commit `.env`.
 
 Key variables:
-- `SUPABASE_DB_URL` — PostgreSQL connection string: `postgresql://postgres:<pw>@<project>.supabase.co:5432/postgres`
+- `DATABASE_URL` — PostgreSQL connection string (Neon.tech): `postgresql://<user>:<pw>@ep-<id>.aws.neon.tech/<dbname>?sslmode=require`
 - `DUCKDB_PATH` — path to the Gold `.duckdb` file (default: `data/gold/jstechstore.duckdb`)
 - `BRONZE_PATH` — local path for Bronze Parquet (default: `data/bronze`)
 - `SILVER_PATH` — local path for Silver Parquet (default: `data/silver`)
@@ -207,9 +207,9 @@ Key variables:
 
 ## Testing Strategy
 
-- **Unit tests** (`tests/`): Python connector logic with mocked Supabase responses; LGPD pseudonymization correctness; data generator output shape
+- **Unit tests** (`tests/`): Python connector logic with mocked database responses; LGPD pseudonymization correctness; data generator output shape
 - **dbt schema tests**: `not_null`, `unique`, `accepted_values`, `relationships` in every `schema.yml` — run in CI on every PR
-- **Reconciliation scripts** (`quality/reconciliation/`): compare Gold totals to Supabase source (tolerance ≤ 0.1%)
+- **Reconciliation scripts** (`quality/reconciliation/`): compare Gold totals to Neon source (tolerance ≤ 0.1%)
 - **LGPD erasure test**: dry-run mode validates records found and tables targeted without modifying data
 
 ## Power BI Constraints and Incremental Refresh
@@ -229,7 +229,7 @@ Key variables:
 
 | Phase | Scope | Target |
 |-------|-------|--------|
-| 1 | Supabase setup + data generation (3 years) + Bronze ingestion (incremental) + GitHub Actions | Month 1–2 |
+| 1 | Neon setup + data generation (3 years) + Bronze ingestion (incremental) + GitHub Actions | Month 1–2 |
 | 2 | Silver + Gold DW + dbt incremental (10 dims, 5 facts) + LGPD scripts | Month 3–4 |
 | 3 | 6 Power BI dashboards with Incremental Refresh (validated by business owners) | Month 5–6 |
 | 4 | Predictive models + self-service BI + Gold size optimization | Month 7–9 |

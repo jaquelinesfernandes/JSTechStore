@@ -11,7 +11,7 @@ configurado em cada uma, e onde cada credencial é consumida.
 
 | Plataforma | Obrigatório para | Status |
 |------------|-----------------|--------|
-| **Supabase** | Banco de dados fonte (OLTP) | Criar conta + projeto |
+| **Neon** | Banco de dados fonte (OLTP) | Criar conta + projeto |
 | **GitHub** | Repositório + CI/CD (Actions) | Já existente |
 | **GitHub Secrets** | Pipeline diário sem expor credenciais | Configurar 1 secret |
 | **Python 3.12+** | Scripts de geração + ingestão + qualidade | Instalar localmente |
@@ -23,14 +23,14 @@ configurado em cada uma, e onde cada credencial é consumida.
 
 ---
 
-## 1. Supabase (PostgreSQL Cloud)
+## 1. Neon (PostgreSQL Cloud)
 
 **O que é:** Banco de dados fonte que simula o OLTP da JSTechStore.  
 **Plano:** Free tier (500 MB de banco — suficiente para os dados sintéticos).
 
 ### Criar conta e projeto
 
-1. Acesse [supabase.com](https://supabase.com) → **Start your project** → cadastro gratuito
+1. Acesse [neon.techm](https://neon.techm) → **Start your project** → cadastro gratuito
 2. Criar novo projeto:
    - Nome: `jstechstore`
    - Senha do banco: gerar uma senha forte (anotar no gerenciador de senhas)
@@ -40,29 +40,29 @@ configurado em cada uma, e onde cada credencial é consumida.
 ### Obter a connection string
 
 ```
-Supabase Dashboard → Project → Settings → Database → Connection string → URI
+Neon Dashboard → Project → Settings → Database → Connection string → URI
 ```
 
 Formato:
 ```
-postgresql://postgres:<SUA_SENHA>@<PROJECT_REF>.supabase.co:5432/postgres
+postgresql://postgres:<SUA_SENHA>@<PROJECT_REF>.neon.tech:5432/postgres
 ```
 
 ### Configurar schemas e índices
 
 ```bash
 # Após criar o projeto, rodar o script de setup (cria schemas, tabelas e índices em updated_at)
-python scripts/setup_supabase.py   # a ser criado na Fase 1
+python scripts/setup_neon.py   # a ser criado na Fase 1
 ```
 
 ### Onde esta credencial é usada
 
 | Onde | Variável |
 |------|----------|
-| `.env` local | `SUPABASE_DB_URL` |
-| GitHub Actions Secret | `SUPABASE_DB_URL` |
-| `ingestion/connectors/postgres/extract.py` | `os.environ["SUPABASE_DB_URL"]` |
-| `quality/reconciliation/reconcile_gold_vs_source.py` | `os.environ["SUPABASE_DB_URL"]` |
+| `.env` local | `DATABASE_URL` |
+| GitHub Actions Secret | `DATABASE_URL` |
+| `ingestion/connectors/postgres/extract.py` | `os.environ["DATABASE_URL"]` |
+| `quality/reconciliation/reconcile_gold_vs_source.py` | `os.environ["DATABASE_URL"]` |
 
 ---
 
@@ -80,13 +80,13 @@ GitHub → Repositório JSTechStore → Settings → Secrets and variables → A
 
 | Secret | Valor | Usado em |
 |--------|-------|----------|
-| `SUPABASE_DB_URL` | Connection string do Supabase (seção 1) | `daily_pipeline.yml` steps 1, 2, 6 |
+| `DATABASE_URL` | Connection string do Neon (seção 1) | `daily_pipeline.yml` steps 1, 2, 6 |
 
 ### Configurar via GitHub CLI (após autenticar)
 
 ```powershell
-# Setar SUPABASE_DB_URL
-gh secret set SUPABASE_DB_URL --body "postgresql://postgres:SENHA@xxxx.supabase.co:5432/postgres"
+# Setar DATABASE_URL
+gh secret set DATABASE_URL --body "postgresql://postgres:SENHA@xxxx.neon.tech:5432/postgres"
 
 # Verificar secrets configurados
 gh secret list
@@ -125,7 +125,7 @@ pip install -r requirements.txt
 ```bash
 # Copiar template e preencher
 cp .env.example .env
-# Editar .env com os valores reais (Supabase URL + LGPD salt)
+# Editar .env com os valores reais (Neon URL + LGPD salt)
 ```
 
 ---
@@ -206,12 +206,12 @@ Get-Service -Name "PBIEgwService" | Select-Object Name, Status, StartType
 Execute na ordem para garantir que tudo está funcional antes da Fase 1:
 
 ```
-[ ] 1. Criar conta Supabase + projeto "jstechstore" (região São Paulo)
-[ ] 2. Copiar connection string do Supabase
-[ ] 3. Copiar .env.example → .env e preencher SUPABASE_DB_URL
+[ ] 1. Criar conta Neon + projeto "jstechstore" (região São Paulo)
+[ ] 2. Copiar connection string do Neon
+[ ] 3. Copiar .env.example → .env e preencher DATABASE_URL
 [ ] 4. Instalar Python 3.12 e criar ambiente virtual (.venv)
 [ ] 5. pip install -r requirements.txt
-[ ] 6. Configurar GitHub Secret: SUPABASE_DB_URL
+[ ] 6. Configurar GitHub Secret: DATABASE_URL
 [ ] 7. Instalar DuckDB ODBC Driver 64-bit e criar System DSN "JSTechStoreGold"
 [ ] 8. Instalar On-premises Data Gateway e registrar como "JSTechStore-GW"
 [ ] 9. Verificar Power BI Pro/PPU disponível na conta de serviço
@@ -223,11 +223,11 @@ Execute na ordem para garantir que tudo está funcional antes da Fase 1:
 
 | Credencial | Sensível | Onde fica | Nunca colocar em |
 |-----------|----------|-----------|-----------------|
-| `SUPABASE_DB_URL` | Sim (contém senha) | `.env` + GitHub Secret | Código, PR, Slack, `.env.example` |
+| `DATABASE_URL` | Sim (contém senha) | `.env` + GitHub Secret | Código, PR, Slack, `.env.example` |
 | `DUCKDB_PATH` | Não | `.env` (opcional) | — |
 | `BRONZE_PATH` | Não | `.env` (opcional) | — |
 | `SILVER_PATH` | Não | `.env` (opcional) | — |
 | `GOLD_BACKUP_DIR` | Não | `.env` (opcional) | — |
 | DSN `JSTechStoreGold` | Não | Windows ODBC (System DSN) | — |
 | Gateway Recovery Key | Sim | Gerenciador de senhas | — |
-| Senha Supabase (DB) | Sim | Gerenciador de senhas | — |
+| Senha Neon (DB) | Sim | Gerenciador de senhas | — |

@@ -13,7 +13,7 @@
 
 A **JSTechStore Brasil** é uma rede varejista omnichannel (15 lojas físicas + e-commerce) que precisa de uma visão unificada de vendas, clientes, estoque, logística e financeiro. Este projeto entrega uma plataforma de dados completa com:
 
-- **Fonte:** Supabase (PostgreSQL) com dados sintéticos gerados por Faker pt_BR
+- **Fonte:** Neon (PostgreSQL) com dados sintéticos gerados por Faker pt_BR
 - **Ingestão:** Python → Google Cloud Storage (Bronze)
 - **Transformação:** dbt → BigQuery (Silver + Gold)
 - **BI:** Power BI com 6 dashboards executivos
@@ -46,7 +46,7 @@ A **JSTechStore Brasil** é uma rede varejista omnichannel (15 lojas físicas + 
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  FONTE: Supabase (PostgreSQL · southamerica-east1)                  │
+│  FONTE: Neon (PostgreSQL · southamerica-east1)                  │
 │  8 schemas · 28 tabelas · ~5,9 M linhas · dados sintéticos         │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │ Python psycopg2 · incremental updated_at
@@ -104,15 +104,15 @@ Instale antes de começar:
 
 Solicite acesso às seguintes plataformas antes de começar:
 
-### 3.1 Supabase (fonte de dados)
+### 3.1 Neon (fonte de dados)
 
 **O que é:** banco PostgreSQL cloud com os dados sintéticos da JSTechStore.
 
 **O que você precisa:**
-- Connection string no formato `postgresql://postgres:<senha>@<project>.supabase.co:5432/postgres`
-- Solicitar ao tech lead ou acessar: Supabase Dashboard → Project → Settings → Database → URI
+- Connection string no formato `postgresql://postgres:<senha>@<project>.neon.tech:5432/postgres`
+- Solicitar ao tech lead ou acessar: Neon Dashboard → Project → Settings → Database → URI
 
-**Onde vai:** variável `SUPABASE_DB_URL` no seu `.env` local.
+**Onde vai:** variável `DATABASE_URL` no seu `.env` local.
 
 ### 3.2 Google Cloud Platform (GCP)
 
@@ -149,7 +149,7 @@ gcloud config list
 
 | Secret | Descrição |
 |--------|-----------|
-| `SUPABASE_DB_URL` | Connection string do Supabase |
+| `DATABASE_URL` | Connection string do Neon |
 | `GCP_SA_KEY` | Chave JSON da Service Account (base64) |
 | `GCP_PROJECT_ID` | ID do projeto GCP |
 | `GCS_BUCKET` | Nome do bucket Bronze (`jstechstore-bronze`) |
@@ -198,7 +198,7 @@ Principais pacotes instalados:
 
 | Pacote | Para que serve |
 |--------|---------------|
-| `psycopg2-binary` | Conector PostgreSQL → Supabase |
+| `psycopg2-binary` | Conector PostgreSQL → Neon |
 | `pandas` + `pyarrow` | Manipulação de DataFrames e Parquet |
 | `google-cloud-storage` | Upload/download GCS (Bronze) |
 | `google-cloud-bigquery` | Queries e DML no BigQuery (scripts de qualidade) |
@@ -223,9 +223,9 @@ cp .env.example .env
 Edite o `.env` com os valores reais. Veja cada variável:
 
 ```bash
-# ── Supabase ──────────────────────────────────────────────────
-# Connection string do PostgreSQL no Supabase
-SUPABASE_DB_URL=postgresql://postgres:SUA_SENHA@SEU_PROJECT.supabase.co:5432/postgres
+# ── Neon ──────────────────────────────────────────────────
+# Connection string do PostgreSQL no Neon
+DATABASE_URL=postgresql://postgres:SUA_SENHA@SEU_PROJECT.neon.tech:5432/postgres
 
 # ── GCP ───────────────────────────────────────────────────────
 # ID do projeto GCP (sem aspas)
@@ -279,13 +279,13 @@ Execute esta sequência de verificações antes de fazer qualquer coisa:
 python --version                    # Python 3.12.x
 pip list | grep -E "dbt|google|psycopg"
 
-# 2. Conexão com Supabase
+# 2. Conexão com Neon
 python -c "
 import os, psycopg2
 from dotenv import load_dotenv
 load_dotenv()
-conn = psycopg2.connect(os.environ['SUPABASE_DB_URL'])
-print('Supabase OK —', conn.server_version)
+conn = psycopg2.connect(os.environ['DATABASE_URL'])
+print('Neon OK —', conn.server_version)
 conn.close()
 "
 
@@ -316,11 +316,11 @@ Se alguma verificação falhar, veja a [seção de troubleshooting](#13-troubles
 
 ## 7. Primeira execução completa
 
-> **Atenção:** a carga inicial gera ~5,9 M de linhas no Supabase e ~165 MB no GCS. Rodar do zero demora ~30–60 minutos. Em ambientes de desenvolvimento, trabalhe sempre com a carga já existente.
+> **Atenção:** a carga inicial gera ~5,9 M de linhas no Neon e ~165 MB no GCS. Rodar do zero demora ~30–60 minutos. Em ambientes de desenvolvimento, trabalhe sempre com a carga já existente.
 
 Se o projeto já está inicializado (caso mais comum), pule para o passo 3.
 
-### Passo 1 — Gerar dados históricos no Supabase (apenas na 1ª vez)
+### Passo 1 — Gerar dados históricos no Neon (apenas na 1ª vez)
 
 ```bash
 # Gera 3 anos de dados sintéticos (2023-07-21 → 2026-07-20)
@@ -332,7 +332,7 @@ Duração: ~30–45 minutos. Popula ~5,9 M linhas em 28 tabelas.
 ### Passo 2 — Ingestão Bronze completa para o GCS
 
 ```bash
-# Extrai tudo do Supabase e envia para gs://jstechstore-bronze/
+# Extrai tudo do Neon e envia para gs://jstechstore-bronze/
 python -m ingestion.connectors.postgres.extract --mode full
 ```
 
@@ -387,7 +387,7 @@ O GitHub Actions executa o pipeline todo dia às **04:00 UTC (01:00 BRT)**. Voc�
 │
 ├── Step 1 · Geração de dados do dia
 │   └── python scripts/generate_daily.py --date today
-│       (insere ~2.000 vendas + entregas + lançamentos no Supabase)
+│       (insere ~2.000 vendas + entregas + lançamentos no Neon)
 │
 ├── Step 2 · Ingestão Bronze → GCS
 │   └── python -m ingestion.connectors.postgres.extract --mode smart
@@ -404,7 +404,7 @@ O GitHub Actions executa o pipeline todo dia às **04:00 UTC (01:00 BRT)**. Voc�
 ├── Step 5 · Verificação de frescor
 │   └── python quality/monitoring/check_data_freshness.py --tolerance-hours 26
 │
-├── Step 6 · Reconciliação Gold vs. Supabase
+├── Step 6 · Reconciliação Gold vs. Neon
 │   └── python quality/reconciliation/reconcile_gold_vs_source.py
 │       (6 tabelas fato · tolerância ≤ 0,1%)
 │
@@ -571,15 +571,15 @@ dbt test --select dim_cliente
 
 Cada modelo Gold tem testes de `not_null`, `unique`, `accepted_values` e `relationships` declarados no `schema.yml`.
 
-### Reconciliação Gold vs. Supabase
+### Reconciliação Gold vs. Neon
 
-Compara totais do BigQuery com a fonte Supabase. Tolerância de desvio: **≤ 0,1%**.
+Compara totais do BigQuery com a fonte Neon. Tolerância de desvio: **≤ 0,1%**.
 
 ```bash
 python quality/reconciliation/reconcile_gold_vs_source.py
 
 # Saída esperada:
-# [fato_venda] OK | BQ: 1.234.567 | Supabase: 1.234.589 | desvio: 0.002%
+# [fato_venda] OK | BQ: 1.234.567 | Neon: 1.234.589 | desvio: 0.002%
 # [fato_estoque] OK | ...
 ```
 
@@ -804,15 +804,15 @@ dbt run-operation stage_external_sources
 
 ### ❌ `extract.py` não encontra novos registros (0 linhas extraídas)
 
-**Causa A:** watermark está na frente dos dados — o Supabase não tem dados mais novos que o último watermark.
+**Causa A:** watermark está na frente dos dados — o Neon não tem dados mais novos que o último watermark.
 
 **Verificar:**
 ```bash
 gsutil cat gs://jstechstore-bronze/.watermarks/vendas__pedidos.json
-# Comparar com MAX(updated_at) no Supabase:
+# Comparar com MAX(updated_at) no Neon:
 python -c "
 import os, psycopg2; from dotenv import load_dotenv; load_dotenv()
-conn = psycopg2.connect(os.environ['SUPABASE_DB_URL'])
+conn = psycopg2.connect(os.environ['DATABASE_URL'])
 cur = conn.cursor()
 cur.execute('SELECT MAX(updated_at) FROM vendas.pedidos')
 print('MAX updated_at:', cur.fetchone()[0])
@@ -870,7 +870,7 @@ dbt test --select nome_do_modelo
 
 | O que | Onde |
 |-------|------|
-| Dados fonte (OLTP) | Supabase → PostgreSQL schemas: `vendas`, `clientes`, `produtos`, `estoque`, `logistica`, `financeiro`, `marketing`, `rh` |
+| Dados fonte (OLTP) | Neon → PostgreSQL schemas: `vendas`, `clientes`, `produtos`, `estoque`, `logistica`, `financeiro`, `marketing`, `rh` |
 | Bronze (Parquet raw) | `gs://jstechstore-bronze/` |
 | Watermarks de ingestão | `gs://jstechstore-bronze/.watermarks/` |
 | External Tables (BQ) | `jstechstore_bronze_ext.*` |
@@ -882,7 +882,7 @@ dbt test --select nome_do_modelo
 | O que | Onde |
 |-------|------|
 | Geração de dados sintéticos | `scripts/generate_data.py`, `scripts/generate_daily.py` |
-| Ingestão Supabase → GCS | `ingestion/connectors/postgres/extract.py` |
+| Ingestão Neon → GCS | `ingestion/connectors/postgres/extract.py` |
 | Configuração das tabelas | `ingestion/connectors/postgres/config.py` |
 | Modelos dbt Bronze | `transformation/dbt_project/models/bronze/stg_*.sql` |
 | External Table sources | `transformation/dbt_project/models/bronze/sources.yml` |
@@ -917,8 +917,8 @@ dbt test --select nome_do_modelo
 [ ] Ferramentas instaladas: Python 3.12, Git, gcloud CLI
 [ ] Acesso ao repositório GitHub confirmado
 [ ] Acesso ao projeto GCP jstechstore-data confirmado
-[ ] .env preenchido com SUPABASE_DB_URL, GCP_PROJECT_ID, GCS_BUCKET, GCP_SA_KEY_JSON
-[ ] Verificações da seção 6 passando (Supabase OK, GCS OK, BigQuery OK, dbt debug OK)
+[ ] .env preenchido com DATABASE_URL, GCP_PROJECT_ID, GCS_BUCKET, GCP_SA_KEY_JSON
+[ ] Verificações da seção 6 passando (Neon OK, GCS OK, BigQuery OK, dbt debug OK)
 [ ] Primeiro dbt run incremental executado com sucesso
 [ ] dbt test --select gold: 80/80 passando
 [ ] Power BI Desktop conectado ao jstechstore_gold (se aplicável)

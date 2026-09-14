@@ -2,7 +2,7 @@
 """
 Gerador de dados sintéticos históricos — JSTechStore Brasil.
 
-Cria todos os schemas/tabelas no Supabase e popula com 3 anos de histórico:
+Cria todos os schemas/tabelas no Neon (PostgreSQL) e popula com 3 anos de histórico:
   • 15 lojas físicas + e-commerce + centro de distribuição
   • ~125 SKUs ativos em 5 categorias de tecnologia
   • 100.000 clientes cadastrados com crescimento gradual
@@ -1434,9 +1434,9 @@ CREATE INDEX IF NOT EXISTS idx_web_eventos_updated_at           ON web_analytics
 
 
 def connect() -> psycopg2.extensions.connection:
-    url = os.environ.get("SUPABASE_DB_URL", "")
+    url = os.environ.get("DATABASE_URL", "")
     if not url:
-        log.error("SUPABASE_DB_URL não definida. Configure no .env ou como variável de ambiente.")
+        log.error("DATABASE_URL não definida. Configure no .env ou como variável de ambiente.")
         sys.exit(1)
     return psycopg2.connect(url)
 
@@ -2562,7 +2562,7 @@ def gen_metas_mensais(conn, vend_by_loja: dict[int, list[int]], ano: int, mes: i
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Gerador de dados históricos JSTechStore → Supabase")
+    p = argparse.ArgumentParser(description="Gerador de dados históricos JSTechStore → Neon (PostgreSQL)")
     p.add_argument("--start-date", required=True, help="Data inicial YYYY-MM-DD")
     p.add_argument("--end-date", required=True, help="Data final YYYY-MM-DD")
     p.add_argument(

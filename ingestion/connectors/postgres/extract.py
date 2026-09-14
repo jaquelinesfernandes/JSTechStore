@@ -1,5 +1,5 @@
 """
-Extrator incremental Supabase → Bronze Parquet.
+Extrator incremental Neon (PostgreSQL) → Bronze Parquet.
 
 Todos os dados são sintéticos (gerados por Faker com locale pt_BR).
 CPF, e-mail e telefone são fictícios por natureza — sem pseudonimização adicional.
@@ -134,7 +134,7 @@ def write_parquet_atomic(df: pd.DataFrame, table: TableConfig, ingested_at: date
 
 
 def get_connection() -> psycopg2.extensions.connection:
-    db_url = os.environ["SUPABASE_DB_URL"]
+    db_url = os.environ["DATABASE_URL"]
     return psycopg2.connect(db_url, cursor_factory=RealDictCursor)
 
 
@@ -227,7 +227,7 @@ def process_table(
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Extrator incremental Supabase → Bronze Parquet")
+    p = argparse.ArgumentParser(description="Extrator incremental Neon → Bronze Parquet")
     p.add_argument(
         "--mode",
         choices=["full", "incremental", "smart"],

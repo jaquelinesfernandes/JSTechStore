@@ -8,7 +8,7 @@
 
 ## 1. Contexto e Problema
 
-A camada Gold (`data/gold/jstechstore.duckdb`, ~700 MB) é o ponto de consumo de todos os 6 dashboards Power BI. Por ser um arquivo binário local, qualquer perda de disco exigiria regeneração completa do DW — processo que pode levar horas e depende do Supabase estar acessível.
+A camada Gold (`data/gold/jstechstore.duckdb`, ~700 MB) é o ponto de consumo de todos os 6 dashboards Power BI. Por ser um arquivo binário local, qualquer perda de disco exigiria regeneração completa do DW — processo que pode levar horas e depende do Neon estar acessível.
 
 **Riscos identificados sem backup:**
 
@@ -223,7 +223,7 @@ Usar quando backups locais e artifacts estão indisponíveis.
 
 ```bash
 # Pré-requisito: Bronze Parquet em data/bronze/ intacto
-# O Supabase pode ser usado para ingestão full se o Bronze também foi perdido
+# O Neon pode ser usado para ingestão full se o Bronze também foi perdido
 
 # 1. Apagar DuckDB corrompido
 rm -f data/gold/jstechstore.duckdb

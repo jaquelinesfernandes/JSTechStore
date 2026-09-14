@@ -2,19 +2,14 @@
 """
 Gerador de dados diários incrementais — JSTechStore Brasil.
 
-Dois modos de saída:
-  --output supabase  (padrão legado) — insere no banco configurado em SUPABASE_DB_URL
-  --output parquet   (recomendado)   — escreve direto no Bronze Parquet sem banco
-
-O modo parquet é a solução definitiva para o Disk IO Budget do Supabase/Neon:
+Escreve direto no Bronze Parquet sem tocar no banco Neon (zero IO):
   - IDs gerenciados localmente em data/bronze/.sequences.json
-  - Contexto carregado do cache JSON em vez de queries ao banco
+  - Contexto (produtos, clientes, lojas) carregado do cache JSON
   - dbt pipeline inalterado — lê Bronze Parquet normalmente
 
 Uso:
-    python scripts/generate_daily.py --date today --output parquet
-    python scripts/generate_daily.py --date 2026-07-21 --output parquet
-    python scripts/generate_daily.py --date today --output supabase  # legado
+    python scripts/generate_daily.py --date today
+    python scripts/generate_daily.py --date 2026-07-21
     python scripts/generate_daily.py --date today --refresh-context  # força re-leitura do banco
 """
 
@@ -64,12 +59,12 @@ logging.basicConfig(
     datefmt="%Y-%m-%dT%H:%M:%S",
 )
 
-# Cache local: evita 5+ full table scans no Supabase por execução
+# Cache local: evita full table scans no banco por execução
 _CONTEXT_CACHE_PATH = Path(__file__).parent.parent / "data" / ".context_cache.json"
 _CONTEXT_CACHE_MAX_AGE_HOURS = 23  # renova uma vez por dia
 
 # Sequências locais para geração direta em Parquet (modo --output parquet)
-# IDs começam em 10_000_000 — acima de qualquer SERIAL do Supabase após 3 anos (~3M max)
+# IDs começam em 10_000_000 — acima de qualquer SERIAL do banco após 3 anos (~3M max)
 _SEQUENCES_PATH = Path(__file__).parent.parent / "data" / "bronze" / ".sequences.json"
 _SEQ_START = 10_000_000
 
@@ -108,13 +103,13 @@ def _load_context_from_cache() -> dict | None:
         age_hours = (datetime.now(timezone.utc) - cached_at).total_seconds() / 3600
         if age_hours > _CONTEXT_CACHE_MAX_AGE_HOURS:
             log.info(
-                f"Cache de contexto expirado ({age_hours:.1f}h > {_CONTEXT_CACHE_MAX_AGE_HOURS}h) — re-lendo Supabase"
+                f"Cache de contexto expirado ({age_hours:.1f}h > {_CONTEXT_CACHE_MAX_AGE_HOURS}h) — re-lendo banco"
             )
             return None
-        log.info(f"Contexto carregado do cache local ({age_hours:.1f}h de idade) — IO Supabase economizado")
+        log.info(f"Contexto carregado do cache local ({age_hours:.1f}h de idade) — IO banco economizado")
         return raw
     except Exception as exc:  # noqa: BLE001
-        log.warning(f"Cache de contexto inválido ({exc}) — re-lendo Supabase")
+        log.warning(f"Cache de contexto inválido ({exc}) — re-lendo banco")
         return None
 
 
@@ -127,13 +122,13 @@ def _save_context_to_cache(ctx: dict) -> None:
 
 
 def load_context(conn, refresh: bool = False) -> dict:
-    """Carrega IDs dos dados mestres. Usa cache local para reduzir Disk IO no Supabase."""
+    """Carrega IDs dos dados mestres. Usa cache local para reduzir IO no banco."""
     if not refresh:
         cached = _load_context_from_cache()
         if cached is not None:
             return cached
 
-    log.info("Carregando contexto do Supabase...")
+    log.info("Carregando contexto do banco (Neon)...")
     ctx: dict = {}
     with conn.cursor() as cur:
         cur.execute(
@@ -667,17 +662,11 @@ def gen_daily_to_parquet(target_date: date, ctx: dict, rng: random.Random) -> No
 
 
 def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Gerador de dados diários JSTechStore → Supabase")
+    p = argparse.ArgumentParser(description="Gerador de dados diários JSTechStore → Bronze Parquet")
     p.add_argument("--date", required=True, help="Data a gerar: 'today' ou YYYY-MM-DD")
     p.add_argument("--seed", type=int, default=None, help="Semente fixa (default: derivada da data)")
     p.add_argument(
-        "--refresh-context", action="store_true", help="Força re-leitura do contexto do Supabase (ignora cache)"
-    )
-    p.add_argument(
-        "--output",
-        choices=["supabase", "parquet"],
-        default="parquet",
-        help="Destino da geração: 'parquet' (recomendado, zero IO banco) ou 'supabase' (legado)",
+        "--refresh-context", action="store_true", help="Força re-leitura do contexto do banco (ignora cache)"
     )
     return p.parse_args()
 
@@ -692,36 +681,24 @@ def main() -> int:
     rng = random.Random(seed)
     Faker.seed(seed)
 
-    log.info(f"Gerando dados para {target_date} | seed={seed} | output={args.output}")
+    log.info(f"Gerando dados para {target_date} | seed={seed}")
 
-    if args.output == "parquet":
-        # Modo recomendado: zero IO banco, IDs locais, escreve direto em Bronze Parquet
-        conn = connect()
-        try:
-            ctx = load_context(conn, refresh=args.refresh_context)
-            ctx = _deserialize_ctx(ctx)
-        except Exception:
-            log.exception("Erro ao carregar contexto do banco.")
-            return 1
-        finally:
-            conn.close()
+    # Zero IO no banco — IDs locais, escreve direto em Bronze Parquet
+    conn = connect()
+    try:
+        ctx = load_context(conn, refresh=args.refresh_context)
+        ctx = _deserialize_ctx(ctx)
+    except Exception:
+        log.exception("Erro ao carregar contexto do banco.")
+        return 1
+    finally:
+        conn.close()
 
-        try:
-            gen_daily_to_parquet(target_date, ctx, rng)
-        except Exception:
-            log.exception("Erro durante geração de dados diários para Parquet.")
-            return 1
-    else:
-        # Modo legado: INSERT direto no Supabase / Neon (master data only)
-        conn = connect()
-        try:
-            ctx = load_context(conn, refresh=args.refresh_context)
-            gen_daily(conn, target_date, ctx, rng)
-        except Exception:
-            log.exception("Erro durante geração de dados diários.")
-            return 1
-        finally:
-            conn.close()
+    try:
+        gen_daily_to_parquet(target_date, ctx, rng)
+    except Exception:
+        log.exception("Erro durante geração de dados diários para Parquet.")
+        return 1
 
     log.info(f"=== Dados do dia {target_date} gerados com sucesso! ===")
     return 0

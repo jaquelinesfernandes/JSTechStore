@@ -643,7 +643,7 @@ MAX(dt_pedido_data) - INTERVAL '3 days'  →  DATE_SUB(MAX(dt_pedido_data), INTE
 - [ ] Disparar `workflow_dispatch` com `full_refresh=true` no GitHub Actions
 - [ ] Confirmar todos os steps passando no GHA (sem cache local, 100% cloud)
 - [ ] Validar: `dbt test --select gold` → meta 80/80 testes
-- [ ] Validar reconciliação: 8/8 checks ≤ 0,1% de desvio vs. Supabase
+- [ ] Validar reconciliação: 8/8 checks ≤ 0,1% de desvio vs. Neon
 - [ ] **Power BI — conectar via conector BigQuery nativo:**
   1. Power BI Desktop → Obter Dados → Google BigQuery
   2. Informar Project ID: `jstechstore-data`

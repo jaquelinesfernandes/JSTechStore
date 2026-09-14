@@ -41,8 +41,8 @@ jobs:
       - name: pytest tests/
         run: pytest tests/ -v --tb=short --timeout=60
         env:
-          # Testes usam banco SQLite local ou mocks — sem Supabase real
-          SUPABASE_DB_URL: ""
+          # Testes usam mocks — sem banco real necessário
+          DATABASE_URL: ""
           DUCKDB_PATH: ":memory:"
           BRONZE_PATH: /tmp/bronze_ci
           SILVER_PATH: /tmp/silver_ci

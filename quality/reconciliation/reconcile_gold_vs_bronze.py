@@ -4,7 +4,7 @@ Reconciliação Gold (DuckDB) vs. Bronze Parquet.
 Substitui reconcile_gold_vs_source.py na arquitetura Parquet-first
 (generate_daily --output parquet): compara os 6 fatos do Gold contra os
 arquivos Bronze Parquet usando DuckDB para ambos os lados — sem depender do
-banco Neon/Supabase.
+banco Neon.
 
 Fatos cobertos:
   fato_venda             → frescor (max data) vs Bronze vendas/pedidos
@@ -107,7 +107,7 @@ CHECKS: tuple[ReconciliationCheck, ...] = (
     # ── fato_estoque ──────────────────────────────────────────────────────────
     # Snapshot atual: compara Gold (sk_tempo=MAX) vs Bronze SOMENTE do batch
     # mais recente (_ingested_at=MAX). Bronze acumula batches históricos com
-    # id_produto de ranges diferentes (Supabase original + Parquet-mode IDs);
+    # id_produto de ranges diferentes (carga inicial Neon + Parquet-mode IDs);
     # sem o filtro por _ingested_at o dedup retornaria todos os pares únicos
     # de TODOS os batches, inflando a contagem vs. o snapshot atual do Gold.
     ReconciliationCheck(

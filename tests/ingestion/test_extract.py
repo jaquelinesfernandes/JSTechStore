@@ -5,7 +5,7 @@ Cobrem:
 - Leitura/escrita de watermarks (filesystem mockado)
 - Configuração de tabelas (TableConfig)
 - Lógica de particionamento de diretório Parquet
-- Não requerem conexão com Supabase
+- Não requerem conexão com o banco
 """
 
 import json
